@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MentorVerse - Complete Mentor Section UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 2000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .section-header {
+            color: white;
+            font-size: 2em;
+            margin: 50px 0 25px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .screen-description {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .phone-frame {
+            background: #1a1a2e;
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .phone-frame:hover {
+            transform: translateY(-10px);
+        }
+
+        .phone-label {
+            position: absolute;
+            top: -35px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #1a1a2e;
+            border-radius: 0 0 15px 15px;
+            z-index: 10;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 9/19.5;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #0A1E3D 0%, #00BFA5 100%);
+            padding: 50px 20px 20px;
+            color: white;
+        }
+
+        .header-simple {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header-with-back {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+        }
+
+        .screen-content {
+            height: 100%;
+            overflow-y: auto;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+        }
+
+        .card {
+            background: white;
+            margin: 0 20px 15px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .mentee-card {
+            background: white;
+            margin: 0 20px 15px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .mentee-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #00BFA5;
+            color: white;
+        }
+
+        .btn-accept {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-reject {
+            background: white;
+            color: #F44336;
+            border: 2px solid #F44336;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #0A1E3D;
+            border: 1px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0A1E3D;
+            margin: 25px 20px 15px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00BFA5;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .progress-bar-container {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00BFA5 0%, #00E5CC 100%);
+            border-radius: 10px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .status-active {
+            background: rgba(0, 191, 165, 0.1);
+            color: #00BFA5;
+            border: 1px solid rgba(0, 191, 165, 0.3);
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 15px;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: #999;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #00BFA5;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 3px;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: 25%;
+            background: #FF5252;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .goal-card {
+            background: white;
+            margin: 0 20px 15px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            color: #0A1E3D;
+            margin-bottom: 8px;
+        }
+
+        .textarea-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 8px;
+            font-size: 32px;
+            margin: 15px 0;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #e0e0e0;
+            transition: color 0.2s;
+        }
+
+        .star.selected {
+            color: #FFA500;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px 15px;
+            overflow-x: auto;
+        }
+
+        .chip {
+            padding: 8px 20px;
+            background: white;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chip.active {
+            background: #00BFA5;
+            color: white;
+            border-color: #00BFA5;
+        }
+
+        @media (max-width: 768px) {
+            .mockup-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🏫 Complete Mentor Section UI</h1>
+        <p class="subtitle">All screens mentors need to guide their mentees</p>
+
+        <!-- SECTION 1: Requests Management -->
+        <h2 class="section-header">📥 Section 1: Incoming Requests</h2>
+        <p class="screen-description">Review and respond to mentorship requests</p>
+
+        <div class="mockup-grid">
+            <!-- Screen 1: Incoming Requests -->
+            <div class="phone-frame">
+                <div class="phone-label">1. INCOMING REQUESTS</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-simple">Mentorship Requests</div>
+                            <div class="header-subtitle">3 new requests</div>
+                        </div>
+
+                        <div class="card">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">SJ</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 3px;">Sarah Johnson</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Aspiring Developer</div>
+                                    <div style="font-size: 12px; color: #999;">Requested 2 hours ago</div>
+                                </div>
+                                <div class="status-badge status-pending">New</div>
+                            </div>
+                            <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; font-size: 14px; color: #666; margin-bottom: 15px; line-height: 1.6;">
+                                "Hi John! I'm an aspiring software developer looking to break into React development. I've been following your articles..."
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-accept" style="flex: 1; padding: 12px;">Accept</button>
+                                <button class="btn btn-reject" style="flex: 1; padding: 12px;">Decline</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">MK</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 3px;">Mike Kim</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">Career Switcher</div>
+                                    <div style="font-size: 12px; color: #999;">Requested 5 hours ago</div>
+                                </div>
+                                <div class="status-badge status-pending">New</div>
+                            </div>
+                            <div style="background: #f5f5f5; padding: 12px; border-radius: 8px; font-size: 14px; color: #666; margin-bottom: 15px; line-height: 1.6;">
+                                "Hello! I'm transitioning from marketing to tech and would love guidance on building my first portfolio..."
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-accept" style="flex: 1; padding: 12px;">Accept</button>
+                                <button class="btn btn-reject" style="flex: 1; padding: 12px;">Decline</button>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="nav-item">
+                                <div class="nav-icon">🏠</div>
+                                <div>Dashboard</div>
+                            </div>
+                            <div class="nav-item active">
+                                <div class="nav-icon" style="position: relative;">
+                                    📥
+                                    <span class="badge">3</span>
+                                </div>
+                                <div>Requests</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">👥</div>
+                                <div>Mentees</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">💬</div>
+                                <div>Messages</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">⚙️</div>
+                                <div>Profile</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Request Detail -->
+            <div class="phone-frame">
+                <div class="phone-label">2. REQUEST DETAIL</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Request Details</h2>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: -30px; text-align: center;">
+                            <div class="avatar" style="width: 80px; height: 80px; font-size: 32px; margin: 0 auto 15px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">SJ</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">Sarah Johnson</div>
+                            <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Aspiring Developer</div>
+                            <div style="font-size: 13px; color: #999;">Requested 2 hours ago</div>
+                        </div>
+
+                        <div class="section-title">About Sarah</div>
+                        <div class="card">
+                            <div style="font-size: 14px; color: #666; line-height: 1.7;">
+                                Recent graduate with a degree in Computer Science. Currently building projects to break into the tech industry. Passionate about web development and eager to learn from experienced developers.
+                            </div>
+                        </div>
+
+                        <div class="section-title">Why She Wants You</div>
+                        <div class="card">
+                            <div style="font-size: 14px; color: #666; line-height: 1.7;">
+                                "Hi John! I'm an aspiring software developer looking to break into React development. I've been following your articles on Medium and I'm impressed by your teaching style. I'm committed to putting in the work and would love your guidance on my journey to becoming a professional developer!"
+                            </div>
+                        </div>
+
+                        <div class="section-title">Her Goals</div>
+                        <div class="card">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="font-size: 24px;">✓</div>
+                                <div style="font-size: 15px; color: #0A1E3D;">Learn React fundamentals</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="font-size: 24px;">✓</div>
+                                <div style="font-size: 15px; color: #0A1E3D;">Build portfolio website</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="font-size: 24px;">✓</div>
+                                <div style="font-size: 15px; color: #0A1E3D;">Land first developer job</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Interests</div>
+                        <div style="padding: 0 20px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">Web Development</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">React</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">JavaScript</span>
+                            </div>
+                        </div>
+
+                        <div style="padding: 20px 20px 100px;">
+                            <button class="btn btn-accept" style="width: 100%; padding: 16px; font-size: 17px;">Accept Sarah as Mentee</button>
+                            <button class="btn btn-reject" style="width: 100%; padding: 16px; font-size: 17px; margin-top: 10px;">Decline Request</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 3: Accept Confirmation -->
+            <div class="phone-frame">
+                <div class="phone-label">3. ACCEPT CONFIRMATION</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Accept Mentee</h2>
+                            </div>
+                        </div>
+
+                        <div style="text-align: center; padding: 40px 20px;">
+                            <div style="font-size: 80px; margin-bottom: 20px;">🤝</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #0A1E3D; margin-bottom: 10px;">Start Mentorship?</div>
+                            <div style="font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 30px;">
+                                You're about to accept <strong>Sarah Johnson</strong> as your mentee. This will start a long-term mentorship relationship.
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 15px;">Welcome Message (Optional)</div>
+                            <textarea 
+                                class="textarea-input" 
+                                placeholder="Send a welcome message to Sarah..."
+                                style="min-height: 150px;"
+                            >Hi Sarah! I'm excited to work with you! Let's schedule a kickoff call this week to discuss your goals and create a learning plan. Looking forward to this journey! 🚀</textarea>
+                        </div>
+
+                        <div style="padding: 0 20px;">
+                            <div style="background: rgba(0, 191, 165, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #00BFA5; margin-bottom: 20px;">
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    💡 <strong>Tip:</strong> Set clear expectations early. Discuss meeting frequency, communication methods, and goal-setting in your first session.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 0 20px 100px;">
+                            <button class="btn btn-accept" style="width: 100%; padding: 16px; font-size: 17px;">Confirm & Start Mentorship</button>
+                            <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 17px; margin-top: 10px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: My Mentees Management -->
+        <h2 class="section-header">👥 Section 2: My Mentees</h2>
+        <p class="screen-description">Manage all your active mentees and their progress</p>
+
+        <div class="mockup-grid">
+            <!-- Screen 4: Mentor Dashboard -->
+            <div class="phone-frame">
+                <div class="phone-label">4. MENTOR DASHBOARD</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-simple">My Dashboard</div>
+                            <div class="header-subtitle">Overview of your mentorship</div>
+                        </div>
+
+                        <div class="stat-grid" style="margin-top: -30px; margin-bottom: 25px;">
+                            <div class="stat-box">
+                                <div class="stat-number">5</div>
+                                <div class="stat-label">Active Mentees</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">127</div>
+                                <div class="stat-label">Total Hours</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">28</div>
+                                <div class="stat-label">Goals Completed</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">4.9</div>
+                                <div class="stat-label">Avg Rating</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Recent Activity</div>
+                        
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #00BFA5;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <div style="font-size: 15px; font-weight: bold; color: #0A1E3D;">Sarah completed a goal! 🎉</div>
+                                    <div style="font-size: 11px; color: #999;">2h ago</div>
+                                </div>
+                                <div style="font-size: 13px; color: #666;">Build Portfolio Website</div>
+                            </div>
+
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #FFA500;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <div style="font-size: 15px; font-weight: bold; color: #0A1E3D;">New message from Mike</div>
+                                    <div style="font-size: 11px; color: #999;">5h ago</div>
+                                </div>
+                                <div style="font-size: 13px; color: #666;">"Can you review my code?"</div>
+                            </div>
+
+                            <div style="background: white; padding: 15px; border-radius: 10px; border-left: 4px solid #2196F3;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <div style="font-size: 15px; font-weight: bold; color: #0A1E3D;">3 new requests pending</div>
+                                    <div style="font-size: 11px; color: #999;">Today</div>
+                                </div>
+                                <div style="font-size: 13px; color: #666;">Review mentorship requests</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">This Week's Tasks</div>
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <input type="checkbox" style="margin-top: 3px; width: 18px; height: 18px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 15px; color: #0A1E3D; margin-bottom: 3px;">Review Sarah's React project</div>
+                                        <div style="font-size: 12px; color: #999;">Due: Friday</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <input type="checkbox" checked style="margin-top: 3px; width: 18px; height: 18px;">
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 15px; color: #999; text-decoration: line-through; margin-bottom: 3px;">Weekly check-in with Mike</div>
+                                        <div style="font-size: 12px; color: #999;">Completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="nav-item active">
+                                <div class="nav-icon">🏠</div>
+                                <div>Dashboard</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">📥</div>
+                                <div>Requests</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">👥</div>
+                                <div>Mentees</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">💬</div>
+                                <div>Messages</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">⚙️</div>
+                                <div>Profile</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 5: My Mentees List -->
+            <div class="phone-frame">
+                <div class="phone-label">5. MY MENTEES LIST</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-simple">My Mentees</div>
+                            <div class="header-subtitle">5 active mentees</div>
+                        </div>
+
+                        <div class="filter-chips">
+                            <div class="chip active">All (5)</div>
+                            <div class="chip">Needs Attention (2)</div>
+                            <div class="chip">On Track (3)</div>
+                        </div>
+
+                        <div class="mentee-card">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div class="avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">SJ</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 3px;">Sarah Johnson</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">3 months together</div>
+                                    <div class="status-badge status-active">Active</div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                    <span>Overall Progress</span>
+                                    <span><strong>65%</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; text-align: center;">
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">5/8</div>
+                                    <div style="color: #999;">Goals</div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">45h</div>
+                                    <div style="color: #999;">Hours</div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">6</div>
+                                    <div style="color: #999;">Skills</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mentee-card">
+                            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                                <div class="avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">MK</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 3px;">Mike Kim</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 8px;">2 months together</div>
+                                    <div class="status-badge status-active">Active</div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                    <span>Overall Progress</span>
+                                    <span><strong>42%</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 42%"></div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px; text-align: center;">
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">3/7</div>
+                                    <div style="color: #999;">Goals</div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">28h</div>
+                                    <div style="color: #999;">Hours</div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: bold; color: #0A1E3D;">4</div>
+                                    <div style="color: #999;">Skills</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-nav">
+                            <div class="nav-item">
+                                <div class="nav-icon">🏠</div>
+                                <div>Dashboard</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">📥</div>
+                                <div>Requests</div>
+                            </div>
+                            <div class="nav-item active">
+                                <div class="nav-icon">👥</div>
+                                <div>Mentees</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">💬</div>
+                                <div>Messages</div>
+                            </div>
+                            <div class="nav-item">
+                                <div class="nav-icon">⚙️</div>
+                                <div>Profile</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 6: Mentee Detail View -->
+            <div class="phone-frame">
+                <div class="phone-label">6. MENTEE DETAIL VIEW</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Sarah's Progress</h2>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: -30px;">
+                            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                                <div class="avatar" style="width: 70px; height: 70px; font-size: 28px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">SJ</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 20px; font-weight: bold; color: #0A1E3D; margin-bottom: 3px;">Sarah Johnson</div>
+                                    <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Aspiring Developer</div>
+                                    <div class="status-badge status-active">3 months together</div>
+                                </div>
+                            </div>
+
+                            <div style="background: #f5f5f5; padding: 15px; border-radius: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <span style="font-size: 14px; color: #666;">Overall Progress</span>
+                                    <span style="font-size: 24px; font-weight: bold; color: #00BFA5;">65%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 0 20px; margin-bottom: 25px;">
+                            <div style="background: white; padding: 20px 15px; border-radius: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;">
+                                <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+                                <div style="font-size: 13px; color: #0A1E3D; font-weight: 500;">Message</div>
+                            </div>
+                            <div style="background: white; padding: 20px 15px; border-radius: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;">
+                                <div style="font-size: 32px; margin-bottom: 8px;">🎯</div>
+                                <div style="font-size: 13px; color: #0A1E3D; font-weight: 500;">Goals</div>
+                            </div>
+                            <div style="background: white; padding: 20px 15px; border-radius: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;">
+                                <div style="font-size: 32px; margin-bottom: 8px;">📊</div>
+                                <div style="font-size: 13px; color: #0A1E3D; font-weight: 500;">Progress</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Statistics</div>
+                        <div class="stat-grid" style="margin-bottom: 25px;">
+                            <div class="stat-box">
+                                <div class="stat-number">8</div>
+                                <div class="stat-label">Total Goals</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">5</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">45</div>
+                                <div class="stat-label">Hours Together</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-number">6</div>
+                                <div class="stat-label">Skills Gained</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Recent Goals</div>
+                        <div class="goal-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                                <div style="font-size: 16px; font-weight: bold; color: #0A1E3D;">Master React Hooks</div>
+                                <div class="status-badge status-active">Active</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                <span>Progress</span>
+                                <span><strong>65%</strong></span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: 65%"></div>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%; padding: 10px; margin-top: 15px; font-size: 14px;">Add Feedback</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Feedback & Progress -->
+        <h2 class="section-header">💬 Section 3: Give Feedback</h2>
+        <p class="screen-description">Provide feedback on mentee goals and progress</p>
+
+        <div class="mockup-grid">
+            <!-- Screen 7: Mentee's Goals (Mentor View) -->
+            <div class="phone-frame">
+                <div class="phone-label">7. MENTEE'S GOALS (Mentor View)</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 24px; font-weight: bold;">Sarah's Goals</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-chips">
+                            <div class="chip active">All (8)</div>
+                            <div class="chip">Active (3)</div>
+                            <div class="chip">Completed (5)</div>
+                        </div>
+
+                        <div class="goal-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">Master React Hooks</div>
+                                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Due: Dec 31, 2024</div>
+                                </div>
+                                <div class="status-badge status-active">Active</div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                    <span>Progress</span>
+                                    <span><strong>65%</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">Add Feedback</button>
+                                <button class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px;">View Details</button>
+                            </div>
+                        </div>
+
+                        <div class="goal-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">Build Portfolio Website</div>
+                                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Completed: Dec 1, 2024</div>
+                                </div>
+                                <div style="padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: rgba(76, 175, 80, 0.1); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);">Completed</div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                    <span>Progress</span>
+                                    <span><strong>100%</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <div style="background: rgba(0, 191, 165, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #00BFA5;">
+                                <div style="font-size: 13px; color: #666; line-height: 1.6;">
+                                    <strong style="color: #00BFA5;">Your feedback:</strong> "🎉 Excellent work! Your portfolio is professional and ready to share with employers!"
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="goal-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">Learn TypeScript</div>
+                                    <div style="font-size: 13px; color: #999; margin-bottom: 10px;">Due: Jan 15, 2025</div>
+                                </div>
+                                <div class="status-badge status-active">Active</div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 5px;">
+                                    <span>Progress</span>
+                                    <span><strong>30%</strong></span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 14px;">Add Feedback</button>
+                                <button class="btn btn-secondary" style="padding: 10px 20px; font-size: 14px;">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 8: Add Feedback -->
+            <div class="phone-frame">
+                <div class="phone-label">8. ADD FEEDBACK TO GOAL</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Give Feedback</h2>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: -30px;">
+                            <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">Master React Hooks</div>
+                            <div style="font-size: 14px; color: #666; margin-bottom: 10px;">Sarah Johnson • 65% complete</div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+
+                        <div style="padding: 0 20px;">
+                            <div class="input-group">
+                                <label class="input-label">Your Feedback *</label>
+                                <textarea 
+                                    class="textarea-input" 
+                                    placeholder="Share your thoughts on Sarah's progress..."
+                                    style="min-height: 150px;"
+                                >Great progress on React Hooks! Your understanding of useState and useEffect is solid. For next week, I'd like you to focus on custom hooks - try building 2-3 of your own. Also, review the useContext example I shared. Keep up the excellent work! 🚀</textarea>
+                                <div style="text-align: right; font-size: 12px; color: #999; margin-top: 5px;">160 / 500 characters</div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Rate Effort (1-5)</label>
+                                <div class="rating-stars">
+                                    <span class="star selected">⭐</span>
+                                    <span class="star selected">⭐</span>
+                                    <span class="star selected">⭐</span>
+                                    <span class="star selected">⭐</span>
+                                    <span class="star selected">⭐</span>
+                                </div>
+                                <div style="font-size: 13px; color: #666; text-align: center; margin-top: -10px;">
+                                    Excellent effort and consistency!
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(0, 191, 165, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #00BFA5; margin-bottom: 20px;">
+                                <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                                    💡 <strong>Tip:</strong> Be specific and constructive. Highlight wins and suggest clear next steps.
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px;">Submit Feedback</button>
+                            <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 17px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 9: Share Resource -->
+            <div class="phone-frame">
+                <div class="phone-label">9. SHARE RESOURCE</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Share Resource</h2>
+                            </div>
+                        </div>
+
+                        <div style="padding: 20px;">
+                            <div class="input-group">
+                                <label class="input-label">Resource Title *</label>
+                                <input 
+                                    type="text" 
+                                    class="text-input" 
+                                    placeholder="e.g., React Hooks Documentation"
+                                    value="React Hooks Deep Dive"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Resource Type *</label>
+                                <select style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; font-family: inherit; cursor: pointer;">
+                                    <option>Video</option>
+                                    <option>Article</option>
+                                    <option>Course</option>
+                                    <option>Book</option>
+                                    <option>Project</option>
+                                    <option>Documentation</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">URL *</label>
+                                <input 
+                                    type="url" 
+                                    class="text-input" 
+                                    placeholder="https://..."
+                                    value="https://youtube.com/watch?v=example"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Description</label>
+                                <textarea 
+                                    class="textarea-input" 
+                                    placeholder="Why you're sharing this resource..."
+                                    style="min-height: 100px;"
+                                >This video covers all React Hooks in depth with practical examples. Watch it before our next session and try implementing the examples in your project.</textarea>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Share With</label>
+                                <select style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px; font-family: inherit; cursor: pointer;">
+                                    <option>Sarah Johnson</option>
+                                    <option>Mike Kim</option>
+                                    <option>All Mentees</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px;">Share Resource</button>
+                            <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 17px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Profile & Settings -->
+        <h2 class="section-header">⚙️ Section 4: Profile & Settings</h2>
+        <p class="screen-description">Manage your mentor profile and preferences</p>
+
+        <div class="mockup-grid">
+            <!-- Screen 10: Mentor Profile (Public View) -->
+            <div class="phone-frame">
+                <div class="phone-label">10. MY PUBLIC PROFILE</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">My Profile</h2>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: -30px; text-align: center;">
+                            <div class="avatar" style="width: 90px; height: 90px; font-size: 36px; margin: 0 auto 15px;">JD</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #0A1E3D; margin-bottom: 5px;">John Doe</div>
+                            <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Senior Software Engineer @ Google</div>
+                            <div style="color: #FFA500; font-size: 14px; margin-bottom: 15px;">⭐ 4.9 (120 reviews)</div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;">
+                                <div>
+                                    <div style="font-size: 24px; font-weight: bold; color: #00BFA5;">25</div>
+                                    <div style="font-size: 12px; color: #999;">Mentees</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 24px; font-weight: bold; color: #00BFA5;">5yrs</div>
+                                    <div style="font-size: 12px; color: #999;">Experience</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 24px; font-weight: bold; color: #00BFA5;">95%</div>
+                                    <div style="font-size: 12px; color: #999;">Success</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 10px 30px; font-size: 14px; margin-top: 15px;">Edit Profile</button>
+                        </div>
+
+                        <div class="section-title">About</div>
+                        <div class="card">
+                            <p style="font-size: 14px; color: #666; line-height: 1.7;">
+                                I'm a passionate software engineer with 5+ years of experience in web development. I specialize in React, Node.js, and system design. I love helping aspiring developers break into the tech industry!
+                            </p>
+                        </div>
+
+                        <div class="section-title">Skills & Expertise</div>
+                        <div style="padding: 0 20px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">React</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">Node.js</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">JavaScript</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">System Design</span>
+                                <span style="padding: 8px 15px; background: rgba(0, 191, 165, 0.1); border-radius: 20px; font-size: 13px; color: #0A1E3D; border: 1px solid #00BFA5;">Git</span>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Settings</div>
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; border-radius: 15px; overflow: hidden;">
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="font-size: 20px;">🔔</div>
+                                        <div style="font-size: 15px; color: #0A1E3D;">Accepting Requests</div>
+                                    </div>
+                                    <div style="width: 50px; height: 28px; background: #00BFA5; border-radius: 14px; position: relative; cursor: pointer;">
+                                        <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                                    </div>
+                                </div>
+                                <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="font-size: 20px;">👥</div>
+                                        <div style="font-size: 15px; color: #0A1E3D;">Max Active Mentees</div>
+                                    </div>
+                                    <div style="color: #666; font-weight: bold;">5</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 11: Edit Profile -->
+            <div class="phone-frame">
+                <div class="phone-label">11. EDIT MENTOR PROFILE</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Edit Profile</h2>
+                            </div>
+                        </div>
+
+                        <div style="padding: 20px;">
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <div class="avatar" style="width: 90px; height: 90px; font-size: 36px; margin: 0 auto 15px;">JD</div>
+                                <button class="btn btn-secondary" style="padding: 10px 25px; font-size: 14px;">Change Photo</button>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Display Name *</label>
+                                <input 
+                                    type="text" 
+                                    class="text-input" 
+                                    value="John Doe"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Title *</label>
+                                <input 
+                                    type="text" 
+                                    class="text-input" 
+                                    value="Senior Software Engineer @ Google"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">About *</label>
+                                <textarea 
+                                    class="textarea-input"
+                                    style="min-height: 120px;"
+                                >I'm a passionate software engineer with 5+ years of experience in web development. I specialize in React, Node.js, and system design. I love helping aspiring developers break into the tech industry!</textarea>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Years of Experience</label>
+                                <input 
+                                    type="number" 
+                                    class="text-input" 
+                                    value="5"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Skills (comma separated)</label>
+                                <input 
+                                    type="text" 
+                                    class="text-input" 
+                                    value="React, Node.js, JavaScript, System Design, Git"
+                                    style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 15px;"
+                                >
+                            </div>
+
+                            <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 17px; margin-bottom: 10px;">Save Changes</button>
+                            <button class="btn btn-secondary" style="width: 100%; padding: 16px; font-size: 17px;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 12: Mentor Settings -->
+            <div class="phone-frame">
+                <div class="phone-label">12. MENTOR SETTINGS</div>
+                <div class="phone-notch"></div>
+                <div class="screen">
+                    <div class="screen-content">
+                        <div class="app-header">
+                            <div class="header-with-back">
+                                <div class="back-button">←</div>
+                                <h2 style="font-size: 24px;">Settings</h2>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Mentorship Settings</div>
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 25px;">
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                        <div style="font-size: 15px; font-weight: 600; color: #0A1E3D;">Accepting New Requests</div>
+                                        <div style="width: 50px; height: 28px; background: #00BFA5; border-radius: 14px; position: relative; cursor: pointer;">
+                                            <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 13px; color: #999;">Turn off to stop receiving new mentorship requests</div>
+                                </div>
+
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                        <div style="font-size: 15px; font-weight: 600; color: #0A1E3D;">Max Active Mentees</div>
+                                        <div style="color: #00BFA5; font-weight: bold; font-size: 18px;">5</div>
+                                    </div>
+                                    <input type="range" min="1" max="10" value="5" style="width: 100%; margin-top: 10px;">
+                                    <div style="font-size: 13px; color: #999; margin-top: 5px;">Currently: 5 active mentees</div>
+                                </div>
+
+                                <div style="padding: 15px 20px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                        <div style="font-size: 15px; font-weight: 600; color: #0A1E3D;">Auto-Reply to Requests</div>
+                                        <div style="width: 50px; height: 28px; background: #e0e0e0; border-radius: 14px; position: relative; cursor: pointer;">
+                                            <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; left: 2px; top: 2px;"></div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 13px; color: #999;">Send automatic response when you can't accept new mentees</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Notifications</div>
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; border-radius: 15px; overflow: hidden; margin-bottom: 25px;">
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 15px; color: #0A1E3D;">New Requests</div>
+                                    <div style="width: 50px; height: 28px; background: #00BFA5; border-radius: 14px; position: relative; cursor: pointer;">
+                                        <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                                    </div>
+                                </div>
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 15px; color: #0A1E3D;">Mentee Messages</div>
+                                    <div style="width: 50px; height: 28px; background: #00BFA5; border-radius: 14px; position: relative; cursor: pointer;">
+                                        <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                                    </div>
+                                </div>
+                                <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="font-size: 15px; color: #0A1E3D;">Goal Completions</div>
+                                    <div style="width: 50px; height: 28px; background: #00BFA5; border-radius: 14px; position: relative; cursor: pointer;">
+                                        <div style="width: 24px; height: 24px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Account</div>
+                        <div style="padding: 0 20px;">
+                            <div style="background: white; border-radius: 15px; overflow: hidden;">
+                                <div style="padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="font-size: 20px;">🔐</div>
+                                        <div style="font-size: 15px; color: #0A1E3D;">Change Password</div>
+                                    </div>
+                                    <div style="color: #999;">›</div>
+                                </div>
+                                <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div style="font-size: 20px;">🚪</div>
+                                        <div style="font-size: 15px; color: #F44336;">Log Out</div>
+                                    </div>
+                                    <div style="color: #999;">›</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Box -->
+        <div style="background: white; padding: 40px; border-radius: 20px; margin-top: 50px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <h2 style="font-size: 32px; color: #0A1E3D; margin-bottom: 20px;">🎉 Complete Mentor Section!</h2>
+            
+            <div style="max-width: 900px; margin: 0 auto;">
+                <p style="font-size: 18px; color: #666; line-height: 1.8; margin-bottom: 30px;">
+                    <strong>12 essential screens</strong> covering the complete mentor experience
+                </p>
+
+                <div style="background: #f5f5f5; padding: 25px; border-radius: 15px; text-align: left;">
+                    <div style="font-size: 20px; font-weight: bold; color: #0A1E3D; margin-bottom: 15px; text-align: center;">
+                        📱 All Mentor Screens
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; font-size: 15px; color: #666;">
+                        <div>✓ 1. Incoming Requests</div>
+                        <div>✓ 2. Request Detail</div>
+                        <div>✓ 3. Accept Confirmation</div>
+                        <div>✓ 4. Mentor Dashboard</div>
+                        <div>✓ 5. My Mentees List</div>
+                        <div>✓ 6. Mentee Detail View</div>
+                        <div>✓ 7. Mentee's Goals</div>
+                        <div>✓ 8. Add Feedback</div>
+                        <div>✓ 9. Share Resource</div>
+                        <div>✓ 10. My Public Profile</div>
+                        <div>✓ 11. Edit Profile</div>
+                        <div>✓ 12. Mentor Settings</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: linear-gradient(135deg, rgba(0, 191, 165, 0.1) 0%, rgba(10, 30, 61, 0.1) 100%); border-radius: 15px;">
+                    <div style="font-size: 18px; font-weight: bold; color: #0A1E3D; margin-bottom: 10px;">
+                        🚀 You Now Have Everything!
+                    </div>
+                    <div style="font-size: 15px; color: #666; line-height: 1.7;">
+                        <strong>Mentee Section:</strong> 16 screens<br>
+                        <strong>Mentor Section:</strong> 12 screens<br>
+                        <strong>Total:</strong> 28 complete screens ready to implement! 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+class Routename{
+  static const String splashScreen= '/splashScreen';
+  static const String onboardingOne= '/onboardingOne';
+  static const String onboardingTwo= '/onboardingTwo';
+  static const String onboardingThree= '/onboardingThree';
+  static const String home= '/home';
+  static const String notification = '/notification';
+  static const String login = '/login';
+  static const String welcome = '/welcome';
+  static const String signup = '/signup';
+  static const String loginSuccess = '/loginSuccess';
+  static const String homeSetup = '/homeSetup';
+  static const String chatSetup = '/chatSetup';
+  static const String bookMarkSetup = '/bookMarkSetup';
+  static const String profileSetup = '/profileSetup';
+  static const String feedbackSetup = '/feedbackSetup';
+  static const String mentorAccount = '/mentorAccount';
+  static const String menteeAccount = '/menteeAccount';
+  static const String goalSetUp = '/goalSetUp';
+  static const String chat = '/chat';
+
+  static const String bottomNav = '/bottomNav';
+  static const String allMentors = '/allMentors';
+  static const String mentorDetails = '/mentorDetails';
+  static const String bookingSuccess = '/bookingSuccess';
+  static const String allReviews = '/allReviews';
+  static const String menteeDetails = '/menteeDetails';
+  static const String requestMentorship = '/requestMentorship';
+  static const String myRequests = '/myRequests';
+  static const String dashboardSetup = '/dashboardSetup';
+  static const String menteeDashboard = '/menteeDashboard';
+  static const String mentorDashboard = '/mentorDashboard';
+  static const String bookmark = '/bookmark';
+  static const String progressDashboard = '/progressDashboard';
+  static const String addGoal = '/addGoal';
+  static const String changePassword = '/changePassword';
+  static const String selectInterest = '/selectInterest';
+  static const String editInterests = '/editInterests';
+}
