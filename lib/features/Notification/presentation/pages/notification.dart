@@ -53,14 +53,14 @@ class NotificationPage extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              AppText(
+                              InAppText(
                                 text: 'Great Deals',
                                 color: AppColors.blue,
                                 fontweight: FontWeight.w600,
                               ),
                               SizedBox(
                                 width: size.width * 0.6,
-                                child: AppText(
+                                child: InAppText(
                                   text: 'We have an amazing deal for you ',
                                   color: AppColors.blue,
                                   size: 14,
@@ -70,7 +70,7 @@ class NotificationPage extends StatelessWidget {
                           ),
                           Align(
                             alignment: Alignment.topRight,
-                            child: AppText(
+                            child: InAppText(
                               text: '1h ago',
                               size: 13,
                               fontweight: FontWeight.w700,

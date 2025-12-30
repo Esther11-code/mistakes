@@ -25,14 +25,14 @@ class ChangePassword extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
               children: [
-                AppText(
+                InAppText(
                   text: 'Secure your account',
                   fontweight: FontWeight.w600,
 
                   size: 20,
                 ),
                 5.verticalSpace,
-                AppText(
+                InAppText(
                   text: 'Create a new password below to secure your account',
                   size: 14,
                 ),
@@ -52,12 +52,12 @@ class ChangePassword extends StatelessWidget {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AppText(text: 'Didn’t receive any code?', size: 14),
-                    AppText(text: 'Expires in 00:00', size: 14),
+                    InAppText(text: 'Didn’t receive any code?', size: 14),
+                    InAppText(text: 'Expires in 00:00', size: 14),
                   ],
                 ),
                 5.verticalSpace,
-                const AppText(
+                const InAppText(
                   text: 'Resend code',
                   fontweight: FontWeight.w500,
                   size: 14,
@@ -100,7 +100,7 @@ class ChangePasswordDialog extends StatelessWidget {
             color: AppColors.background,
           ),
           20.verticalSpace,
-          const AppText(
+          const InAppText(
             textAlign: TextAlign.center,
             text: 'Your Password Has been Changed Successfully!',
             size: 16,

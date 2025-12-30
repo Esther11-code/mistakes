@@ -31,13 +31,13 @@ class AddGoal extends StatelessWidget {
                     InfoBar(size: size, icon: Icons.info_outline),
                     Row(
                       children: [
-                        AppText(
+                        InAppText(
                           text: "Goal Title",
                           color: AppColors.blue,
                           fontweight: FontWeight.w600,
                           size: 18,
                         ),
-                        AppText(
+                        InAppText(
                           text: " *",
                           color: Colors.red,
                           fontweight: FontWeight.w600,
@@ -50,13 +50,13 @@ class AddGoal extends StatelessWidget {
                     SizedBox(height: size.height * 0.02),
                     Row(
                       children: [
-                        AppText(
+                        InAppText(
                           text: "Goal Description",
                           color: AppColors.blue,
                           fontweight: FontWeight.w600,
                           size: 18,
                         ),
-                        AppText(
+                        InAppText(
                           text: " *",
                           color: Colors.red,
                           fontweight: FontWeight.w600,
@@ -71,7 +71,7 @@ class AddGoal extends StatelessWidget {
                       hintText: "Enter your goal description",
                     ),
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       text: "Category",
                       color: AppColors.blue,
                       fontweight: FontWeight.w600,
@@ -99,12 +99,12 @@ class AddGoal extends StatelessWidget {
                       buttonColor: AppColors.blue,
                     ),
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       text: "Target Completion Date",
                       color: AppColors.blue,
                       fontweight: FontWeight.w600,
                     ),
-                    AppText(
+                    InAppText(
                       text: " *",
                       color: Colors.red,
                       fontweight: FontWeight.w600,
@@ -117,7 +117,7 @@ class AddGoal extends StatelessWidget {
                       lastDate: DateTime(2025, 11, 9),
                       onDateChanged: (value) {},
                     ),
-                    AppText(
+                    InAppText(
                       text: "Success Criteria",
                       color: AppColors.blue,
                       fontweight: FontWeight.w600,
@@ -174,15 +174,11 @@ class InfoBar extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: AppColors.filledColor,
-              size: 23.sp,
-            ),
+            Icon(icon, color: AppColors.filledColor, size: 23.sp),
             SizedBox(width: size.width * 0.015),
             SizedBox(
               width: size.width * 0.775,
-              child: AppText(
+              child: InAppText(
                 text:
                     text ??
                     "Set SMART goals: Specific, Measurable, Achievable, Relevant, Time-bound",

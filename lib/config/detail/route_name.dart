@@ -36,4 +36,12 @@ class Routename{
   static const String changePassword = '/changePassword';
   static const String selectInterest = '/selectInterest';
   static const String editInterests = '/editInterests';
+  static const String addFeedback = '/addFeedback';
+  static const String shareResources = '/shareResources';
+  static const String mentorFeedback = '/mentorFeedback';
+  static const String requestDetails = '/requestDetails';
+  static const String acceptMentorship = '/acceptMentorship';
+
+  static const String editMentorProfile = '/editMentorProfile';
+  s
 }

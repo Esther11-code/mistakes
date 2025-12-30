@@ -55,7 +55,7 @@ class AppButton extends StatelessWidget {
               size: 20.sp,
             )
           : child ??
-                AppText(
+                InAppText(
                   text: label ?? '',
                   color: labelColor ?? AppColors.white,
                   size: textSize ?? 14,

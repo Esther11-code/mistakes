@@ -51,7 +51,7 @@ class MenteeGoal extends StatelessWidget {
                     vertical: size.height * 0.015,
                     horizontal: size.width * 0.04,
                   ),
-                  child: AppText(
+                  child: InAppText(
                     text: watchGoalCubit.goals[index],
                     color: watchGoalCubit.selectedGoalIndex == index
                         ? AppColors.white
@@ -81,7 +81,7 @@ class MenteeGoal extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      AppText(
+                      InAppText(
                         text: "All Goals",
                         color: AppColors.blue,
                         size: 18,
@@ -103,7 +103,7 @@ class MenteeGoal extends StatelessWidget {
                               size: 20.sp,
                             ),
                             SizedBox(width: size.width * 0.01),
-                            AppText(
+                            InAppText(
                               text: "Add Goal",
                               color: AppColors.white,
                               fontweight: FontWeight.w500,

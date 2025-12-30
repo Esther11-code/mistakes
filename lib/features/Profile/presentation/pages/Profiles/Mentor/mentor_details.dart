@@ -41,12 +41,12 @@ class MentorDetails extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: size.height * 0.02),
-                          AppText(
+                          InAppText(
                             text: "Mentor Name",
                             size: 20,
                             fontweight: FontWeight.bold,
                           ),
-                          AppText(text: "Mentor Expertise", size: 16),
+                          InAppText(text: "Mentor Expertise", size: 16),
                           SizedBox(height: size.height * 0.02),
 
                           AppshadowContainer(
@@ -64,7 +64,7 @@ class MentorDetails extends StatelessWidget {
                                   color: AppColors.yellow,
                                   size: 20.sp,
                                 ),
-                                AppText(
+                                InAppText(
                                   text: "4.8 (100+ reviews)",
                                   size: 16,
                                   color: AppColors.blue,
@@ -81,35 +81,35 @@ class MentorDetails extends StatelessWidget {
                             children: [
                               Column(
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "24",
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
                                   ),
-                                  AppText(text: "Mentees", size: 16),
+                                  InAppText(text: "Mentees", size: 16),
                                 ],
                               ),
                               Column(
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "5yrs",
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
                                   ),
-                                  AppText(text: "Experience", size: 16),
+                                  InAppText(text: "Experience", size: 16),
                                 ],
                               ),
                               Column(
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "95%",
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
                                   ),
-                                  AppText(text: "Success", size: 16),
+                                  InAppText(text: "Success", size: 16),
                                 ],
                               ),
                             ],
@@ -118,7 +118,7 @@ class MentorDetails extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: size.height * 0.03),
-                    AppText(
+                    InAppText(
                       text: "About Mentor",
                       size: 20,
                       fontweight: FontWeight.w600,
@@ -128,7 +128,7 @@ class MentorDetails extends StatelessWidget {
                       color: AppColors.white,
                       padding: EdgeInsets.all(size.width * 0.03),
                       shadowcolour: AppColors.lightgrey.withAlpha(100),
-                      child: AppText(
+                      child: InAppText(
                         textAlign: TextAlign.justify,
                         maxline: 10,
                         text:
@@ -138,7 +138,7 @@ class MentorDetails extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: size.height * 0.03),
-                    AppText(
+                    InAppText(
                       text: "Skills & Expertise",
                       size: 20,
                       fontweight: FontWeight.w600,
@@ -162,7 +162,7 @@ class MentorDetails extends StatelessWidget {
                             border: true,
                             borderColor: AppColors.background,
                             color: AppColors.inactive,
-                            child: AppText(
+                            child: InAppText(
                               text: "HTML",
                               color: AppColors.blue,
                               fontweight: FontWeight.w500,
@@ -178,7 +178,7 @@ class MentorDetails extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          AppText(
+                          InAppText(
                             text: 'Reviews',
                             color: AppColors.blue,
                             fontweight: FontWeight.w500,
@@ -189,7 +189,7 @@ class MentorDetails extends StatelessWidget {
                               context,
                               Routename.allReviews,
                             ),
-                            child: const AppText(text: 'View All', size: 16),
+                            child: const InAppText(text: 'View All', size: 16),
                           ),
                         ],
                       ),
@@ -265,13 +265,13 @@ class ReviewsContainer extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
+                  InAppText(
                     text: "User Name",
                     size: 16,
                     color: AppColors.blue,
                     fontweight: FontWeight.w600,
                   ),
-                  AppText(
+                  InAppText(
                     text: "2 days ago",
                     size: 14,
                     color: AppColors.blue.withAlpha(100),
@@ -280,7 +280,7 @@ class ReviewsContainer extends StatelessWidget {
               ),
               Spacer(),
               Icon(Icons.star, size: 20.sp, color: AppColors.yellow),
-              AppText(
+              InAppText(
                 text: "4.5",
                 size: 16,
                 color: AppColors.blue,
@@ -293,7 +293,7 @@ class ReviewsContainer extends StatelessWidget {
           SizedBox(height: size.height * 0.01),
           AppDivider(),
           SizedBox(height: size.height * 0.01),
-          AppText(
+          InAppText(
             text:
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 

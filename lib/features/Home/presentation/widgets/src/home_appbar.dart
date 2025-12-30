@@ -41,13 +41,13 @@ class HomeAppbar extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
+              InAppText(
                 color: AppColors.blue,
                 text:
                     '${Utils.getGreting()}, ${context.watch<AuthenticationCubit>().user.name ?? "Dear User"}',
                 fontweight: FontWeight.w700,
               ),
-              AppText(
+              InAppText(
                 text: 'Let\'s grow together!',
                 size: 14,
                 color: AppColors.blue,
@@ -102,7 +102,7 @@ class HomeCarousel extends StatelessWidget {
             children: [
               SizedBox(
                 width: size.width * 0.38,
-                child: AppText(
+                child: InAppText(
                   maxline: 6,
                   text: 'Get the best services providers with our services',
                   color: AppColors.white,

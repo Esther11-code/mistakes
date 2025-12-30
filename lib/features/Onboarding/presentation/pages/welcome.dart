@@ -25,7 +25,7 @@ class WelcomePage extends StatelessWidget {
             Expanded(child: SizedBox()),
             Padding(
               padding: EdgeInsets.all(size.width * 0.05),
-              child: AppText(
+              child: InAppText(
                 textAlign: TextAlign.center,
                 text: "Welcome =)",
                 fontweight: FontWeight.w800,
@@ -37,7 +37,7 @@ class WelcomePage extends StatelessWidget {
               padding: EdgeInsets.all(size.width * 0.05),
               child: Column(
                 children: [
-                  AppText(
+                  InAppText(
                     text:
                         "Turn ambition into action — connect with mentors who care. Your journey starts here in Mentorverse",
                     textAlign: TextAlign.center,

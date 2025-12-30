@@ -28,14 +28,14 @@ class BookingSuccess extends StatelessWidget {
                     color: AppColors.filledColor,
                   ),
                   SizedBox(height: size.width * 0.055),
-                  AppText(
+                  InAppText(
                     text: 'Thank You!',
                     size: 20,
                     fontweight: FontWeight.w600,
                     color: AppColors.blue,
                   ),
                   SizedBox(height: size.width * 0.02),
-                  const AppText(
+                  const InAppText(
                     text: 'Your mentor booking was successful ',
                     size: 18,
                     textAlign: TextAlign.center,

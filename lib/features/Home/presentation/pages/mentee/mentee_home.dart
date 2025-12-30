@@ -37,7 +37,7 @@ class MenteeHome extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
+                InAppText(
                   text: 'Suggested Mentors',
                   color: AppColors.blue,
                   fontweight: FontWeight.w500,
@@ -46,7 +46,7 @@ class MenteeHome extends StatelessWidget {
                 GestureDetector(
                   onTap: () =>
                       Navigator.pushNamed(context, Routename.allMentors),
-                  child: const AppText(text: 'View All', size: 16),
+                  child: const InAppText(text: 'View All', size: 16),
                 ),
               ],
             ),

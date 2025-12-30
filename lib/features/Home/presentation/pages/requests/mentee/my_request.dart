@@ -38,10 +38,7 @@ class MyRequest extends StatelessWidget {
 }
 
 class MyRequestContainer extends StatelessWidget {
-  const MyRequestContainer({
-    super.key,
-    required this.size,
-  });
+  const MyRequestContainer({super.key, required this.size});
 
   final Size size;
 
@@ -64,28 +61,24 @@ class MyRequestContainer extends StatelessWidget {
                 width: size.width * 0.15,
                 height: size.width * 0.15,
                 color: AppColors.filledColor,
-                child: Icon(
-                  Icons.person,
-                  color: AppColors.white,
-                  size: 20.sp,
-                ),
+                child: Icon(Icons.person, color: AppColors.white, size: 20.sp),
               ),
               SizedBox(width: size.width * 0.03),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppText(
+                  InAppText(
                     text: "Mentor Name",
                     fontweight: FontWeight.w800,
                     size: 18,
                   ),
-                  AppText(
+                  InAppText(
                     text: "Mentor Name",
                     fontweight: FontWeight.w500,
                     size: 16,
                   ),
-                  AppText(
+                  InAppText(
                     text: "Requested on 2 days ago",
                     fontweight: FontWeight.w400,
                     color: AppColors.blue.withAlpha(100),
@@ -98,13 +91,11 @@ class MyRequestContainer extends StatelessWidget {
                   horizontal: size.width * 0.03,
                   vertical: size.height * 0.009,
                 ),
-                borderRadius: BorderRadius.circular(
-                  size.width * 0.07,
-                ),
+                borderRadius: BorderRadius.circular(size.width * 0.07),
                 border: true,
                 borderColor: AppColors.orange.withAlpha(100),
                 color: AppColors.orange.withAlpha(75),
-                child: AppText(
+                child: InAppText(
                   text: "Ongoing",
                   color: AppColors.orange,
                   fontweight: FontWeight.w500,
@@ -117,7 +108,7 @@ class MyRequestContainer extends StatelessWidget {
             margin: EdgeInsets.only(top: size.height * 0.02),
             padding: EdgeInsets.all(size.width * 0.03),
             color: AppColors.grey.withAlpha(40),
-            child: AppText(
+            child: InAppText(
               text:
                   "\"I would like to improve my skills in UI/UX design and learn more about user research methodologies.\"",
               size: 16,
@@ -132,16 +123,11 @@ class MyRequestContainer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.info,
-                  color: AppColors.success,
-                  size: 20.sp,
-                ),
+                Icon(Icons.info, color: AppColors.success, size: 20.sp),
                 SizedBox(width: size.width * 0.02),
-                AppText(
+                InAppText(
                   color: AppColors.success,
-                  text:
-                      "Your request is being reviewed by mentor.",
+                  text: "Your request is being reviewed by mentor.",
                   size: 16,
                   fontweight: FontWeight.w400,
                 ),

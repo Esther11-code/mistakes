@@ -50,7 +50,7 @@ class AppScaffold extends StatelessWidget {
                       ),
                     ),
                     3.verticalSpace,
-                    const AppText(
+                    const InAppText(
                       text: ' Please wait...',
                       fontweight: FontWeight.w600,
                     ),

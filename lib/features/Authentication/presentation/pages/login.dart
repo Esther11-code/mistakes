@@ -63,7 +63,7 @@ class LoginPage extends StatelessWidget {
                         child: Column(
                           children: [
                             SizedBox(height: size.height * 0.03),
-                            AppText(
+                            InAppText(
                               text: "Welcome Back",
                               fontweight: FontWeight.w900,
                               size: 28,
@@ -118,7 +118,7 @@ class LoginPage extends StatelessWidget {
                                 ),
                                 SizedBox(
                                   width: size.width * 0.45,
-                                  child: AppText(
+                                  child: InAppText(
                                     text: "Forgot Password?",
                                     fontweight: FontWeight.w500,
                                     size: 16,
@@ -158,14 +158,14 @@ class LoginPage extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "Don't have an account?",
                                     fontweight: FontWeight.w500,
                                     size: 18,
                                     color: AppColors.lightblack,
                                   ),
                                   5.horizontalSpace,
-                                  AppText(
+                                  InAppText(
                                     text: "Signup",
                                     fontweight: FontWeight.w700,
                                     size: 18,
@@ -210,7 +210,7 @@ class CheckboxAndLabel extends StatelessWidget {
           },
         ),
         10.horizontalSpace,
-        AppText(
+        InAppText(
           text: "Stay logged in",
           fontweight: FontWeight.w500,
           size: 16,

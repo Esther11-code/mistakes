@@ -2,26 +2,48 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/features/Authentication/data/remote/auth_repo.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
+import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'features/Goal/pages/cubit/goal_cubit.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 /// The main entry point of the application. Ensures that the
 /// [WidgetsFlutterBinding] is initialized and then runs the
 /// [MyApp] widget.
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: dotenv.env['supabase_url']!,
+    anonKey: dotenv.env['supabase_anonKey']!,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+    ),
+    realtimeClientOptions: const RealtimeClientOptions(
+      logLevel: RealtimeLogLevel.info,
+    ),
+  );
   runApp(const MyApp());
 }
+
+final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,12 +52,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [BlocProvider(create: (context) => OnboardingCubit()),
-      BlocProvider(create: (context) => AuthenticationCubit(AuthRepo())),
-      BlocProvider(create: (context) => GoalCubit()),
-      BlocProvider(create: (context) => ProfileCubit()),
-      BlocProvider(create: (context) => ChatCubit()),
-      BlocProvider(create: (context) => HomeCubit()),
+      providers: [
+        BlocProvider(create: (context) => OnboardingCubit()),
+        BlocProvider(create: (context) => AuthenticationCubit(AuthRepo())),
+        BlocProvider(create: (context) => GoalCubit()),
+        BlocProvider(create: (context) => ProfileCubit()),
+        BlocProvider(create: (context) => ChatCubit()),
+        BlocProvider(create: (context) => HomeCubit()),
+        BlocProvider(create: (context) => DashboardCubit()),
+        BlocProvider(create: (context) => ReviewCubit()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(370, 800),
@@ -72,4 +97,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

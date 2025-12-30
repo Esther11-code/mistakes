@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/features/Goal/pages/Goals/goal_setup.dart';
 import 'package:mistakes/global%20widgets/export.dart';
-import 'package:mistakes/global%20widgets/widgets/app_scaffold.dart';
-import 'package:mistakes/global%20widgets/widgets/appbar.dart';
 
 import '../../../../constants/utils/app_colors.dart';
 
@@ -51,12 +49,12 @@ class ProgressDashboard extends StatelessWidget {
                             textColor: AppColors.blue,
                           ),
                           SizedBox(height: size.height * 0.028),
-                          AppText(
+                          InAppText(
                             text: "Overall Progress",
                             fontweight: FontWeight.w500,
                             color: AppColors.blue.withAlpha(100),
                           ),
-                          AppText(
+                          InAppText(
                             text: "3 months with Mentor Jane Doe",
                             size: 20,
                             color: AppColors.blue,
@@ -67,7 +65,7 @@ class ProgressDashboard extends StatelessWidget {
                     ),
 
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       text: "Skills Gained",
                       size: 20,
                       fontweight: FontWeight.w600,
@@ -91,7 +89,7 @@ class ProgressDashboard extends StatelessWidget {
                             border: true,
                             borderColor: AppColors.background,
                             color: AppColors.inactive,
-                            child: AppText(
+                            child: InAppText(
                               text: "HTML",
                               color: AppColors.blue,
                               fontweight: FontWeight.w500,
@@ -101,7 +99,7 @@ class ProgressDashboard extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       text: "Milestones",
                       size: 20,
                       fontweight: FontWeight.w600,
@@ -136,13 +134,13 @@ class ProgressDashboard extends StatelessWidget {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: 'Great Deals',
                                     color: AppColors.blue,
                                     size: 20,
                                     fontweight: FontWeight.w700,
                                   ),
-                                  AppText(
+                                  InAppText(
                                     text: '1h ago',
                                     size: 14,
                                     fontweight: FontWeight.w700,

@@ -61,7 +61,7 @@ class SignupPage extends StatelessWidget {
                         padding: EdgeInsets.all(size.width * 0.04),
                         child: Column(
                           children: [
-                            AppText(
+                            InAppText(
                               text: "Get Started",
                               fontweight: FontWeight.w900,
                               size: 28,
@@ -143,7 +143,7 @@ class SignupPage extends StatelessWidget {
                               ),
                             ),
                             SizedBox(height: size.height * 0.02),
-                            AppText(
+                            InAppText(
                               textAlign: TextAlign.left,
                               text: "I want to be a...",
                               fontweight: FontWeight.w500,
@@ -271,14 +271,14 @@ class SignupPage extends StatelessWidget {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "Already have an account?",
                                     fontweight: FontWeight.w500,
                                     size: 18,
                                     color: AppColors.lightblack,
                                   ),
                                   5.horizontalSpace,
-                                  AppText(
+                                  InAppText(
                                     text: "Login",
                                     fontweight: FontWeight.w700,
                                     size: 18,

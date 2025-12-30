@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/global%20widgets/widgets/app_button.dart';
 import 'package:mistakes/global%20widgets/widgets/app_container_withshadow.dart';
 import 'package:mistakes/global%20widgets/widgets/app_scaffold.dart';
 import 'package:mistakes/global%20widgets/widgets/app_text.dart';
@@ -9,8 +10,6 @@ import 'package:mistakes/global%20widgets/widgets/appbar.dart';
 
 import '../../data/local/dashboard_static_repo.dart';
 import '../dashboard_setup.dart';
-
-
 
 class MenteeDashboard extends StatelessWidget {
   const MenteeDashboard({super.key});
@@ -52,12 +51,12 @@ class MenteeDashboard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  AppText(
+                                  InAppText(
                                     text: "Mentor Name",
                                     fontweight: FontWeight.w800,
                                     size: 18,
                                   ),
-                                  AppText(
+                                  InAppText(
                                     text: "Mentor Name",
                                     fontweight: FontWeight.w500,
                                     size: 16,
@@ -74,7 +73,7 @@ class MenteeDashboard extends StatelessWidget {
                                     border: true,
                                     borderColor: AppColors.filledColor,
                                     color: AppColors.inactive,
-                                    child: AppText(
+                                    child: InAppText(
                                       text: "3 months together",
                                       color: AppColors.background,
                                       fontweight: FontWeight.w500,
@@ -88,7 +87,7 @@ class MenteeDashboard extends StatelessWidget {
                           SizedBox(height: size.height * 0.02),
                           AppshadowContainer(
                             padding: EdgeInsets.all(size.width * 0.03),
-                            color: AppColors.grey.withAlpha(25),
+                            color: AppColors.grey.withAlpha(15),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -96,8 +95,8 @@ class MenteeDashboard extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    AppText(text: "Overall Progress"),
-                                    AppText(
+                                    InAppText(text: "Overall Progress"),
+                                    InAppText(
                                       text: " 70%",
                                       fontweight: FontWeight.w800,
                                       color: AppColors.filledColor,
@@ -105,13 +104,26 @@ class MenteeDashboard extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: size.height * 0.02),
-                                LinearProgressIndicator(
-                                  value: 0.7,
-                                  minHeight: size.height * 0.02,
-                                  backgroundColor: AppColors.grey.withAlpha(40),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.filledColor,
+                                SizedBox(height: size.height * 0.012),
+                                AppshadowContainer(
+                                  padding: EdgeInsets.zero,
+                                  alignment: Alignment.centerLeft,
+                                  height: size.height * 0.025,
+                                  width: size.width,
+                                  borderRadius: BorderRadius.circular(
+                                    size.height * 0.02,
+                                  ),
+                                  color: AppColors.grey.withAlpha(40),
+                                  child: SizedBox(
+                                    width: size.width * 0.7,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.filledColor,
+                                        borderRadius: BorderRadius.circular(
+                                          size.height * 0.02,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -148,7 +160,7 @@ class MenteeDashboard extends StatelessWidget {
                     ),
 
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       color: AppColors.blue,
                       text: "Mentorship Stats",
                       size: 20,
@@ -182,13 +194,13 @@ class MenteeDashboard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              AppText(
+                              InAppText(
                                 text: DashboardStaticRepo.stats[index].stat,
                                 color: AppColors.background,
                                 size: 22,
                                 fontweight: FontWeight.w900,
                               ),
-                              AppText(
+                              InAppText(
                                 text: DashboardStaticRepo.stats[index].title,
                                 textAlign: TextAlign.center,
                                 size: 20,
@@ -198,56 +210,167 @@ class MenteeDashboard extends StatelessWidget {
                         );
                       },
                     ),
-                    AppText(
-                      text: "Recent Activity",
-                      size: 18,
-                      fontweight: FontWeight.w800,
+                    Visibility(
+                      visible: true,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InAppText(
+                            color: AppColors.blue,
+                            text: "Recent Goals",
+                            size: 20,
+                            fontweight: FontWeight.w700,
+                          ),
+                          SizedBox(height: size.height * 0.02),
+                          AppshadowContainer(
+                            padding: EdgeInsets.all(size.width * 0.04),
+                            shadowcolour: AppColors.lightgrey.withAlpha(100),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    InAppText(
+                                      text: "Master Flutter",
+                                      fontweight: FontWeight.w800,
+                                      size: 20,
+                                    ),
+                                    AppshadowContainer(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: size.width * 0.03,
+                                        // vertical: size.height * 0.009,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                        size.width * 0.07,
+                                      ),
+                                      border: true,
+                                      borderColor: AppColors.filledColor,
+                                      color: AppColors.inactive,
+                                      child: InAppText(
+                                        text: "Active",
+                                        color: AppColors.background,
+                                        fontweight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: size.height * 0.01),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    InAppText(text: "Progress"),
+                                    InAppText(
+                                      text: " 70%",
+                                      fontweight: FontWeight.w800,
+                                      color: AppColors.filledColor,
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: size.height * 0.012),
+                                AppshadowContainer(
+                                  padding: EdgeInsets.zero,
+                                  alignment: Alignment.centerLeft,
+                                  height: size.height * 0.015,
+                                  width: size.width,
+                                  borderRadius: BorderRadius.circular(
+                                    size.height * 0.02,
+                                  ),
+                                  color: AppColors.grey.withAlpha(40),
+                                  child: SizedBox(
+                                    width: size.width * 0.7,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.filledColor,
+                                        borderRadius: BorderRadius.circular(
+                                          size.height * 0.02,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: size.height * 0.02),
+                                AppButton(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routename.mentorFeedback,
+                                    );
+                                  },
+                                  label: "Add Feedback",
+                                  buttonColor: AppColors.filledColor,
+                                  textSize: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: size.height * 0.03),
+                        ],
+                      ),
                     ),
-                    Column(
-                      children: List.generate(
-                        5,
-                        (index) => AppshadowContainer(
-                          shadowcolour: AppColors.lightgrey.withAlpha(50),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: size.width * 0.03,
-                            vertical: size.width * 0.04,
+                    Visibility(
+                      visible: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InAppText(
+                            text: "Recent Activity",
+                            size: 20,
+                            fontweight: FontWeight.w700,
                           ),
-                          margin: EdgeInsets.symmetric(
-                            vertical: size.width * 0.02,
-                          ),
-                          width: size.width,
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: size.height * 0.03,
-                                backgroundColor: AppColors.filledColor,
-                                child: Icon(
-                                  Icons.notifications,
-                                  color: AppColors.white,
-                                  size: 25.sp,
+
+                          Column(
+                            children: List.generate(
+                              5,
+                              (index) => AppshadowContainer(
+                                shadowcolour: AppColors.lightgrey.withAlpha(50),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: size.width * 0.03,
+                                  vertical: size.width * 0.04,
+                                ),
+                                margin: EdgeInsets.symmetric(
+                                  vertical: size.width * 0.02,
+                                ),
+                                width: size.width,
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: size.height * 0.03,
+                                      backgroundColor: AppColors.filledColor,
+                                      child: Icon(
+                                        Icons.notifications,
+                                        color: AppColors.white,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.03),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        InAppText(
+                                          text: 'Great Deals',
+                                          color: AppColors.background,
+                                          size: 20,
+                                          fontweight: FontWeight.w700,
+                                        ),
+                                        InAppText(
+                                          text: '1h ago',
+                                          size: 14,
+                                          fontweight: FontWeight.w700,
+                                          color: AppColors.blue.withAlpha(70),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(width: size.width * 0.03),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppText(
-                                    text: 'Great Deals',
-                                    color: AppColors.background,
-                                    size: 20,
-                                    fontweight: FontWeight.w700,
-                                  ),
-                                  AppText(
-                                    text: '1h ago',
-                                    size: 14,
-                                    fontweight: FontWeight.w700,
-                                    color: AppColors.blue.withAlpha(70),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ],

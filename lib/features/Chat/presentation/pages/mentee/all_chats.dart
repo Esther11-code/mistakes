@@ -27,7 +27,7 @@ class AllMessages extends StatelessWidget {
           children: [
             SizedBox(height: size.height * 0.02),
 
-            AppText(
+            InAppText(
               text: 'Chats',
               size: 20,
               fontweight: FontWeight.w800,
@@ -68,13 +68,13 @@ class AllMessages extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    AppText(
+                                    InAppText(
                                       maxline: 2,
                                       text: 'John Doe ',
                                       fontweight: FontWeight.w700,
                                       color: AppColors.blue,
                                     ),
-                                    AppText(
+                                    InAppText(
                                       text: '2 min ago',
                                       size: 12,
                                       fontweight: FontWeight.w700,
@@ -83,7 +83,7 @@ class AllMessages extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              AppText(
+                              InAppText(
                                 text: 'Are You done?',
                                 color: AppColors.lightgrey,
                                 size: 14,

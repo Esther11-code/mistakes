@@ -22,10 +22,12 @@ class ApptextField extends StatelessWidget {
     this.fontWeight,
     this.obscureText,
     this.suffixIcon,
-    this.prefixIconn, this.maxlength, this.focusNode,
+    this.prefixIconn,
+    this.maxlength,
+    this.focusNode,
   });
   final String? title, hintText, labelText;
-  final int? maxLine,maxlength;
+  final int? maxLine, maxlength;
   final IconData? prefixIcon, sufixIcon;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -74,17 +76,17 @@ class ApptextField extends StatelessWidget {
             errorMaxLines: 3,
             suffixIconColor: WidgetStateColor.resolveWith(
               (states) => states.contains(WidgetState.focused)
-                  ? AppColors.blue
+                  ? AppColors.filledColor
                   : AppColors.inactive,
             ),
             prefixIconColor: WidgetStateColor.resolveWith(
               (states) => states.contains(WidgetState.focused)
-                  ? AppColors.blue
+                  ? AppColors.filledColor
                   : AppColors.inactive,
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(6.r),
-              borderSide: BorderSide(color: AppColors.textfieldborder),
+              borderSide: BorderSide(color: AppColors.grey),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(6.r),
@@ -92,7 +94,7 @@ class ApptextField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(6.r),
-              borderSide: BorderSide(color: AppColors.blue),
+              borderSide: BorderSide(color: AppColors.filledColor, width: 3.0),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(6.r),

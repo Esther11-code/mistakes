@@ -28,14 +28,14 @@ class LoginSuccessPage extends StatelessWidget {
                     color: AppColors.background,
                   ),
                   SizedBox(height: size.width * 0.055),
-                  AppText(
+                  InAppText(
                     text: 'Account Logged In',
                     size: 20,
                     fontweight: FontWeight.w600,
                     color: AppColors.blue,
                   ),
                   SizedBox(height: size.width * 0.02),
-                  const AppText(
+                  const InAppText(
                     text: 'Your account has been successfully Logged In ',
                     size: 18,
                     textAlign: TextAlign.center,

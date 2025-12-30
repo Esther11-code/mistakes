@@ -187,13 +187,13 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
+                InAppText(
                   text: widget.userName,
                   size: 16,
                   fontweight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
-                AppText(
+                InAppText(
                   text: widget.isOnline ? 'Online' : 'Offline',
                   size: 12,
                   color: widget.isOnline
@@ -226,7 +226,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
         color: AppColors.background,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: AppText(
+      child: InAppText(
         text: time,
         size: 12,
         color: AppColors.white.withAlpha(80),
@@ -280,7 +280,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
+                  InAppText(
                     text: message.message,
                     size: 15,
                     color: AppColors.white,
@@ -290,7 +290,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      AppText(
+                      InAppText(
                         text: message.time,
                         size: 11,
                         color: AppColors.white.withAlpha(80),
@@ -511,7 +511,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
             child: Icon(icon, color: color, size: 28),
           ),
           SizedBox(height: 8.h),
-          AppText(text: label, size: 12, color: AppColors.blue),
+          InAppText(text: label, size: 12, color: AppColors.blue),
         ],
       ),
     );

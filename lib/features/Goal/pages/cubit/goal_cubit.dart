@@ -8,27 +8,50 @@ part 'goal_state.dart';
 class GoalCubit extends Cubit<GoalState> {
   GoalCubit() : super(GoalInitial());
 
-  List<String> goals = ['All', 'Pending', 'Ongoing', 'Completed'];
+  List<String> goals = ['All', 'Ongoing', 'Completed'];
   int selectedGoalIndex = 0;
 
-  List<String> interests = [
-    'Technology',
-    'Health',
-    'Finance',
-    'Education',
-    'Art',
-    'Sports',
-    'Travel',
-    'Music',
-    'Science',
-    'Literature', 
-  ];
-  List<String> category = [
-    'Health',
-    'Career',
-    'Personal Development',
-    'Finance',
-  ];
+Map<String, List<String>> categoryInterests = {
+  'Health': [
+    'Fitness',
+    'Nutrition',
+    'Mental Health',
+    'Yoga',
+    'Sleep',
+    'Meditation',
+  ],
+  'Career': [
+    'Leadership',
+    'Networking',
+    'Skill Development',
+    'Job Search',
+    'Entrepreneurship',
+    'Work-Life Balance',
+  ],
+  'Personal Development': [
+    'Reading',
+    'Learning',
+    'Hobbies',
+    'Relationships',
+    'Time Management',
+    'Self-Care',
+  ],
+  'Finance': [
+    'Budgeting',
+    'Investing',
+    'Savings',
+    'Debt Management',
+    'Financial Planning',
+    'Income Growth',
+  ],
+};
+
+List<String> category = [
+  'Health',
+  'Career',
+  'Personal Development',
+  'Finance',
+];
 
   // int selectedInterestIndex = 0;
   List<String> selectedInterests = [];
@@ -40,7 +63,7 @@ class GoalCubit extends Cubit<GoalState> {
     emit(GoalLoadedState());
   }
 
-    // Add interest (only if not already selected)
+  // Add interest (only if not already selected)
   void addInterest(String interest) {
     if (!selectedInterests.contains(interest)) {
       emit(GoalLoadingState());

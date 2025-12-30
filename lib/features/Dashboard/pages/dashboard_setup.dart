@@ -60,7 +60,7 @@ class DashboardOptions extends StatelessWidget {
             color: AppColors.filledColor,
           ),
           SizedBox(height: size.height * 0.01),
-          AppText(
+          InAppText(
             text: text ?? "Message",
             textAlign: TextAlign.center,
             size: 20,

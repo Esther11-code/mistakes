@@ -45,7 +45,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
   @override
   Widget build(BuildContext context) {
     late Size size = MediaQuery.sizeOf(context);
-    
+
     return PopUpOverlay(
       visible: showDropDown,
       offset: Offset(0, 67.h),
@@ -82,13 +82,14 @@ class _DropdownWidgetState extends State<DropdownWidget> {
           ),
         ),
       ),
-      child: IgnorePointer( // Better than AbsorbPointer for this use case
+      child: IgnorePointer(
+        // Better than AbsorbPointer for this use case
         ignoring: false,
         child: GestureDetector(
           onTap: () {
             // Remove any keyboard focus first
             FocusScope.of(context).unfocus();
-            
+
             if (mounted) {
               setState(() => showDropDown = !showDropDown);
             }
@@ -111,10 +112,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
 }
 
 class _DropdownTile extends StatelessWidget {
-  const _DropdownTile({
-    required this.title,
-    required this.onTap,
-  });
+  const _DropdownTile({required this.title, required this.onTap});
 
   final String title;
   final VoidCallback onTap;
@@ -122,19 +120,21 @@ class _DropdownTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late Size size = MediaQuery.sizeOf(context);
-    
-    return InkWell( // Better than GestureDetector for material ripple
+
+    return InkWell(
+      // Better than GestureDetector for material ripple
       onTap: onTap,
       child: SizedBox(
         width: size.width,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-          child: AppText(text: title),
+          child: InAppText(text: title),
         ),
       ),
     );
   }
 }
+
 class PopUpOverlay extends StatelessWidget {
   const PopUpOverlay({
     super.key,

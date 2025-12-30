@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -63,7 +61,7 @@ class SelectInterest extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                         SizedBox(width: size.width * 0.02),
-                        AppText(
+                        InAppText(
                           text:
                               "${watchGoalCubit.selectedInterestsCount} interests selected",
                           color: AppColors.blue,
@@ -82,17 +80,6 @@ class SelectInterest extends StatelessWidget {
                       },
                     ),
                     SizedBox(height: size.height * 0.015),
-                    AppButton(
-                      textSize: 20,
-                      label: "Skip",
-                      border: true,
-                      buttonColor: AppColors.inactive,
-                      bordercolor: AppColors.background,
-                      labelColor: AppColors.blue,
-                      onTap: () {
-                        Navigator.pushNamed(context, Routename.bottomNav);
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -119,14 +106,19 @@ class InterestsSections extends StatelessWidget {
     final watchGoalCubit = context.watch<GoalCubit>();
     final readGoalCubit = context.read<GoalCubit>();
 
+    // Get interests for this specific category
+    final categoryName = watchGoalCubit.category[categoryIndex];
+    final categorySpecificInterests =
+        watchGoalCubit.categoryInterests[categoryName] ?? [];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         categoryIndex != 0
             ? SizedBox(height: size.height * 0.03)
             : SizedBox.shrink(),
-        AppText(
-          text: watchGoalCubit.category[categoryIndex],
+        InAppText(
+          text: categoryName,
           color: AppColors.blue,
           fontweight: FontWeight.w700,
           size: 24,
@@ -136,16 +128,17 @@ class InterestsSections extends StatelessWidget {
           spacing: size.width * 0.03,
           runSpacing: size.height * 0.02,
           children: List.generate(
-            watchGoalCubit.interests.length,
+            categorySpecificInterests.length, // Use category-specific interests
             (index) => IntrinsicWidth(
-              // Add this
               child: GestureDetector(
                 onDoubleTap: () {
-                  readGoalCubit.removeInterest(watchGoalCubit.interests[index]);
+                  readGoalCubit.removeInterest(
+                    categorySpecificInterests[index],
+                  );
                 },
                 child: AppshadowContainer(
                   onTap: () {
-                    readGoalCubit.addInterest(watchGoalCubit.interests[index]);
+                    readGoalCubit.addInterest(categorySpecificInterests[index]);
                   },
                   radius: size.height * 0.05,
                   padding: EdgeInsets.symmetric(
@@ -154,22 +147,22 @@ class InterestsSections extends StatelessWidget {
                   ),
                   border:
                       watchGoalCubit.isInterestSelected(
-                        watchGoalCubit.interests[index],
+                        categorySpecificInterests[index],
                       )
                       ? false
                       : true,
                   borderColor: AppColors.background,
                   color:
                       watchGoalCubit.isInterestSelected(
-                        watchGoalCubit.interests[index],
+                        categorySpecificInterests[index],
                       )
                       ? AppColors.blue
                       : AppColors.inactive.withAlpha(100),
-                  child: AppText(
-                    text: watchGoalCubit.interests[index],
+                  child: InAppText(
+                    text: categorySpecificInterests[index],
                     color:
                         watchGoalCubit.isInterestSelected(
-                          watchGoalCubit.interests[index],
+                          categorySpecificInterests[index],
                         )
                         ? AppColors.white
                         : AppColors.blue,

@@ -10,13 +10,12 @@ import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
 
-
 class GoalSetup extends StatelessWidget {
   const GoalSetup({super.key});
 
   @override
   Widget build(BuildContext context) {
-   final watchAuthCubit = context.watch<AuthenticationCubit>();
+    final watchAuthCubit = context.watch<AuthenticationCubit>();
     return watchAuthCubit.user.role == "Mentee"
         ? const MenteeGoal()
         : const MenteeGoal();
@@ -47,7 +46,7 @@ class GoalContainer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  AppText(
+                  InAppText(
                     text: "Lorem ipsum",
                     color: AppColors.blue,
                     size: 20,
@@ -61,7 +60,7 @@ class GoalContainer extends StatelessWidget {
                         color: AppColors.blue.withAlpha(100),
                       ),
                       SizedBox(width: size.width * 0.02),
-                      AppText(
+                      InAppText(
                         text: "Next Month - 12:45PM",
                         color: AppColors.blue.withAlpha(100),
                         size: 16,
@@ -79,7 +78,7 @@ class GoalContainer extends StatelessWidget {
                 border: true,
                 borderColor: AppColors.orange.withAlpha(100),
                 color: AppColors.orange.withAlpha(75),
-                child: AppText(
+                child: InAppText(
                   text: "Ongoing",
                   color: AppColors.orange,
                   fontweight: FontWeight.w500,
@@ -109,7 +108,7 @@ class GoalContainer extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      AppText(
+                      InAppText(
                         text: "Mentor review",
                         color: AppColors.blue,
                         size: 20,
@@ -117,7 +116,7 @@ class GoalContainer extends StatelessWidget {
                       ),
                       SizedBox(
                         width: size.width * 0.5,
-                        child: AppText(
+                        child: InAppText(
                           text:
                               "\"Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor\"",
                           color: AppColors.blue.withAlpha(100),
@@ -190,7 +189,7 @@ class CircularProgressWithPercentage extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppText(
+              InAppText(
                 text: '${(percentage * 100).toInt()}%',
 
                 size: textSize ?? 16,

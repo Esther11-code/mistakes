@@ -8,6 +8,13 @@ class HomeStaticRepo {
     BottomNavModel(icon: Icons.chat, title: 'Chat'),
     BottomNavModel(icon: Icons.account_circle, title: 'Profile'),
   ];
+  static List<BottomNavModel> mentorBottomNavItems = [
+    BottomNavModel(icon: Icons.home_filled, title: 'Home'),
+    BottomNavModel(icon: Icons.connect_without_contact, title: 'Requests'),
+    BottomNavModel(icon: Icons.people, title: 'Mentees'),
+    BottomNavModel(icon: Icons.chat, title: 'Chat'),
+    BottomNavModel(icon: Icons.settings, title: 'Profile'),
+  ];
 }
 
 class BottomNavModel {

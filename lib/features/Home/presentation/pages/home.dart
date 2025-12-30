@@ -38,7 +38,7 @@ class Home extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
+                InAppText(
                   text: 'Suggested Mentors',
                   color: AppColors.blue,
                   fontweight: FontWeight.w500,
@@ -47,7 +47,7 @@ class Home extends StatelessWidget {
                 GestureDetector(
                   onTap: () =>
                       Navigator.pushNamed(context, Routename.allMentors),
-                  child: const AppText(text: 'View All', size: 16),
+                  child: const InAppText(text: 'View All', size: 16),
                 ),
               ],
             ),
@@ -104,7 +104,7 @@ class MentorList extends StatelessWidget {
                     children: [
                       Icon(Icons.star, color: AppColors.yellow, size: 25.sp),
                       5.horizontalSpace,
-                      const AppText(
+                      const InAppText(
                         text: '4.8',
                         size: 16,
                         fontweight: FontWeight.w500,
@@ -118,16 +118,16 @@ class MentorList extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppText(
+                  const InAppText(
                     text: 'Chineye Okafor',
                     fontweight: FontWeight.w500,
                     size: 20,
                   ),
                   Row(
                     children: [
-                      const AppText(text: 'Graphic Designer', size: 18),
+                      const InAppText(text: 'Graphic Designer', size: 18),
                       SizedBox(width: size.width * 0.02),
-                      const AppText(text: '4yrs Exp.', size: 18),
+                      const InAppText(text: '4yrs Exp.', size: 18),
                     ],
                   ),
                   SizedBox(height: size.width * 0.01),

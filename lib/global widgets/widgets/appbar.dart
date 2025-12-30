@@ -38,9 +38,9 @@ class AppbarWidget extends StatelessWidget {
             shadowColor: shadowColor,
             iconColor: iconColor,
           ),
-          50.horizontalSpace,
+          SizedBox(width: size.width * 0.05),
           Center(
-            child: AppText(
+            child: InAppText(
               color: textColor ?? AppColors.blackColor,
               text: title,
               fontweight: FontWeight.w600,

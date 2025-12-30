@@ -35,7 +35,7 @@ class AllReviews extends StatelessWidget {
                       shadowcolour: AppColors.lightgrey.withAlpha(100),
                       child: Column(
                         children: [
-                          AppText(
+                          InAppText(
                             text: "4.6",
                             size: 21,
                             fontweight: FontWeight.w800,
@@ -53,7 +53,7 @@ class AllReviews extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: size.height * 0.008),
-                          AppText(text: "Based on 100+ reviews", size: 16),
+                          InAppText(text: "Based on 100+ reviews", size: 16),
                           SizedBox(height: size.height * 0.02),
                           AppDivider(),
 
@@ -68,7 +68,7 @@ class AllReviews extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                AppText(
+                                InAppText(
                                   text: "90% Positive Reviews",
                                   size: 16,
                                   color: AppColors.blue,
@@ -82,7 +82,7 @@ class AllReviews extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: size.height * 0.02),
-                    AppText(
+                    InAppText(
                       text: "User Reviews",
                       size: 20,
                       color: AppColors.blue,

@@ -61,7 +61,7 @@ class EditInterests extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                         SizedBox(width: size.width * 0.02),
-                        AppText(
+                        InAppText(
                           text:
                               "${watchGoalCubit.selectedInterestsCount} interests selected",
                           color: AppColors.blue,

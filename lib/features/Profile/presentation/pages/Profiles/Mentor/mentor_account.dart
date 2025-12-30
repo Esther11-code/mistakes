@@ -1,193 +1,393 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
-import 'package:mistakes/features/Profile/presentation/pages/profile.dart';
+import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class MentorAccount extends StatelessWidget {
   const MentorAccount({super.key});
 
   @override
-   Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     return AppScaffold(
-      color: AppColors.background,
       body: Column(
         children: [
           CustomAppbar(
             onTap: () =>
                 Navigator.popAndPushNamed(context, Routename.bottomNav),
             title: "Profile",
-            containerColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            iconColor1: AppColors.white,
-            iconColor2: AppColors.white,
-            textColor: AppColors.white,
+            shadowColor: AppColors.grey.withAlpha(50),
+            iconColor1: AppColors.background,
+            iconColor2: AppColors.background,
           ),
-          SizedBox(height: size.height * 0.18),
+          SizedBox(height: size.height * 0.03),
           Expanded(
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // White container with inward curve
-                ClipPath(
-                  clipper: InwardCurveClipper(),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(color: AppColors.white),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: size.width * 0.04,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: size.height * 0.12,
-                        ), // Space for floating container
-                        // Your other content goes here
-                        AppText(
-                          text: "Set up your profile",
-                          color: AppColors.blue,
-                          size: 20,
-                          fontweight: FontWeight.w600,
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(size.width * 0.04),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppshadowContainer(
+                      color: AppColors.white,
+                      padding: EdgeInsets.all(size.width * 0.03),
+                      shadowcolour: AppColors.lightgrey.withAlpha(100),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppColors.filledColor,
+                            radius: size.height * 0.07,
+                            child: Icon(
+                              Icons.person,
+                              size: 50.sp,
+                              color: AppColors.white,
+                            ),
+                          ),
+                          SizedBox(height: size.height * 0.02),
+                          InAppText(
+                            text: "Mentor Name",
+                            size: 20,
+                            fontweight: FontWeight.bold,
+                          ),
+                          InAppText(text: "Mentor Expertise", size: 16),
+                          SizedBox(height: size.height * 0.02),
+                          AppshadowContainer(
+                            alignment: Alignment.center,
+                            color: AppColors.inactive,
+                            border: true,
+                            borderColor: AppColors.background,
+                            width: size.width * 0.5,
+                            padding: EdgeInsets.all(size.width * 0.02),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                ProfileSettingWidget(
-                                  size: size,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      Routename.changePassword,
-                                    );
-                                  },
+                                Icon(
+                                  Icons.star,
+                                  color: AppColors.yellow,
+                                  size: 20.sp,
                                 ),
-                                ProfileSettingWidget(
-                                  size: size,
-                                  label: "Edit Interests",
-                                  icon: CupertinoIcons.pencil,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      Routename.editInterests,
-                                    );
-                                  },
-                                ),
-                                ProfileSettingWidget(
-                                  size: size,
-                                  label: "Appointment and History",
-                                  icon: CupertinoIcons.clock,
-                                ),
-                                ProfileSettingWidget(
-                                  size: size,
-                                  label: "Privacy Policy",
-                                  icon: CupertinoIcons.shield_lefthalf_fill,
+                                InAppText(
+                                  text: "4.8 (100+ reviews)",
+                                  size: 16,
+                                  color: AppColors.blue,
+                                  fontweight: FontWeight.bold,
                                 ),
                               ],
                             ),
                           ),
+                          SizedBox(height: size.height * 0.02),
+                          AppDivider(),
+                          SizedBox(height: size.height * 0.02),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  InAppText(
+                                    text: "24",
+                                    color: AppColors.blue,
+                                    size: 18,
+                                    fontweight: FontWeight.w600,
+                                  ),
+                                  InAppText(text: "Mentees", size: 16),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  InAppText(
+                                    text: "5yrs",
+                                    color: AppColors.blue,
+                                    size: 18,
+                                    fontweight: FontWeight.w600,
+                                  ),
+                                  InAppText(text: "Experience", size: 16),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  InAppText(
+                                    text: "95%",
+                                    color: AppColors.blue,
+                                    size: 18,
+                                    fontweight: FontWeight.w600,
+                                  ),
+                                  InAppText(text: "Success", size: 16),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: size.height * 0.02),
+                          AppButton(
+                            textSize: 18,
+                            label: "Edit Profile",
+                            buttonColor: AppColors.blue,
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                Routename.editMentorProfile,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                    InAppText(
+                      text: "About Mentor",
+                      size: 20,
+                      fontweight: FontWeight.w600,
+                    ),
+                    SizedBox(height: size.height * 0.01),
+                    AppshadowContainer(
+                      color: AppColors.white,
+                      padding: EdgeInsets.all(size.width * 0.03),
+                      shadowcolour: AppColors.lightgrey.withAlpha(100),
+                      child: InAppText(
+                        textAlign: TextAlign.justify,
+                        maxline: 10,
+                        text:
+                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                        color: AppColors.blackColor,
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                    InAppText(
+                      text: "Skills & Expertise",
+                      size: 20,
+                      fontweight: FontWeight.w600,
+                    ),
+                    SizedBox(height: size.height * 0.01),
+                    Wrap(
+                      alignment: WrapAlignment.start,
+                      spacing: size.width * 0.02,
+                      runSpacing: size.height * 0.02,
+                      children: List.generate(
+                        7,
+                        (index) => IntrinsicWidth(
+                          child: AppshadowContainer(
+                            radius: size.height * 0.05,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.04,
+                              vertical: size.height * 0.01,
+                            ),
+                            border: true,
+                            borderColor: AppColors.background,
+                            color: AppColors.inactive,
+                            child: InAppText(
+                              text: "HTML",
+                              color: AppColors.blue,
+                              fontweight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                        AppButton(
-                          onTap: () {
-                            // Navigate to next page or perform action
-                          },
-
-                          buttonColor: Colors.red[700],
-                          label: 'Log Out',
+                      ),
+                    ),
+                    SizedBox(height: size.height * 0.03),
+                    Row(
+                      children: [
+                        InAppText(
+                          text: "Settings",
+                          size: 20,
+                          fontweight: FontWeight.w600,
                         ),
-                        SizedBox(height: size.height * 0.05),
+                        Spacer(),
+                        InAppText(text: "View All", size: 16),
                       ],
                     ),
-                  ),
-                ),
-                // Floating white container
-                Positioned(
-                  top: -100,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: AppshadowContainer(
+                    SizedBox(height: size.height * 0.015),
+                    AppshadowContainer(
+                      padding: EdgeInsets.zero,
                       color: AppColors.white,
-                      height: size.height * 0.2,
-                      width: size.width * 0.9,
                       shadowcolour: AppColors.lightgrey.withAlpha(100),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
-                            height: size.height * 0.04,
-                          ), // Space for circular avatar
-                          AppText(
-                            text: "Hello User",
-                            color: AppColors.blue,
-                            size: 20,
-                            fontweight: FontWeight.w600,
+                          Padding(
+                            padding: EdgeInsets.all(size.width * 0.04),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        size.width * 0.03,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.success.withAlpha(10),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        Icons.notifications_active_outlined,
+                                        color: AppColors.success,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.03),
+                                    InAppText(
+                                      text: "Accepting Requests",
+                                      fontweight: FontWeight.w500,
+                                      color: AppColors.blue,
+                                    ),
+                                  ],
+                                ),
+                                Switch(
+                                  activeColor: AppColors.success,
+                                  value: true,
+                                  onChanged: (value) {},
+                                ),
+                              ],
+                            ),
                           ),
-                          AppText(
-                            text: "Set up your profile",
-                            color: AppColors.blue,
-                            size: 14,
+                          SettingsDivider(size: size),
+                          Padding(
+                            padding: EdgeInsets.all(size.width * 0.04),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        size.width * 0.03,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.blue.withAlpha(10),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        Icons.group_outlined,
+                                        color: AppColors.blue,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.03),
+                                    InAppText(
+                                      text: "Max Active Mentees",
+                                      fontweight: FontWeight.w500,
+                                      color: AppColors.blue,
+                                    ),
+                                  ],
+                                ),
+                                AppshadowContainer(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: size.width * 0.04,
+                                    vertical: size.height * 0.008,
+                                  ),
+                                  color: AppColors.blue,
+                                  child: InAppText(
+                                    text: "5",
+                                    size: 18,
+                                    fontweight: FontWeight.w700,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          AppText(
-                            text: "I am Interested in Technology",
-                            color: AppColors.blue,
-                            size: 14,
+                          SettingsDivider(size: size),
+                          Padding(
+                            padding: EdgeInsets.all(size.width * 0.04),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        size.width * 0.03,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.orange.withAlpha(10),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        Icons.lock_outline,
+                                        color: AppColors.orange,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.03),
+                                    InAppText(
+                                      text: "Privacy Settings",
+                                      fontweight: FontWeight.w500,
+                                      color: AppColors.blue,
+                                    ),
+                                  ],
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 20.sp,
+                                  color: AppColors.grey,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SettingsDivider(size: size),
+                          Padding(
+                            padding: EdgeInsets.all(size.width * 0.04),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(
+                                        size.width * 0.03,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.purple.withAlpha(10),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Icon(
+                                        Icons.notifications_outlined,
+                                        color: Colors.purple.shade400,
+                                        size: 25.sp,
+                                      ),
+                                    ),
+                                    SizedBox(width: size.width * 0.03),
+                                    InAppText(
+                                      text: "Notifications",
+                                      fontweight: FontWeight.w500,
+                                      color: AppColors.blue,
+                                    ),
+                                  ],
+                                ),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 20.sp,
+                                  color: AppColors.grey,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
+
+                    SizedBox(height: size.height * 0.03),
+                  ],
                 ),
-                // Circular avatar on top of white container
-                Positioned(
-                  top:
-                      -size.height *
-                      0.17, // Half of avatar size above the white container
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: size.height * 0.13,
-                      height: size.height * 0.13,
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.background,
-                          width: size.width * 0.005,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.lightgrey.withAlpha(100),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Icon(
-                          Icons.person,
-                          size: size.height * 0.06,
-                          color: AppColors.blue,
-                        ),
-                        // Or use an image:
-                        // child: Image.network(
-                        //   'profile_image_url',
-                        //   fit: BoxFit.cover,
-                        // ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+}
 
+class SettingsDivider extends StatelessWidget {
+  const SettingsDivider({super.key, required this.size});
+
+  final Size size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
+      child: Container(height: 1, color: AppColors.inactive),
+    );
+  }
 }

@@ -44,12 +44,12 @@ class RequestMentorship extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: size.height * 0.02),
-                          AppText(
+                          InAppText(
                             text: "Mentor Name",
                             size: 20,
                             fontweight: FontWeight.bold,
                           ),
-                          AppText(text: "Mentor Expertise", size: 16),
+                          InAppText(text: "Mentor Expertise", size: 16),
                           SizedBox(height: size.height * 0.009),
                         ],
                       ),
@@ -76,7 +76,7 @@ class RequestMentorship extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AppText(
+                          InAppText(
                             text: "My Goals",
                             fontweight: FontWeight.w700,
                             size: 20,
@@ -96,7 +96,7 @@ class RequestMentorship extends StatelessWidget {
                                   horizontal: size.width * 0.03,
                                 ),
                                 color: AppColors.filledColor.withAlpha(50),
-                                child: AppText(
+                                child: InAppText(
                                   text: "Goal ${index + 1}",
                                   color: AppColors.filledColor,
                                   fontweight: FontWeight.w500,

@@ -47,7 +47,7 @@ class MenteeAccount extends StatelessWidget {
                           height: size.height * 0.12,
                         ), // Space for floating container
                         // Your other content goes here
-                        AppText(
+                        InAppText(
                           text: "Set up your profile",
                           color: AppColors.blue,
                           size: 20,
@@ -107,18 +107,18 @@ class MenteeAccount extends StatelessWidget {
                           SizedBox(
                             height: size.height * 0.04,
                           ), // Space for circular avatar
-                          AppText(
+                          InAppText(
                             text: "Hello User",
                             color: AppColors.blue,
                             size: 20,
                             fontweight: FontWeight.w600,
                           ),
-                          AppText(
+                          InAppText(
                             text: "Set up your profile",
                             color: AppColors.blue,
                             size: 14,
                           ),
-                          AppText(
+                          InAppText(
                             text: "I am Interested in Technology",
                             color: AppColors.blue,
                             size: 14,

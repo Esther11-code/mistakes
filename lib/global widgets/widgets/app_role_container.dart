@@ -43,14 +43,14 @@ class MentorOrMenteeContainer extends StatelessWidget {
         child: Column(
           children: [
             Icon(icon, size: 30, color: iconColor),
-            AppText(
+            InAppText(
               textAlign: TextAlign.center,
               text: text ?? "Mentor",
               fontweight: FontWeight.w800,
               size: 18,
               color: textColor ?? AppColors.blackColor,
             ),
-            AppText(
+            InAppText(
               textAlign: TextAlign.center,
               text: subText ?? "Guide Others",
               fontweight: FontWeight.w600,

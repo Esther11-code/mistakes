@@ -10,13 +10,19 @@ import 'package:mistakes/features/Home/presentation/pages/bottom_nav.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home_setup.dart';
+import 'package:mistakes/features/Home/presentation/pages/requests/mentor/accept_mentorship.dart';
+import 'package:mistakes/features/Home/presentation/pages/requests/mentor/request_details.dart';
 import 'package:mistakes/features/Onboarding/presentation/pages/splashscreen.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/mentee_account.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/all_mentor.dart';
+import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/edit_mentor_profile.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_account.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_details.dart';
 import 'package:mistakes/features/Profile/presentation/pages/profile.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/add_feedback.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/all_reviews.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/mentor_feedback.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/share_resources.dart';
 import '../../features/Authentication/presentation/pages/change_password.dart';
 import '../../features/Authentication/presentation/pages/login.dart';
 import '../../features/Authentication/presentation/pages/login_success.dart';
@@ -126,6 +132,18 @@ class AppRoute {
         return CustomPageRoute(child: const SelectInterest());
       case Routename.editInterests:
         return CustomPageRoute(child: const EditInterests());
+      case Routename.addFeedback:
+        return CustomPageRoute(child: const AddFeedback());
+      case Routename.shareResources:
+        return CustomPageRoute(child: const ShareResources());
+      case Routename.mentorFeedback:
+        return CustomPageRoute(child: const MentorReview());
+      case Routename.acceptMentorship:
+        return CustomPageRoute(child: const AcceptMentorship());
+      case Routename.requestDetails:
+        return CustomPageRoute(child: const RequestDetails());
+      case Routename.editMentorProfile:
+        return CustomPageRoute(child: const EditMentorProfile());
       case Routename.bottomNav:
         return CustomPageRoute(
           child: BlocProvider(

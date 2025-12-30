@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Home/data/local/home_static_repo.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 
@@ -16,6 +17,7 @@ class BottomNav extends StatelessWidget {
     final readHome = context.read<HomeCubit>();
     final index = watchHome.bottonnavSelectedIndex;
     final size = MediaQuery.sizeOf(context);
+    final watchAuthCubit = context.watch<AuthenticationCubit>();
     return Scaffold(
       body: watchHome.screens[index],
       extendBody: true,
@@ -50,9 +52,13 @@ class BottomNav extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(top: 6.0),
                 child: CurvedNavigationBar(
-                  items: HomeStaticRepo.bottomNavItems
-                      .map((item) => Icon(item.icon))
-                      .toList(),
+                  items: watchAuthCubit.role == "Mentor"
+                      ? HomeStaticRepo.mentorBottomNavItems
+                            .map((item) => Icon(item.icon))
+                            .toList()
+                      : HomeStaticRepo.bottomNavItems
+                            .map((item) => Icon(item.icon))
+                            .toList(),
                   height: size.height * 0.075,
                   backgroundColor: AppColors.background,
                   color: AppColors.white,
