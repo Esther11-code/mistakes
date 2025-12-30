@@ -8,9 +8,13 @@ sealed class HomeState extends Equatable {
 }
 
 final class HomeInitial extends HomeState {}
+
 final class HomeLoadingState extends HomeState {}
 
+final class HomeLikeToggledState extends HomeState {}
+
 final class HomeLoadedState extends HomeState {}
+
 final class HomeButtonChangedState extends HomeState {}
 
 final class HomeError extends HomeState {

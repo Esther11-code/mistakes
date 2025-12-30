@@ -19,43 +19,61 @@ class MenteeHome extends StatelessWidget {
           HomeAppbar(size: size),
           SizedBox(height: size.height * 0.025),
           // const AppDivider(),
-          SizedBox(height: size.height * 0.02),
-          HomeCarousel(size: size),
-          10.verticalSpace,
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-            child: const ApptextField(
-              size: 21,
-              title: 'What do you need?',
-              prefixIcon: Icons.search,
-              hintText: 'Example : Mentors, Years..',
-            ),
-          ),
-          10.verticalSpace,
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InAppText(
-                  text: 'Suggested Mentors',
-                  color: AppColors.blue,
-                  fontweight: FontWeight.w500,
-                  size: 21,
-                ),
-                GestureDetector(
-                  onTap: () =>
-                      Navigator.pushNamed(context, Routename.allMentors),
-                  child: const InAppText(text: 'View All', size: 16),
-                ),
-              ],
-            ),
-          ),
-          10.verticalSpace,
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                children: List.generate(5, (index) => MentorList(size: size)),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: size.height * 0.02),
+                  HomeCarousel(size: size),
+                  10.verticalSpace,
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.04,
+                    ),
+                    child: const ApptextField(
+                      size: 21,
+                      title: 'What do you need?',
+                      prefixIcon: Icons.search,
+                      hintText: 'Example : Mentors, Years..',
+                    ),
+                  ),
+                  10.verticalSpace,
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.04,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InAppText(
+                          text: 'Suggested Mentors',
+                          color: AppColors.blue,
+                          fontweight: FontWeight.w600,
+                          size: 20,
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            Routename.allMentors,
+                          ),
+                          child: const InAppText(text: 'View All', size: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  10.verticalSpace,
+                  Column(
+                    children: List.generate(
+                      5,
+                      (index) => MentorList(
+                        size: size,
+                        mentorId: 'mentor$index',
+                        mentorName: 'Mentor Name $index',
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

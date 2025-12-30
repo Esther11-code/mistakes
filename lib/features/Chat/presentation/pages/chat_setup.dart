@@ -11,7 +11,7 @@ class ChatSetup extends StatelessWidget {
   Widget build(BuildContext context) {
     final watchAuthCubit = context.watch<AuthenticationCubit>();
     return watchAuthCubit.user.role == "Mentor"
-        ? const MentorChatPage()
+        ? const MentorChatPage(userName: "Lacy")
         : MenteeChatPage(userName: "Stacy");
   }
 }

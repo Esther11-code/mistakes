@@ -43,5 +43,6 @@ class Routename{
   static const String acceptMentorship = '/acceptMentorship';
 
   static const String editMentorProfile = '/editMentorProfile';
-  s
+  static const String mentorSettings = '/mentorSettings';
+  static const String achievementHistory = '/achievementHistory';
 }

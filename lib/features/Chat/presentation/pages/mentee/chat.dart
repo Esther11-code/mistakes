@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../Home/data/local/images/home_image.dart';
@@ -108,12 +110,15 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
 
-    return Scaffold(
-      backgroundColor: AppColors.white,
-      appBar: _buildAppBar(),
+    return AppScaffold(
       body: Column(
         children: [
-          // Messages List
+          // App Bar
+          _buildAppBar(
+            color: AppColors.white,
+            shadowColor: AppColors.grey.withAlpha(50),
+            iconColor: AppColors.filledColor,
+          ),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -124,112 +129,55 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                 final showAvatar =
                     index == messages.length - 1 ||
                     messages[index + 1].isSent != message.isSent;
-                // final showTime =
-                //     index == 0 || index % 5 == 0; // Show time every 5 messages
-
                 return Column(
-                  children: [
-                    // if (showTime && index == 0) _buildTimeStamp("Today"),
-                    _buildMessageBubble(message, showAvatar),
-                  ],
+                  children: [_buildMessageBubble(message, showAvatar)],
                 );
               },
             ),
           ),
-          // Message Input Area
           _buildMessageInput(),
         ],
       ),
     );
   }
 
-  _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_ios, color: AppColors.blue, size: 20),
-        onPressed: () =>
-            Navigator.popAndPushNamed(context, Routename.bottomNav),
-      ),
-      title: Row(
+  _buildAppBar({
+    required Color color,
+    required Color shadowColor,
+    required Color iconColor,
+  }) {
+    final size = MediaQuery.sizeOf(context);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
+      child: Row(
         children: [
-          Stack(
+          IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: iconColor),
+            onPressed: () => Navigator.pushNamed(context, Routename.bottomNav),
+          ),
+          CircleAvatar(
+            radius: size.width * 0.07,
+            backgroundColor: AppColors.filledColor,
+            backgroundImage: widget.userAvatar!.isNotEmpty
+                ? NetworkImage(widget.userAvatar!)
+                : null,
+            child: widget.userAvatar!.isEmpty
+                ? Icon(Icons.person, color: AppColors.white, size: 24)
+                : null,
+          ),
+          SizedBox(width: size.width * 0.04),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: AppColors.filledColor,
-                backgroundImage: widget.userAvatar!.isNotEmpty
-                    ? NetworkImage(widget.userAvatar!)
-                    : null,
-                child: widget.userAvatar!.isEmpty
-                    ? Icon(Icons.person, color: AppColors.white, size: 24)
-                    : null,
+              InAppText(
+                text: widget.userName,
+                size: 20,
+                fontweight: FontWeight.w600,
+                color: AppColors.blue,
               ),
-              if (widget.isOnline)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.white, width: 2),
-                    ),
-                  ),
-                ),
             ],
           ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                InAppText(
-                  text: widget.userName,
-                  size: 16,
-                  fontweight: FontWeight.w600,
-                  color: AppColors.blue,
-                ),
-                InAppText(
-                  text: widget.isOnline ? 'Online' : 'Offline',
-                  size: 12,
-                  color: widget.isOnline
-                      ? Colors.green
-                      : AppColors.white.withAlpha(80),
-                ),
-              ],
-            ),
-          ),
         ],
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.call, color: AppColors.blue),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(Icons.more_vert, color: AppColors.blue),
-          onPressed: () {},
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimeStamp(String time) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 20.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: InAppText(
-        text: time,
-        size: 12,
-        color: AppColors.white.withAlpha(80),
       ),
     );
   }
@@ -282,7 +230,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                 children: [
                   InAppText(
                     text: message.message,
-                    size: 15,
+
                     color: AppColors.white,
                     height: 1.4,
                   ),
@@ -292,8 +240,8 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                     children: [
                       InAppText(
                         text: message.time,
-                        size: 11,
-                        color: AppColors.white.withAlpha(80),
+                        size: 15,
+                        color: AppColors.white.withAlpha(100),
                       ),
                       if (message.isSent) ...[
                         SizedBox(width: 4.w),
@@ -327,6 +275,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
   }
 
   Widget _buildMessageInput() {
+    final size = MediaQuery.sizeOf(context);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
@@ -342,16 +291,15 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
       child: SafeArea(
         child: Row(
           children: [
-            // Emoji/Attachment Button
             Container(
-              width: 40,
-              height: 40,
+              width: size.width * 0.12,
+              height: size.width * 0.12,
               decoration: BoxDecoration(
                 color: AppColors.background,
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: Icon(Icons.add, color: AppColors.white, size: 24),
+                icon: Icon(Icons.add, color: AppColors.white, size: 25.sp),
                 onPressed: () {
                   _showAttachmentOptions();
                 },
@@ -359,13 +307,15 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
               ),
             ),
             SizedBox(width: 12.w),
-            // Text Input Field
             Expanded(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
+                    color: AppColors.filledColor,
+                    width: size.width * 0.005,
+                  ),
+                  borderRadius: BorderRadius.circular(size.width * 0.1),
                 ),
                 child: Row(
                   children: [
@@ -375,14 +325,17 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                         focusNode: _focusNode,
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
-                          hintStyle: TextStyle(
-                            color: AppColors.white.withAlpha(80),
-                            fontSize: 15,
+                          hintStyle: GoogleFonts.ptSans(
+                            color: AppColors.filledColor,
+                            fontSize: 20,
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 12.h),
                         ),
-                        style: TextStyle(color: AppColors.blue, fontSize: 15),
+                        style: GoogleFonts.ptSans(
+                          color: AppColors.blue,
+                          fontSize: 20,
+                        ),
                         maxLines: null,
                         textCapitalization: TextCapitalization.sentences,
                       ),
@@ -390,7 +343,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                     IconButton(
                       icon: Icon(
                         Icons.emoji_emotions_outlined,
-                        color: AppColors.white.withAlpha(80),
+                        color: AppColors.filledColor,
                       ),
                       onPressed: () {
                         // Add emoji picker
@@ -532,14 +485,3 @@ class ChatMessage {
     this.isRead = false,
   });
 }
-
-// Usage:
-// Navigator.push(
-//   context,
-//   MaterialPageRoute(
-//     builder: (_) => ModernChatScreen(
-//       userName: 'John Doe',
-//       isOnline: true,
-//     ),
-//   ),
-// );

@@ -101,16 +101,17 @@ class HomeCarousel extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               SizedBox(
-                width: size.width * 0.38,
+                width: size.width * 0.35,
                 child: InAppText(
                   maxline: 6,
-                  text: 'Get the best services providers with our services',
+                  text:
+                      'Get the best mentors to reach your goals faster and better.',
                   color: AppColors.white,
                   fontweight: FontWeight.w500,
                 ),
               ),
               SizedBox(
-                width: size.width * 0.5,
+                width: size.width * 0.52,
                 child: Image.asset(
                   OnboardingImages.onboarding1,
                   height: size.height * 0.18,
@@ -120,20 +121,20 @@ class HomeCarousel extends StatelessWidget {
           ),
         ),
         10.verticalSpace,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            3,
-            (index) => AppshadowContainer(
-              border: index != 0,
-              borderColor: AppColors.background,
-              margin: EdgeInsets.only(right: size.width * 0.02),
-              color: index == 0 ? AppColors.background : AppColors.inactive,
-              width: index == 0 ? size.width * 0.15 : size.width * 0.04,
-              height: size.width * 0.04,
-            ),
-          ),
-        ),
+        // Row(
+        //   mainAxisAlignment: MainAxisAlignment.center,
+        //   children: List.generate(
+        //     3,
+        //     (index) => AppshadowContainer(
+        //       border: index != 0,
+        //       borderColor: AppColors.background,
+        //       margin: EdgeInsets.only(right: size.width * 0.02),
+        //       color: index == 0 ? AppColors.background : AppColors.inactive,
+        //       width: index == 0 ? size.width * 0.15 : size.width * 0.04,
+        //       height: size.width * 0.04,
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

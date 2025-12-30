@@ -13,6 +13,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   int bottonnavSelectedIndex = 0;
 
+
   final screens = [
     const HomeSetup(),
     const BookmarkSetup(),
@@ -26,4 +27,21 @@ class HomeCubit extends Cubit<HomeState> {
     bottonnavSelectedIndex = index;
     emit(HomeLoadedState());
   }
+
+    List<String> likedMentorIds = [];
+
+  void toggleLike(String mentorId) {
+    emit(HomeLoadingState());
+    if (likedMentorIds.contains(mentorId)) {
+      likedMentorIds.remove(mentorId);
+    } else {
+      likedMentorIds.add(mentorId);
+    }
+    emit(HomeLikeToggledState());
+  }
+
+  bool isLiked(String mentorId) {
+    return likedMentorIds.contains(mentorId);
+  }
+
 }

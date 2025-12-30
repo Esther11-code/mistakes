@@ -40,6 +40,6 @@ class MentorBookmarkContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MentorList(size: size);
+    return MentorList(size: size, mentorId: "1", mentorName: 'Mentor Name 1');
   }
 }

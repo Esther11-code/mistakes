@@ -185,16 +185,21 @@ class MentorAccount extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: size.height * 0.03),
-                    Row(
-                      children: [
-                        InAppText(
-                          text: "Settings",
-                          size: 20,
-                          fontweight: FontWeight.w600,
-                        ),
-                        Spacer(),
-                        InAppText(text: "View All", size: 16),
-                      ],
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, Routename.mentorSettings);
+                      },
+                      child: Row(
+                        children: [
+                          InAppText(
+                            text: "Settings",
+                            size: 20,
+                            fontweight: FontWeight.w600,
+                          ),
+                          Spacer(),
+                          InAppText(text: "View All", size: 16),
+                        ],
+                      ),
                     ),
                     SizedBox(height: size.height * 0.015),
                     AppshadowContainer(

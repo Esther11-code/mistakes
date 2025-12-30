@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Home/data/local/images/home_image.dart';
+import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
@@ -56,7 +58,14 @@ class Home extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                children: List.generate(5, (index) => MentorList(size: size)),
+                children: List.generate(
+                  5,
+                  (index) => MentorList(
+                    size: size,
+                    mentorId: 'mentor$index',
+                    mentorName: 'Mentor Name $index',
+                  ),
+                ),
               ),
             ),
           ),
@@ -67,14 +76,26 @@ class Home extends StatelessWidget {
 }
 
 class MentorList extends StatelessWidget {
-  const MentorList({super.key, required this.size});
+  const MentorList({
+    super.key,
+    required this.size,
+    required this.mentorId,
+    required this.mentorName,
+  });
 
   final Size size;
+  final String mentorId;
+  final String mentorName;
 
   @override
   Widget build(BuildContext context) {
+    final watchHomeCubit = context.watch<HomeCubit>();
+    final readHomeCubit = context.read<HomeCubit>();
+
     return AppshadowContainer(
-      onTap: () => Navigator.pushNamed(context, Routename.mentorDetails),
+      onTap: () {
+        readHomeCubit.toggleLike(mentorId);
+      },
       shadowcolour: AppColors.inactive.withAlpha(100),
       border: true,
       color: AppColors.white,
@@ -113,13 +134,12 @@ class MentorList extends StatelessWidget {
                   ),
                 ],
               ),
-
               SizedBox(width: size.width * 0.009),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const InAppText(
-                    text: 'Chineye Okafor',
+                  InAppText(
+                    text: mentorName,
                     fontweight: FontWeight.w500,
                     size: 20,
                   ),
@@ -144,7 +164,20 @@ class MentorList extends StatelessWidget {
               ),
             ],
           ),
-          Icon(Icons.favorite, color: AppColors.errorColor, size: 25.sp),
+          GestureDetector(
+            onTap: () {
+              readHomeCubit.toggleLike(mentorId);
+            },
+            child: Icon(
+              watchHomeCubit.isLiked(mentorId)
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              color: watchHomeCubit.isLiked(mentorId)
+                  ? AppColors.errorColor
+                  : AppColors.grey,
+              size: 25.sp,
+            ),
+          ),
         ],
       ),
     );

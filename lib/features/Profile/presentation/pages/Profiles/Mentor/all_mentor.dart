@@ -16,7 +16,14 @@ class AllMentor extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                children: List.generate(10, (index) => MentorList(size: size)),
+                children: List.generate(
+                  10,
+                  (index) => MentorList(
+                    size: size,
+                    mentorId: 'mentor$index',
+                    mentorName: 'Mentor Name $index',
+                  ),
+                ),
               ),
             ),
           ),

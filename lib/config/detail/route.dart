@@ -13,11 +13,13 @@ import 'package:mistakes/features/Home/presentation/pages/home_setup.dart';
 import 'package:mistakes/features/Home/presentation/pages/requests/mentor/accept_mentorship.dart';
 import 'package:mistakes/features/Home/presentation/pages/requests/mentor/request_details.dart';
 import 'package:mistakes/features/Onboarding/presentation/pages/splashscreen.dart';
+import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/achievement_history.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/mentee_account.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/all_mentor.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/edit_mentor_profile.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_account.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_details.dart';
+import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_setting.dart';
 import 'package:mistakes/features/Profile/presentation/pages/profile.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/add_feedback.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/all_reviews.dart';
@@ -144,6 +146,10 @@ class AppRoute {
         return CustomPageRoute(child: const RequestDetails());
       case Routename.editMentorProfile:
         return CustomPageRoute(child: const EditMentorProfile());
+      case Routename.mentorSettings:
+        return CustomPageRoute(child: const MentorSettings());
+      case Routename.achievementHistory:
+        return CustomPageRoute(child: const AchievementHistory());
       case Routename.bottomNav:
         return CustomPageRoute(
           child: BlocProvider(
