@@ -38,7 +38,7 @@ class MenteeHomeState extends State<MenteeHome> {
     return AppScaffold(
       body: BlocListener<HomeCubit, HomeState>(
         listener: (context, state) {
-          // Show error message if search fails
+          // Show error message if search fail
           if (state is UserSearchErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
