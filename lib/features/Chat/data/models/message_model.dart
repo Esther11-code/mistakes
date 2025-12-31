@@ -1,4 +1,3 @@
-// chat_message.dart
 class ChatMessage {
   final String id;
   final String message;

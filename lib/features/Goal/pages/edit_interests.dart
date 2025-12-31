@@ -21,9 +21,10 @@ class EditInterests extends StatelessWidget {
         children: [
           AppbarWidget(
             onTap: () => Navigator.pop(context),
-            title: "Select Interests",
+            title: "Edit Interests",
             size: size,
           ),
+          SizedBox(height: size.height * 0.02),
           Expanded(
             child: SingleChildScrollView(
               child: Padding(

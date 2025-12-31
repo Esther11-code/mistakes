@@ -25,14 +25,14 @@ class ChangePassword extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
               children: [
-                InAppText(
+                AppText(
                   text: 'Secure your account',
                   fontweight: FontWeight.w600,
 
                   size: 20,
                 ),
                 5.verticalSpace,
-                InAppText(
+                AppText(
                   text: 'Create a new password below to secure your account',
                   size: 14,
                 ),
@@ -52,12 +52,12 @@ class ChangePassword extends StatelessWidget {
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    InAppText(text: 'Didn’t receive any code?', size: 14),
-                    InAppText(text: 'Expires in 00:00', size: 14),
+                    AppText(text: 'Didn’t receive any code?', size: 14),
+                    AppText(text: 'Expires in 00:00', size: 14),
                   ],
                 ),
                 5.verticalSpace,
-                const InAppText(
+                const AppText(
                   text: 'Resend code',
                   fontweight: FontWeight.w500,
                   size: 14,
@@ -95,19 +95,19 @@ class ChangePasswordDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            CupertinoIcons.check_mark_circled_solid,
-            size: 250.sp,
+            Icons.check_circle_outline,
+            size: 150.sp,
             color: AppColors.background,
           ),
           20.verticalSpace,
-          const InAppText(
+          const AppText(
             textAlign: TextAlign.center,
             text: 'Your Password Has been Changed Successfully!',
-            size: 16,
           ),
           20.verticalSpace,
           AppButton(
             label: 'Done',
+            textSize: 19,
             buttonColor: AppColors.background,
             onTap: () {
               Navigator.pushNamed(context, Routename.login);

@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/mentee_account.dart';
@@ -15,7 +14,6 @@ class ProfileSetUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthenticationCubit>().user.role;
-    final size = MediaQuery.sizeOf(context);
     return user == 'Mentor' ? const MentorAccount() : const MenteeAccount();
   }
 }
@@ -79,25 +77,20 @@ class ProfileSettingWidget extends StatelessWidget {
     );
   }
 }
-
-// Custom clipper for inward curve at the top
 class InwardCurveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-    path.lineTo(0, 0); // Start at top left
-
-    // Create inward curve using quadratic bezier
+    path.lineTo(0, 0);
     path.quadraticBezierTo(
       size.width / 2,
-      80, // Control point (dips down in the middle)
+      80,
       size.width,
-      0, // End point at top right
+      0,
     );
-
-    path.lineTo(size.width, size.height); // Right side
-    path.lineTo(0, size.height); // Bottom
-    path.close(); // Back to start
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
     return path;
   }
 

@@ -3,6 +3,7 @@ import 'package:mistakes/config/detail/custom_page_route.dart';
 import 'package:mistakes/features/Chat/presentation/pages/chat_setup.dart';
 import 'package:mistakes/features/Chat/presentation/pages/mentee/chat.dart';
 import 'package:mistakes/features/Dashboard/pages/mentee/mentee_dashboard.dart';
+import 'package:mistakes/features/Dashboard/pages/mentee/shared_resources.dart';
 import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
 import 'package:mistakes/features/Goal/pages/Goals/goal_setup.dart';
 import 'package:mistakes/features/Home/presentation/pages/booking_success.dart';
@@ -150,6 +151,10 @@ class AppRoute {
         return CustomPageRoute(child: const MentorSettings());
       case Routename.achievementHistory:
         return CustomPageRoute(child: const AchievementHistory());
+      case Routename.sharedResources:
+        return CustomPageRoute(child: const SharedResources());
+      // case Routename.progressDashboard:
+      //   return CustomPageRoute(child: const ProgressDashboard());
       case Routename.bottomNav:
         return CustomPageRoute(
           child: BlocProvider(

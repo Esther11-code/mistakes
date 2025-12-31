@@ -36,7 +36,7 @@ class BookingSuccess extends StatelessWidget {
                   ),
                   SizedBox(height: size.width * 0.02),
                   const InAppText(
-                    text: 'Your mentor booking was successful ',
+                    text: 'Your mentor was saved successfully ',
                     size: 18,
                     textAlign: TextAlign.center,
                   ),

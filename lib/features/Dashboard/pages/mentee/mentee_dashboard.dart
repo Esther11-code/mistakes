@@ -63,7 +63,7 @@ class MenteeDashboard extends StatelessWidget {
                                 ),
                               ),
                               child: CircleAvatar(
-                                backgroundColor: Colors.white,
+                                backgroundColor: AppColors.white,
                                 child: Icon(
                                   Icons.person,
                                   color: AppColors.blue,
@@ -96,12 +96,12 @@ class MenteeDashboard extends StatelessWidget {
                                       vertical: size.height * 0.006,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withAlpha(20),
+                                      color: AppColors.white.withAlpha(20),
                                       borderRadius: BorderRadius.circular(
                                         size.width * 0.02,
                                       ),
                                       border: Border.all(
-                                        color: Colors.white.withAlpha(30),
+                                        color: AppColors.white.withAlpha(30),
                                       ),
                                     ),
                                     child: Row(
@@ -110,7 +110,7 @@ class MenteeDashboard extends StatelessWidget {
                                         Icon(
                                           Icons.calendar_today,
                                           size: 12,
-                                          color: Colors.white,
+                                          color: AppColors.white,
                                         ),
                                         SizedBox(width: 6),
                                         InAppText(
@@ -200,7 +200,7 @@ class MenteeDashboard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      QuickActionCard(
+                      DashboardOptionCard(
                         size: size,
                         icon: Icons.message_outlined,
                         label: "Messages",
@@ -209,7 +209,7 @@ class MenteeDashboard extends StatelessWidget {
                           Navigator.pushNamed(context, Routename.chatSetup);
                         },
                       ),
-                      QuickActionCard(
+                      DashboardOptionCard(
                         size: size,
                         icon: Icons.track_changes,
                         label: "Goals",
@@ -218,7 +218,7 @@ class MenteeDashboard extends StatelessWidget {
                           Navigator.pushNamed(context, Routename.goalSetUp);
                         },
                       ),
-                      QuickActionCard(
+                      DashboardOptionCard(
                         size: size,
                         icon: Icons.bar_chart,
                         label: "Progress",
@@ -277,48 +277,43 @@ class MenteeDashboard extends StatelessWidget {
                         [Colors.orange.shade400, Colors.orange.shade600],
                         [Colors.green.shade400, Colors.green.shade600],
                       ];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, Routename.chat);
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(size.width * 0.04),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: statColors[index % statColors.length],
+                      return Container(
+                        padding: EdgeInsets.all(size.width * 0.04),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: statColors[index % statColors.length],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: statColors[index % statColors.length][0]
+                                  .withAlpha(30),
+                              blurRadius: 12,
+                              offset: Offset(0, 6),
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: statColors[index % statColors.length][0]
-                                    .withAlpha(30),
-                                blurRadius: 12,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              InAppText(
-                                text: DashboardStaticRepo.stats[index].stat,
-                                color: AppColors.white,
-                                size: 30,
-                                fontweight: FontWeight.w900,
-                              ),
-                              SizedBox(height: 4),
-                              InAppText(
-                                text: DashboardStaticRepo.stats[index].title,
-                                textAlign: TextAlign.center,
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            InAppText(
+                              text: DashboardStaticRepo.stats[index].stat,
+                              color: AppColors.white,
+                              size: 30,
+                              fontweight: FontWeight.w900,
+                            ),
+                            SizedBox(height: 4),
+                            InAppText(
+                              text: DashboardStaticRepo.stats[index].title,
+                              textAlign: TextAlign.center,
 
-                                fontweight: FontWeight.w600,
-                                color: AppColors.white,
-                                maxline: 2,
-                              ),
-                            ],
-                          ),
+                              fontweight: FontWeight.w600,
+                              color: AppColors.white,
+                              maxline: 2,
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -383,7 +378,7 @@ class MenteeDashboard extends StatelessWidget {
                                 ),
                                 child: InAppText(
                                   text: "Active",
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   fontweight: FontWeight.w700,
                                   size: 16,
                                 ),
@@ -475,7 +470,7 @@ class MenteeDashboard extends StatelessWidget {
                         ),
                         SizedBox(width: size.width * 0.03),
                         InAppText(
-                          text: "Activity",
+                          text: "Need Attention",
                           size: 20,
                           fontweight: FontWeight.w700,
                           color: AppColors.blue,
@@ -512,14 +507,19 @@ class MenteeDashboard extends StatelessWidget {
                             if (index == 0) {
                               Navigator.pushNamed(context, Routename.goalSetUp);
                             } else if (index == 2) {
-                              // Navigator.pushNamed(context, Routename.resourcesShared);
-                            } else if (index == 4) {
                               Navigator.pushNamed(
                                 context,
-                                Routename.mentorFeedback,
+                                Routename.sharedResources,
                               );
+                            } else if (index == 4) {
+                              Navigator.pushNamed(context, Routename.goalSetUp);
                             } else if (index == 1) {
                               Navigator.pushNamed(context, Routename.chat);
+                            } else {
+                              Navigator.pushNamed(
+                                context,
+                                Routename.achievementHistory,
+                              );
                             }
                           },
                           shadowcolour: AppColors.lightgrey.withAlpha(50),
@@ -550,7 +550,7 @@ class MenteeDashboard extends StatelessWidget {
                                 ),
                                 child: Icon(
                                   activityIcons[index],
-                                  color: Colors.white,
+                                  color: AppColors.white,
                                   size: 24.sp,
                                 ),
                               ),
@@ -586,7 +586,6 @@ class MenteeDashboard extends StatelessWidget {
                       }),
                     ),
                   ],
-
                   SizedBox(height: size.height * 0.02),
                 ],
               ),
@@ -598,15 +597,14 @@ class MenteeDashboard extends StatelessWidget {
   }
 }
 
-// Quick Action Card Widget
-class QuickActionCard extends StatelessWidget {
+class DashboardOptionCard extends StatelessWidget {
   final Size size;
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
 
-  const QuickActionCard({
+  const DashboardOptionCard({
     super.key,
     required this.size,
     required this.icon,
