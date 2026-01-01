@@ -62,8 +62,6 @@ class MenteeHomeState extends State<MenteeHome> {
                     SizedBox(height: size.height * 0.02),
                     HomeCarousel(size: size),
                     10.verticalSpace,
-
-                    // Search Field
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: size.width * 0.04,
@@ -163,8 +161,6 @@ class MenteeHomeState extends State<MenteeHome> {
                       ),
                     ),
                     10.verticalSpace,
-
-                    // Mentors List
                     BlocBuilder<HomeCubit, HomeState>(
                       builder: (context, state) {
                         if (state is UserSearchLoadingState) {
@@ -188,7 +184,7 @@ class MenteeHomeState extends State<MenteeHome> {
                                     Icon(
                                       Icons.search_off,
                                       size: 60,
-                                      color: AppColors.grey.withOpacity(0.5),
+                                      color: AppColors.grey.withAlpha(50),
                                     ),
                                     SizedBox(height: 16),
                                     InAppText(
