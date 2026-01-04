@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
@@ -38,14 +41,9 @@ class MenteeHomeState extends State<MenteeHome> {
     return AppScaffold(
       body: BlocListener<HomeCubit, HomeState>(
         listener: (context, state) {
-          // Show error message if search fail
           if (state is UserSearchErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.error),
-                backgroundColor: AppColors.errorColor,
-              ),
-            );
+            Fluttertoast.showToast(msg: state.error);
+            searchController.clear();
           }
         },
         child: Column(
@@ -61,7 +59,7 @@ class MenteeHomeState extends State<MenteeHome> {
                   children: [
                     SizedBox(height: size.height * 0.02),
                     HomeCarousel(size: size),
-                    10.verticalSpace,
+                    SizedBox(height: size.height * 0.025),
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: size.width * 0.04,
@@ -76,16 +74,19 @@ class MenteeHomeState extends State<MenteeHome> {
                         },
                         decoration: InputDecoration(
                           labelText: 'What do you need?',
-                          labelStyle: TextStyle(
-                            fontSize: 21.sp,
-                            color: AppColors.blue,
+                          labelStyle: GoogleFonts.ptSans(
+                            fontSize: 20.sp,
+                            color: AppColors.blackColor,
                           ),
                           hintText: 'Example: Mentors, Years..',
-                          hintStyle: TextStyle(
+                          hintStyle: GoogleFonts.ptSans(
                             fontSize: 15.sp,
                             color: AppColors.grey,
                           ),
-                          prefixIcon: Icon(Icons.search, color: AppColors.blue),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: AppColors.blackColor,
+                          ),
                           suffixIcon: searchController.text.isNotEmpty
                               ? IconButton(
                                   icon: Icon(
@@ -103,26 +104,30 @@ class MenteeHomeState extends State<MenteeHome> {
                                 )
                               : null,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              size.width * 0.03,
+                            ),
                             borderSide: BorderSide(color: AppColors.inactive),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              size.width * 0.03,
+                            ),
                             borderSide: BorderSide(color: AppColors.inactive),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              size.width * 0.03,
+                            ),
                             borderSide: BorderSide(
                               color: AppColors.blue,
-                              width: 2,
+                              width: size.width * 0.002,
                             ),
                           ),
                         ),
                       ),
                     ),
-                    10.verticalSpace,
-
-                    // Header
+                    SizedBox(height: size.height * 0.025),
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: size.width * 0.04,
@@ -137,14 +142,13 @@ class MenteeHomeState extends State<MenteeHome> {
                                 return InAppText(
                                   text:
                                       '${state.users.length} Mentor${state.users.length != 1 ? 's' : ''} Found',
-                                  color: AppColors.blue,
+
                                   fontweight: FontWeight.w600,
                                   size: 20,
                                 );
                               }
                               return InAppText(
                                 text: 'Suggested Mentors',
-                                color: AppColors.blue,
                                 fontweight: FontWeight.w600,
                                 size: 20,
                               );
@@ -160,20 +164,20 @@ class MenteeHomeState extends State<MenteeHome> {
                         ],
                       ),
                     ),
-                    10.verticalSpace,
+                    SizedBox(height: size.height * 0.01),
                     BlocBuilder<HomeCubit, HomeState>(
                       builder: (context, state) {
                         if (state is UserSearchLoadingState) {
                           return Center(
                             child: Padding(
                               padding: EdgeInsets.all(size.height * 0.05),
-                              child: CircularProgressIndicator(
-                                color: AppColors.blue,
+                              child: LoadingAnimationWidget.dotsTriangle(
+                                size: 70.sp,
+                                color: AppColors.background,
                               ),
                             ),
                           );
                         }
-
                         if (state is UserSearchLoadedState) {
                           if (state.users.isEmpty) {
                             return Center(
@@ -183,29 +187,26 @@ class MenteeHomeState extends State<MenteeHome> {
                                   children: [
                                     Icon(
                                       Icons.search_off,
-                                      size: 60,
+                                      size: 70.sp,
                                       color: AppColors.grey.withAlpha(50),
                                     ),
-                                    SizedBox(height: 16),
+                                    SizedBox(height: size.height * 0.01),
                                     InAppText(
                                       text: "No mentors found",
-                                      size: 18,
+                                      size: 20,
                                       fontweight: FontWeight.w600,
-                                      color: AppColors.grey,
+                                      color: AppColors.lightblack,
                                     ),
-                                    SizedBox(height: 8),
                                     InAppText(
                                       text: "Try a different search term",
-                                      size: 14,
-                                      color: AppColors.grey,
+
+                                      color: AppColors.lightblack,
                                     ),
                                   ],
                                 ),
                               ),
                             );
                           }
-
-                          // Show only first 5 mentors
                           final displayMentors = state.users.take(5).toList();
 
                           return Column(
@@ -214,12 +215,13 @@ class MenteeHomeState extends State<MenteeHome> {
                                 size: size,
                                 mentorId: mentor.id ?? "0",
                                 mentorName: mentor.name ?? "rey",
+                                rating: mentor.rating.toString(),
+                                expertise: mentor.expertise ?? "Expertise",
+                                yoe: mentor.yearsOfExperience.toString(),
                               );
                             }).toList(),
                           );
                         }
-
-                        // Default fallback
                         return Column(
                           children: List.generate(
                             5,
@@ -227,6 +229,9 @@ class MenteeHomeState extends State<MenteeHome> {
                               size: size,
                               mentorId: 'mentor$index',
                               mentorName: 'Mentor Name $index',
+                              rating: '4.5',
+                              expertise: 'Expertise $index',
+                              yoe: 'YOE $index',
                             ),
                           ),
                         );

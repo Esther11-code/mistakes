@@ -15,7 +15,7 @@ MentorVerse is a cross-platform mobile app that makes mentorship **goal-oriented
 ## ✨ Features
 
 | Feature | Description |
-|---------|-------------|
+| --------- | ------------- |
 | 🔐 **Authentication** | Secure login/signup with email |
 | 👥 **Dual Roles** | Sign up as Mentor, Mentee, or Both |
 | 🔍 **Mentor Discovery** | Search, filter, and bookmark mentors |
@@ -28,11 +28,13 @@ MentorVerse is a cross-platform mobile app that makes mentorship **goal-oriented
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Flutter SDK 3.9+
 - Dart SDK
 - Android Studio / VS Code
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Esther11-code/mistakes.git
@@ -49,7 +51,7 @@ flutter run
 
 ## 📂 Project Structure
 
-```
+``` directory
 lib/
 ├── config/          # Routing & configuration
 ├── constants/       # Colors, utilities
@@ -84,4 +86,4 @@ See [PLAN.md](PLAN.md) for current development status.
 
 ---
 
-*Built with ❤️ using Flutter*
+**Built with ❤️ using Flutter*

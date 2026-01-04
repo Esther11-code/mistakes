@@ -2,23 +2,23 @@
 class UserModel {
   String? id;
   String? name;
-  String ?email;
-  String ?role; // "mentor" or "mentee"
+  String? email;
+  String? role; // "mentor" or "mentee"
   String? avatar;
-  String ?bio;
-  
+  String? bio;
+
   // Common fields
   List<String>? skills;
-  List<String> ?interests;
+  List<String>? interests;
   String? expertise;
-  
+
   // Mentor-specific fields (nullable for mentees)
   int? yearsOfExperience;
   double? rating;
   int? totalMentees;
   bool? isAvailable;
   int? maxMentees;
-  
+
   // Mentee-specific fields (nullable for mentors)
   String? mentorId;
   List<String>? goals;
@@ -26,15 +26,15 @@ class UserModel {
   int? sessionsAttended;
 
   UserModel({
-   this.id,
-  this.name,
-  this.email,
-  this.role,
+    this.id,
+    this.name,
+    this.email,
+    this.role,
     this.avatar,
-  this.bio,
-  this.skills,
-  this.interests,
-  this.expertise,
+    this.bio,
+    this.skills,
+    this.interests,
+    this.expertise,
     // Mentor fields
     this.yearsOfExperience,
     this.rating,
@@ -66,7 +66,9 @@ class UserModel {
       expertise: json['expertise'],
       // Mentor fields
       yearsOfExperience: json['yearsOfExperience'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      rating: json['rating'] != null
+          ? (json['rating'] as num).toDouble()
+          : null,
       totalMentees: json['totalMentees'],
       isAvailable: json['isAvailable'],
       maxMentees: json['maxMentees'],
@@ -238,7 +240,11 @@ class UserModel {
       interests: ['Technology', 'Learning', 'Mobile Apps'],
       expertise: 'Mobile Development',
       mentorId: '1',
-      goals: ['Learn State Management', 'Build First App', 'Understand Firebase'],
+      goals: [
+        'Learn State Management',
+        'Build First App',
+        'Understand Firebase',
+      ],
       completedGoals: 1,
       sessionsAttended: 5,
     ),

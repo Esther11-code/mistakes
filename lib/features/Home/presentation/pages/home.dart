@@ -64,6 +64,9 @@ class Home extends StatelessWidget {
                     size: size,
                     mentorId: 'mentor$index',
                     mentorName: 'Mentor Name $index',
+                    rating: '4.5',
+                    expertise: 'Expertise $index',
+                    yoe: 'YOE $index',
                   ),
                 ),
               ),
@@ -81,11 +84,14 @@ class MentorList extends StatelessWidget {
     required this.size,
     required this.mentorId,
     required this.mentorName,
+    this.rating,
+    this.expertise,
+    this.yoe,
   });
 
   final Size size;
-  final String mentorId;
-  final String mentorName;
+  final String mentorId, mentorName;
+  final String? rating, expertise, yoe;
 
   @override
   Widget build(BuildContext context) {
@@ -125,8 +131,8 @@ class MentorList extends StatelessWidget {
                     children: [
                       Icon(Icons.star, color: AppColors.yellow, size: 25.sp),
                       5.horizontalSpace,
-                      const InAppText(
-                        text: '4.8',
+                      InAppText(
+                        text: rating ?? '4.8',
                         size: 16,
                         fontweight: FontWeight.w500,
                       ),
@@ -140,14 +146,17 @@ class MentorList extends StatelessWidget {
                 children: [
                   InAppText(
                     text: mentorName,
-                    fontweight: FontWeight.w500,
+                    fontweight: FontWeight.w700,
                     size: 20,
                   ),
                   Row(
                     children: [
-                      const InAppText(text: 'Graphic Designer', size: 18),
+                      InAppText(
+                        text: expertise ?? 'Graphic Designer',
+                        size: 18,
+                      ),
                       SizedBox(width: size.width * 0.02),
-                      const InAppText(text: '4yrs Exp.', size: 18),
+                      InAppText(text: "$yoe exp.", size: 18),
                     ],
                   ),
                   SizedBox(height: size.width * 0.01),
