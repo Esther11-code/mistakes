@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:mentorverse.app</string>
+    </array>
+	<key>NSCameraUsageDescription</key>
+    <string>We need access to your camera to take profile pictures</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library to select profile pictures</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need access to save photos to your library</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -45,5 +55,18 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	   <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>io.supabase.mentorverse</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>io.supabase.mentorverse</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

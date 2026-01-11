@@ -1,114 +1,91 @@
-class ChatMessage {
+class MessageModel {
   final String id;
+  final String conversationId;
+  final String senderId;
+  final String receiverId;
   final String message;
-  final bool isSent;
-  final String time;
-  final bool isRead;
   final DateTime timestamp;
+  final bool isRead;
   final MessageType type;
-  final String? imageUrl;
-  final String? fileUrl;
+  final String? mediaUrl;
   final String? fileName;
 
-  ChatMessage({
-    String? id,
+  MessageModel({
+    required this.id,
+    required this.conversationId,
+    required this.senderId,
+    required this.receiverId,
     required this.message,
-    required this.isSent,
-    required this.time,
+    required this.timestamp,
     this.isRead = false,
-    DateTime? timestamp,
     this.type = MessageType.text,
-    this.imageUrl,
-    this.fileUrl,
+    this.mediaUrl,
     this.fileName,
-  })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        timestamp = timestamp ?? DateTime.now();
+  });
 
-  // Copy with method
-  ChatMessage copyWith({
-    String? id,
-    String? message,
-    bool? isSent,
-    String? time,
-    bool? isRead,
-    DateTime? timestamp,
-    MessageType? type,
-    String? imageUrl,
-    String? fileUrl,
-    String? fileName,
-  }) {
-    return ChatMessage(
-      id: id ?? this.id,
-      message: message ?? this.message,
-      isSent: isSent ?? this.isSent,
-      time: time ?? this.time,
-      isRead: isRead ?? this.isRead,
-      timestamp: timestamp ?? this.timestamp,
-      type: type ?? this.type,
-      imageUrl: imageUrl ?? this.imageUrl,
-      fileUrl: fileUrl ?? this.fileUrl,
-      fileName: fileName ?? this.fileName,
-    );
-  }
-
-  // From JSON
-  factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    return ChatMessage(
-      id: json['id'] as String?,
-      message: json['message'] as String,
-      isSent: json['isSent'] as bool,
-      time: json['time'] as String,
-      isRead: json['isRead'] as bool? ?? false,
-      timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'] as String)
-          : null,
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      id: json['id'],
+      conversationId: json['conversation_id'],
+      senderId: json['sender_id'],
+      receiverId: json['receiver_id'],
+      message: json['message'],
+      timestamp: DateTime.parse(json['timestamp']),
+      isRead: json['is_read'] ?? false,
       type: MessageType.values.firstWhere(
-        (e) => e.toString() == 'MessageType.${json['type']}',
+        (e) => e.toString().split('.').last == json['type'],
         orElse: () => MessageType.text,
       ),
-      imageUrl: json['imageUrl'] as String?,
-      fileUrl: json['fileUrl'] as String?,
-      fileName: json['fileName'] as String?,
+      mediaUrl: json['media_url'],
+      fileName: json['file_name'],
     );
   }
 
-  // To JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'conversation_id': conversationId,
+      'sender_id': senderId,
+      'receiver_id': receiverId,
       'message': message,
-      'isSent': isSent,
-      'time': time,
-      'isRead': isRead,
       'timestamp': timestamp.toIso8601String(),
+      'is_read': isRead,
       'type': type.toString().split('.').last,
-      'imageUrl': imageUrl,
-      'fileUrl': fileUrl,
-      'fileName': fileName,
+      'media_url': mediaUrl,
+      'file_name': fileName,
     };
   }
 
-  @override
-  String toString() {
-    return 'ChatMessage(id: $id, message: $message, isSent: $isSent, time: $time, isRead: $isRead)';
+  MessageModel copyWith({
+    String? id,
+    String? conversationId,
+    String? senderId,
+    String? receiverId,
+    String? message,
+    DateTime? timestamp,
+    bool? isRead,
+    MessageType? type,
+    String? mediaUrl,
+    String? fileName,
+  }) {
+    return MessageModel(
+      id: id ?? this.id,
+      conversationId: conversationId ?? this.conversationId,
+      senderId: senderId ?? this.senderId,
+      receiverId: receiverId ?? this.receiverId,
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      isRead: isRead ?? this.isRead,
+      type: type ?? this.type,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      fileName: fileName ?? this.fileName,
+    );
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is ChatMessage && other.id == id;
-  }
-
-  @override
-  int get hashCode => id.hashCode;
 }
 
-// Message Type Enum
 enum MessageType {
   text,
   image,
   file,
   location,
-  audio,
-  video,
 }

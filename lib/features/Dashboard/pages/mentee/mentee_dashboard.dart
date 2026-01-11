@@ -206,7 +206,7 @@ class MenteeDashboard extends StatelessWidget {
                         label: "Messages",
                         color: Colors.blue.shade400,
                         onTap: () {
-                          Navigator.pushNamed(context, Routename.chatSetup);
+                          Navigator.pushNamed(context, Routename.messageList);
                         },
                       ),
                       DashboardOptionCard(
@@ -514,7 +514,10 @@ class MenteeDashboard extends StatelessWidget {
                             } else if (index == 4) {
                               Navigator.pushNamed(context, Routename.goalSetUp);
                             } else if (index == 1) {
-                              Navigator.pushNamed(context, Routename.chat);
+                              Navigator.pushNamed(
+                                context,
+                                Routename.menteeChat,
+                              );
                             } else {
                               Navigator.pushNamed(
                                 context,

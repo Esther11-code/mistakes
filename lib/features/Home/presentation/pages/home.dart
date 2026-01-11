@@ -127,17 +127,7 @@ class MentorList extends StatelessWidget {
                       height: size.height * 0.08,
                     ),
                   ),
-                  Row(
-                    children: [
-                      Icon(Icons.star, color: AppColors.yellow, size: 25.sp),
-                      5.horizontalSpace,
-                      InAppText(
-                        text: rating ?? '4.8',
-                        size: 16,
-                        fontweight: FontWeight.w500,
-                      ),
-                    ],
-                  ),
+              
                 ],
               ),
               SizedBox(width: size.width * 0.009),

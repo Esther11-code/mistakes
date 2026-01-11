@@ -37,7 +37,7 @@ class MenteeHomeState extends State<MenteeHome> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-
+    final watchHomeCubit = context.watch<HomeCubit>();
     return AppScaffold(
       body: BlocListener<HomeCubit, HomeState>(
         listener: (context, state) {
@@ -215,26 +215,66 @@ class MenteeHomeState extends State<MenteeHome> {
                                 size: size,
                                 mentorId: mentor.id ?? "0",
                                 mentorName: mentor.name ?? "rey",
-                                rating: mentor.rating.toString(),
+
                                 expertise: mentor.expertise ?? "Expertise",
-                                yoe: mentor.yearsOfExperience.toString(),
+                                yoe: mentor.yearsExperience.toString(),
                               );
                             }).toList(),
                           );
                         }
-                        return Column(
-                          children: List.generate(
-                            5,
-                            (index) => MentorList(
-                              size: size,
-                              mentorId: 'mentor$index',
-                              mentorName: 'Mentor Name $index',
-                              rating: '4.5',
-                              expertise: 'Expertise $index',
-                              yoe: 'YOE $index',
-                            ),
-                          ),
-                        );
+                        return watchHomeCubit.getMentors().isEmpty
+                            ? Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(size.height * 0.05),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.no_accounts,
+                                        size: 70.sp,
+                                        color: AppColors.grey.withAlpha(50),
+                                      ),
+                                      SizedBox(height: size.height * 0.01),
+                                      InAppText(
+                                        text: "No mentors available",
+                                        size: 20,
+                                        fontweight: FontWeight.w600,
+                                        color: AppColors.lightblack,
+                                      ),
+                                      InAppText(
+                                        text: "Please try again later",
+
+                                        color: AppColors.lightblack,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                children: List.generate(
+                                  watchHomeCubit.getMentors().length,
+                                  (index) => MentorList(
+                                    size: size,
+                                    mentorId:
+                                        watchHomeCubit.getMentors()[index].id ??
+                                        'mentor$index',
+                                    mentorName:
+                                        watchHomeCubit
+                                            .getMentors()[index]
+                                            .name ??
+                                        'Mentor $index',
+
+                                    expertise:
+                                        watchHomeCubit
+                                            .getMentors()[index]
+                                            .expertise ??
+                                        'Expertise $index',
+                                    yoe: watchHomeCubit
+                                        .getMentors()[index]
+                                        .yearsExperience
+                                        .toString(),
+                                  ),
+                                ),
+                              );
                       },
                     ),
                   ],

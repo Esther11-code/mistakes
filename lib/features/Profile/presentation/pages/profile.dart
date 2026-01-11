@@ -14,7 +14,7 @@ class ProfileSetUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthenticationCubit>().user.role;
-    return user == 'Mentor' ? const MentorAccount() : const MenteeAccount();
+    return user == 'mentor' ? const MentorAccount() : const MenteeAccount();
   }
 }
 

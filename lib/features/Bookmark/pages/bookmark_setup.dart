@@ -10,7 +10,7 @@ class BookmarkSetup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return watchAuthCubit.user.role == "Mentor"
+    return watchAuthCubit.user.role == "mentor"
         ? const MentorshipRequest()
         : const Bookmark();
   }

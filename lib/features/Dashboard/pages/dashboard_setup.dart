@@ -16,7 +16,7 @@ class DashboardSetup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return watchAuthCubit.user.role == "Mentor"
+    return watchAuthCubit.user.role == "mentor"
         ? const MentorDashboard()
         : const MenteeDashboard();
   }
@@ -44,7 +44,7 @@ class DashboardOptions extends StatelessWidget {
       onTap:
           onTap ??
           () {
-            Navigator.pushNamed(context, Routename.chat);
+            Navigator.pushNamed(context, Routename.menteeChat);
           },
       shadowcolour: AppColors.lightgrey.withAlpha(100),
       padding: EdgeInsets.symmetric(

@@ -16,7 +16,7 @@ class GoalSetup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return watchAuthCubit.user.role == "Mentee"
+    return watchAuthCubit.user.role == "mentee"
         ? const MenteeGoal()
         : const MenteeGoal();
   }

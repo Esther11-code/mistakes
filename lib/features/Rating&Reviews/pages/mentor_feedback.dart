@@ -93,20 +93,22 @@ class MentorReview extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: List.generate(
-                            watchGoalCubit.goals.length,
+                            watchGoalCubit.goalFilterOptions.length,
                             (int index) => AppshadowContainer(
                               color: watchGoalCubit.selectedGoalIndex == index
                                   ? AppColors.filledColor
                                   : Colors.transparent,
                               onTap: () {
-                                context.read<GoalCubit>().changeGoal(index);
+                                context.read<GoalCubit>().changeGoalFilter(
+                                  index,
+                                );
                               },
                               padding: EdgeInsets.symmetric(
                                 vertical: size.height * 0.015,
                                 horizontal: size.width * 0.04,
                               ),
                               child: InAppText(
-                                text: watchGoalCubit.goals[index],
+                                text: watchGoalCubit.goalFilterOptions[index],
                                 color: watchGoalCubit.selectedGoalIndex == index
                                     ? AppColors.white
                                     : AppColors.grey,

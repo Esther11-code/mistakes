@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mistakes/config/detail/custom_page_route.dart';
+import 'package:mistakes/features/Authentication/presentation/pages/add_details.dart';
+import 'package:mistakes/features/Authentication/presentation/pages/forget_password.dart';
 import 'package:mistakes/features/Chat/presentation/pages/chat_setup.dart';
 import 'package:mistakes/features/Chat/presentation/pages/mentee/chat.dart';
+import 'package:mistakes/features/Chat/presentation/pages/mentor/mentor_chat.dart';
+import 'package:mistakes/features/Chat/presentation/pages/message_list.dart';
 import 'package:mistakes/features/Dashboard/pages/mentee/mentee_dashboard.dart';
 import 'package:mistakes/features/Dashboard/pages/mentee/shared_resources.dart';
 import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
 import 'package:mistakes/features/Goal/pages/Goals/goal_setup.dart';
+import 'package:mistakes/features/Home/data/remote/home_repo.dart';
 import 'package:mistakes/features/Home/presentation/pages/booking_success.dart';
 import 'package:mistakes/features/Home/presentation/pages/bottom_nav.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,8 +96,10 @@ class AppRoute {
         return CustomPageRoute(child: const NotificationPage());
       case Routename.goalSetUp:
         return CustomPageRoute(child: const GoalSetup());
-      case Routename.chat:
-        return CustomPageRoute(child: const MenteeChatPage(userName: 'Esther'));
+      case Routename.menteeChat:
+        return CustomPageRoute(child: const MenteeChatPage());
+      case Routename.mentorChat:
+        return CustomPageRoute(child: const MentorChatPage());
       case Routename.profileSetup:
         return CustomPageRoute(child: const ProfileSetUp());
       case Routename.chatSetup:
@@ -101,6 +108,8 @@ class AppRoute {
         return CustomPageRoute(child: const DashboardSetup());
       case Routename.homeSetup:
         return CustomPageRoute(child: const HomeSetup());
+      case Routename.conversationList:
+        return CustomPageRoute(child: const MessageListPage());
 
       case Routename.menteeAccount:
         return CustomPageRoute(child: const MenteeAccount());
@@ -153,12 +162,14 @@ class AppRoute {
         return CustomPageRoute(child: const AchievementHistory());
       case Routename.sharedResources:
         return CustomPageRoute(child: const SharedResources());
-      // case Routename.progressDashboard:
-      //   return CustomPageRoute(child: const ProgressDashboard());
+      case Routename.addDetails:
+        return CustomPageRoute(child: const AddDetails());
+      case Routename.forgotPassword:
+        return CustomPageRoute(child: const ForgotPassword());
       case Routename.bottomNav:
         return CustomPageRoute(
           child: BlocProvider(
-            create: (_) => HomeCubit(),
+            create: (_) => HomeCubit(HomeRepo()),
             child: const BottomNav(),
           ),
         );

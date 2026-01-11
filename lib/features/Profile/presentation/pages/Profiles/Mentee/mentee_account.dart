@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_account.dart';
 import 'package:mistakes/features/Profile/presentation/pages/profile.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -8,10 +12,65 @@ import '../../../../../../constants/utils/app_colors.dart';
 
 class MenteeAccount extends StatelessWidget {
   const MenteeAccount({super.key});
+  void showImagePicker(BuildContext context) {
+    final readAuthCubit = context.read<AuthenticationCubit>();
+    final size = MediaQuery.sizeOf(context);
+
+    showModalBottomSheet(
+      backgroundColor: AppColors.white,
+      barrierColor: Colors.transparent,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      builder: (BuildContext sheetContext) {
+        return Container(
+          color: AppColors.white,
+          padding: EdgeInsets.all(size.width * 0.04),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.camera_alt, color: AppColors.blue),
+                title: InAppText(
+                  text: 'Take Photo',
+                  size: 18,
+                  color: AppColors.blue,
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await Future.delayed(Duration(milliseconds: 300));
+                  if (context.mounted) {
+                    await readAuthCubit.pickImage(context, ImageSource.camera);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library, color: AppColors.blue),
+                title: InAppText(
+                  text: 'Choose from Gallery',
+                  size: 18,
+                  color: AppColors.lightblack,
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await Future.delayed(Duration(milliseconds: 300));
+                  if (context.mounted) {
+                    await readAuthCubit.pickImage(context, ImageSource.gallery);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final watchAuthcubit = context.watch<AuthenticationCubit>();
     return AppScaffold(
       color: AppColors.background,
       body: Column(
@@ -84,6 +143,9 @@ class MenteeAccount extends StatelessWidget {
                                         label: "Edit Interests",
                                         color: Colors.purple.shade400,
                                         onTap: () {
+                                          context
+                                              .read<GoalCubit>()
+                                              .loadInterests();
                                           Navigator.pushNamed(
                                             context,
                                             Routename.editInterests,
@@ -217,8 +279,28 @@ class MenteeAccount extends StatelessWidget {
                                                 ),
                                                 Expanded(
                                                   child: AppButton(
+                                                    isLoading:
+                                                        context
+                                                                .watch<
+                                                                  AuthenticationCubit
+                                                                >()
+                                                                .state
+                                                            is AuthLoadingState,
                                                     onTap: () {
-                                                      // Log out logic
+                                                      final readAuthCubit = context
+                                                          .read<
+                                                            AuthenticationCubit
+                                                          >();
+                                                      Future.delayed(
+                                                        const Duration(
+                                                          milliseconds: 500,
+                                                        ),
+                                                        () {
+                                                          readAuthCubit
+                                                              .logout();
+                                                        },
+                                                      );
+
                                                       Navigator.pop(context);
                                                     },
                                                     label: 'Log Out',
@@ -291,13 +373,15 @@ class MenteeAccount extends StatelessWidget {
                         children: [
                           SizedBox(height: size.height * 0.04),
                           InAppText(
-                            text: "Esther Enyia",
+                            text: watchAuthcubit.user.name ?? "Esther Enyia",
                             size: 22,
                             fontweight: FontWeight.w700,
                           ),
                           SizedBox(height: size.height * 0.01),
                           InAppText(
-                            text: "esther.eny@email.com",
+                            text:
+                                watchAuthcubit.user.email ??
+                                "esther.eny@email.com",
                             color: AppColors.lightblack,
                             size: 16,
                           ),
@@ -359,11 +443,20 @@ class MenteeAccount extends StatelessWidget {
                               shape: BoxShape.circle,
                               color: AppColors.white,
                             ),
-                            child: Icon(
-                              Icons.person,
-                              size: size.height * 0.06,
-                              color: AppColors.background,
-                            ),
+                            child: watchAuthcubit.user.profilePhotoUrl != null
+                                ? AppNetwokImage(
+                                    height: size.height * 0.15,
+                                    width: size.width * 0.15,
+                                    imageUrl:
+                                        watchAuthcubit.user.profilePhotoUrl ??
+                                        "",
+                                    isCircular: true,
+                                  )
+                                : Icon(
+                                    Icons.person,
+                                    size: size.height * 0.06,
+                                    color: AppColors.background,
+                                  ),
                           ),
                         ),
                         Positioned(

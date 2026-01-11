@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/config/detail/route_name.dart';
-import 'package:mistakes/features/Goal/pages/Goals/progress.dart';
 import '../../../../../../constants/utils/app_colors.dart';
 import '../../../../../../global widgets/export.dart';
 
@@ -492,6 +491,22 @@ class GoalChip extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+class HorizontalDivider extends StatelessWidget {
+  const HorizontalDivider({super.key, required this.size, this.width, this.height, this.color});
+
+  final Size size;
+  final double? width,height;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width:width?? size.width * 0.004,
+      height:height?? size.height * 0.05,
+      color:color?? AppColors.white.withAlpha(70),
     );
   }
 }

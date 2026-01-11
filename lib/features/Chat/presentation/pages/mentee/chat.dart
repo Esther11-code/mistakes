@@ -1,221 +1,332 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mistakes/config/detail/route_name.dart';
+
 import 'package:mistakes/constants/utils/app_colors.dart';
-import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Chat/data/models/message_model.dart';
+import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-import '../../../../Home/data/local/images/home_image.dart';
-
-class MenteeChatPage extends StatefulWidget {
-  final String userName;
-  final String? userAvatar;
-  final bool isOnline;
-
-  const MenteeChatPage({
-    super.key,
-    required this.userName,
-    this.userAvatar = HomeImages.avatar,
-    this.isOnline = false,
-  });
-
-  @override
-  State<MenteeChatPage> createState() => _MenteeChatPageState();
-}
-
-class _MenteeChatPageState extends State<MenteeChatPage> {
-  final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode();
-
-  List<ChatMessage> messages = [
-    ChatMessage(
-      message: "Hey! How are you doing?",
-      isSent: false,
-      time: "10:30 AM",
-      isRead: true,
-    ),
-    ChatMessage(
-      message: "I'm doing great! Just finished that project we talked about",
-      isSent: true,
-      time: "10:32 AM",
-      isRead: true,
-    ),
-    ChatMessage(
-      message: "That's awesome! How did it turn out?",
-      isSent: false,
-      time: "10:33 AM",
-      isRead: true,
-    ),
-    ChatMessage(
-      message: "Really well! The client loved it 😊",
-      isSent: true,
-      time: "10:35 AM",
-      isRead: true,
-    ),
-    ChatMessage(
-      message: "I'm so happy to hear that! You worked really hard on it",
-      isSent: false,
-      time: "10:36 AM",
-      isRead: true,
-    ),
-  ];
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
-      setState(() {
-        messages.add(
-          ChatMessage(
-            message: _messageController.text.trim(),
-            isSent: true,
-            time: _formatTime(DateTime.now()),
-            isRead: false,
-          ),
-        );
-      });
-      _messageController.clear();
-      _scrollToBottom();
-    }
-  }
-
-  void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  String _formatTime(DateTime time) {
-    final hour = time.hour > 12 ? time.hour - 12 : time.hour;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.hour >= 12 ? 'PM' : 'AM';
-    return '$hour:$minute $period';
-  }
+class MenteeChatPage extends StatelessWidget {
+  const MenteeChatPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final readChatCubit = context.read<ChatCubit>();
+    final watchChatCubit = context.watch<ChatCubit>();
 
-    return AppScaffold(
-      body: Column(
-        children: [
-          // App Bar
-          _buildAppBar(
-            color: AppColors.white,
-            shadowColor: AppColors.grey.withAlpha(50),
-            iconColor: AppColors.filledColor,
-          ),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final showAvatar =
-                    index == messages.length - 1 ||
-                    messages[index + 1].isSent != message.isSent;
-                return Column(
-                  children: [_buildMessageBubble(message, showAvatar)],
-                );
-              },
+    return BlocListener<ChatCubit, ChatState>(
+      listener: (context, state) {
+        if (state is ChatErrorState) {
+          Fluttertoast.showToast(
+            msg: "Failed to load messages",
+            gravity: ToastGravity.TOP,
+            backgroundColor: AppColors.errorColor,
+          );
+        }
+      },
+      child: BlocBuilder<ChatCubit, ChatState>(
+        builder: (context, state) {
+          return AppScaffold(
+            isloading:
+                state is ChatLoadingState &&
+                watchChatCubit.currentChatMessages.isEmpty,
+            body: Column(
+              children: [
+                ChatAppBar(
+                  userName: watchChatCubit.selectedUserName,
+                  userAvatar: watchChatCubit.selectedUserAvatar,
+                  isOnline: watchChatCubit.selectedUserIsOnline,
+                  size: size,
+                ),
+
+                Expanded(
+                  child: watchChatCubit.currentChatMessages.isEmpty
+                      ? ChatEmptyState(size: size)
+                      : MessagesList(
+                          size: size,
+                          messages: watchChatCubit.currentChatMessages,
+                          scrollController: watchChatCubit.scrollController,
+                          currentUserId: watchChatCubit.user.id!,
+                        ),
+                ),
+
+                ChatMessageInput(size: size),
+              ],
             ),
-          ),
-          _buildMessageInput(),
-        ],
+          );
+        },
       ),
     );
   }
+}
 
-  _buildAppBar({
-    required Color color,
-    required Color shadowColor,
-    required Color iconColor,
-  }) {
-    final size = MediaQuery.sizeOf(context);
+class ChatAppBar extends StatelessWidget {
+  final String userName;
+  final String? userAvatar;
+  final bool isOnline;
+  final Size size;
+
+  const ChatAppBar({
+    super.key,
+    required this.userName,
+    this.userAvatar,
+    required this.isOnline,
+    required this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final readChatCubit = context.read<ChatCubit>();
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.01,
+      ),
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: iconColor),
-            onPressed: () => Navigator.pushNamed(context, Routename.bottomNav),
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.blue),
+            onPressed: () => Navigator.pop(context),
           ),
-          CircleAvatar(
-            radius: size.width * 0.07,
-            backgroundColor: AppColors.filledColor,
-            backgroundImage: widget.userAvatar!.isNotEmpty
-                ? NetworkImage(widget.userAvatar!)
-                : null,
-            child: widget.userAvatar!.isEmpty
-                ? Icon(Icons.person, color: AppColors.white, size: 24)
-                : null,
+          ChatUserAvatar(
+            userName: userName,
+            userAvatar: userAvatar,
+            isOnline: isOnline,
+            size: size,
+            initials: readChatCubit.getInitials(userName),
           ),
-          SizedBox(width: size.width * 0.04),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InAppText(
-                text: widget.userName,
-                size: 20,
-                fontweight: FontWeight.w600,
-                color: AppColors.blue,
-              ),
-            ],
+          SizedBox(width: size.width * 0.03),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InAppText(
+                  text: userName,
+                  size: 18,
+                  fontweight: FontWeight.w600,
+                  color: AppColors.blue,
+                ),
+                InAppText(
+                  text: isOnline ? 'Online' : 'Offline',
+                  size: 12,
+                  color: isOnline ? Colors.green : AppColors.grey,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.more_vert, color: AppColors.blue),
+            onPressed: () {
+              // Show options menu
+            },
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMessageBubble(ChatMessage message, bool showAvatar) {
+class ChatUserAvatar extends StatelessWidget {
+  final String userName;
+  final String? userAvatar;
+  final bool isOnline;
+  final Size size;
+  final String initials;
+
+  const ChatUserAvatar({
+    super.key,
+    required this.userName,
+    this.userAvatar,
+    required this.isOnline,
+    required this.size,
+    required this.initials,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          width: size.width * 0.12,
+          height: size.width * 0.12,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.blue.withAlpha(30),
+          ),
+          child: userAvatar != null
+              ? ClipOval(
+                  child: Image.network(
+                    userAvatar!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Text(
+                          initials,
+                          style: GoogleFonts.ptSans(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.blue,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : Center(
+                  child: Text(
+                    initials,
+                    style: GoogleFonts.ptSans(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.blue,
+                    ),
+                  ),
+                ),
+        ),
+        if (isOnline)
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.white, width: 2),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class ChatEmptyState extends StatelessWidget {
+  final Size size;
+
+  const ChatEmptyState({super.key, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: AppColors.grey.withAlpha(100),
+          ),
+          SizedBox(height: size.height * 0.02),
+          InAppText(text: "No messages yet", size: 18, color: AppColors.grey),
+          SizedBox(height: size.height * 0.01),
+          InAppText(
+            text: "Start the conversation!",
+            size: 14,
+            color: AppColors.grey,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MessagesList extends StatelessWidget {
+  final Size size;
+  final List<MessageModel> messages;
+  final ScrollController scrollController;
+  final String currentUserId;
+
+  const MessagesList({
+    super.key,
+    required this.size,
+    required this.messages,
+    required this.scrollController,
+    required this.currentUserId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final readChatCubit = context.read<ChatCubit>();
+
+    return ListView.builder(
+      controller: scrollController,
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.02,
+      ),
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final message = messages[index];
+        final isMyMessage = readChatCubit.isMyMessage(message);
+
+        final showAvatar =
+            index == messages.length - 1 ||
+            (index < messages.length - 1 &&
+                readChatCubit.isMyMessage(messages[index + 1]) != isMyMessage);
+
+        return MessageBubble(
+          message: message,
+          isMyMessage: isMyMessage,
+          showAvatar: showAvatar,
+          size: size,
+          time: readChatCubit.formatTime(message.timestamp),
+        );
+      },
+    );
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+  final MessageModel message;
+  final bool isMyMessage;
+  final bool showAvatar;
+  final Size size;
+  final String time;
+
+  const MessageBubble({
+    super.key,
+    required this.message,
+    required this.isMyMessage,
+    required this.showAvatar,
+    required this.size,
+    required this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.only(bottom: size.height * 0.015),
       child: Row(
-        mainAxisAlignment: message.isSent
+        mainAxisAlignment: isMyMessage
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!message.isSent && showAvatar)
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.filledColor,
-              child: Icon(Icons.person, color: AppColors.white, size: 18),
-            ),
-          if (!message.isSent && showAvatar) SizedBox(width: 8.w),
-          if (!message.isSent && !showAvatar) SizedBox(width: 40.w),
+          if (!isMyMessage && showAvatar)
+            MessageAvatar(size: size, color: AppColors.filledColor),
+          if (!isMyMessage && showAvatar) SizedBox(width: size.width * 0.02),
+          if (!isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
+
           Flexible(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(
+                horizontal: size.width * 0.04,
+                vertical: size.height * 0.015,
+              ),
               decoration: BoxDecoration(
-                gradient: message.isSent
-                    ? LinearGradient(
-                        colors: [AppColors.blue, AppColors.blue],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: message.isSent ? null : AppColors.filledColor,
+                color: isMyMessage ? AppColors.blue : AppColors.filledColor,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
-                  bottomLeft: Radius.circular(message.isSent ? 20 : 4),
-                  bottomRight: Radius.circular(message.isSent ? 4 : 20),
+                  bottomLeft: Radius.circular(isMyMessage ? 20 : 4),
+                  bottomRight: Radius.circular(isMyMessage ? 4 : 20),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -228,23 +339,27 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InAppText(
-                    text: message.message,
-
-                    color: AppColors.white,
-                    height: 1.4,
+                  Text(
+                    message.message,
+                    style: GoogleFonts.ptSans(
+                      fontSize: 15.sp,
+                      color: AppColors.white,
+                      height: 1.4,
+                    ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: size.height * 0.005),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      InAppText(
-                        text: message.time,
-                        size: 15,
-                        color: AppColors.white.withAlpha(100),
+                      Text(
+                        time,
+                        style: GoogleFonts.ptSans(
+                          fontSize: 11.sp,
+                          color: AppColors.white.withAlpha(80),
+                        ),
                       ),
-                      if (message.isSent) ...[
-                        SizedBox(width: 4.w),
+                      if (isMyMessage) ...[
+                        SizedBox(width: size.width * 0.01),
                         Icon(
                           message.isRead
                               ? Icons.done_all_rounded
@@ -261,23 +376,48 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
               ),
             ),
           ),
-          if (message.isSent && showAvatar) SizedBox(width: 8.w),
-          if (message.isSent && showAvatar)
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: AppColors.blue,
-              child: Icon(Icons.person, color: AppColors.white, size: 18),
-            ),
-          if (message.isSent && !showAvatar) SizedBox(width: 40.w),
+
+          if (isMyMessage && showAvatar) SizedBox(width: size.width * 0.02),
+          if (isMyMessage && showAvatar)
+            MessageAvatar(size: size, color: AppColors.blue),
+          if (isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMessageInput() {
-    final size = MediaQuery.sizeOf(context);
+class MessageAvatar extends StatelessWidget {
+  final Size size;
+  final Color color;
+
+  const MessageAvatar({super.key, required this.size, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: color,
+      child: Icon(Icons.person, color: AppColors.white, size: 18),
+    );
+  }
+}
+
+class ChatMessageInput extends StatelessWidget {
+  final Size size;
+
+  const ChatMessageInput({super.key, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final readChatCubit = context.read<ChatCubit>();
+    final watchChatCubit = context.watch<ChatCubit>();
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.015,
+      ),
       decoration: BoxDecoration(
         color: AppColors.white,
         boxShadow: [
@@ -291,50 +431,41 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
       child: SafeArea(
         child: Row(
           children: [
-            Container(
-              width: size.width * 0.12,
-              height: size.width * 0.12,
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: Icon(Icons.add, color: AppColors.white, size: 25.sp),
-                onPressed: () {
-                  _showAttachmentOptions();
-                },
-                padding: EdgeInsets.zero,
-              ),
+            AttachmentButton(
+              size: size,
+              onPressed: () {
+                showAttachmentOptions(context, size);
+              },
             ),
-            SizedBox(width: 12.w),
+            SizedBox(width: size.width * 0.03),
+
             Expanded(
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.filledColor,
-                    width: size.width * 0.005,
-                  ),
-                  borderRadius: BorderRadius.circular(size.width * 0.1),
+                  border: Border.all(color: AppColors.filledColor, width: 1),
+                  borderRadius: BorderRadius.circular(25),
                 ),
                 child: Row(
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: _messageController,
-                        focusNode: _focusNode,
+                        controller: watchChatCubit.messageController,
+                        focusNode: watchChatCubit.focusNode,
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
                           hintStyle: GoogleFonts.ptSans(
                             color: AppColors.filledColor,
-                            fontSize: 20,
+                            fontSize: 15.sp,
                           ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.015,
+                          ),
                         ),
                         style: GoogleFonts.ptSans(
                           color: AppColors.blue,
-                          fontSize: 20,
+                          fontSize: 15.sp,
                         ),
                         maxLines: null,
                         textCapitalization: TextCapitalization.sentences,
@@ -346,7 +477,7 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                         color: AppColors.filledColor,
                       ),
                       onPressed: () {
-                        // Add emoji picker
+                        // TODO: Add emoji picker
                       },
                       padding: EdgeInsets.zero,
                       constraints: BoxConstraints(),
@@ -355,101 +486,171 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
                 ),
               ),
             ),
-            SizedBox(width: 12.w),
-            // Send Button
-            GestureDetector(
-              onTap: _sendMessage,
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.blue.withAlpha(30),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.send_rounded,
-                  color: AppColors.white,
-                  size: 20,
-                ),
-              ),
+
+            SizedBox(width: size.width * 0.03),
+
+            SendMessageButton(
+              size: size,
+              onPressed: () => readChatCubit.sendMessage(),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  void _showAttachmentOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+class AttachmentButton extends StatelessWidget {
+  final Size size;
+  final VoidCallback onPressed;
+
+  const AttachmentButton({
+    super.key,
+    required this.size,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size.width * 0.11,
+      height: size.width * 0.11,
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        icon: Icon(Icons.add, color: AppColors.white, size: 22),
+        onPressed: onPressed,
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+}
+
+class SendMessageButton extends StatelessWidget {
+  final Size size;
+  final VoidCallback onPressed;
+
+  const SendMessageButton({
+    super.key,
+    required this.size,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: size.width * 0.11,
+        height: size.width * 0.11,
         decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.inactive,
-                borderRadius: BorderRadius.circular(2),
-              ),
+          color: AppColors.background,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.blue.withAlpha(30),
+              blurRadius: 8,
+              offset: Offset(0, 4),
             ),
-            SizedBox(height: 24.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildAttachmentOption(
-                  Icons.image,
-                  'Gallery',
-                  Colors.purple,
-                  () {},
-                ),
-                _buildAttachmentOption(
-                  Icons.camera_alt,
-                  'Camera',
-                  Colors.pink,
-                  () {},
-                ),
-                _buildAttachmentOption(
-                  Icons.insert_drive_file,
-                  'Document',
-                  Colors.blue,
-                  () {},
-                ),
-                _buildAttachmentOption(
-                  Icons.location_on,
-                  'Location',
-                  Colors.green,
-                  () {},
-                ),
-              ],
-            ),
-            SizedBox(height: 20.h),
           ],
         ),
+        child: Icon(Icons.send_rounded, color: AppColors.white, size: 20),
       ),
     );
   }
+}
 
-  Widget _buildAttachmentOption(
-    IconData icon,
-    String label,
-    Color color,
-    VoidCallback onTap,
-  ) {
+void showAttachmentOptions(BuildContext context, Size size) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.05,
+        vertical: size.height * 0.03,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.inactive,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: size.height * 0.03),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              AttachmentOption(
+                icon: Icons.image,
+                label: 'Gallery',
+                color: Colors.purple,
+                onTap: () {
+                  Navigator.pop(context);
+                  // TODO: Pick image from gallery
+                },
+              ),
+              AttachmentOption(
+                icon: Icons.camera_alt,
+                label: 'Camera',
+                color: Colors.pink,
+                onTap: () {
+                  Navigator.pop(context);
+                  // TODO: Take photo with camera
+                },
+              ),
+              AttachmentOption(
+                icon: Icons.insert_drive_file,
+                label: 'Document',
+                color: Colors.blue,
+                onTap: () {
+                  Navigator.pop(context);
+                  // TODO: Pick document
+                },
+              ),
+              AttachmentOption(
+                icon: Icons.location_on,
+                label: 'Location',
+                color: Colors.green,
+                onTap: () {
+                  Navigator.pop(context);
+                  // TODO: Share location
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: size.height * 0.02),
+        ],
+      ),
+    ),
+  );
+}
+
+class AttachmentOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const AttachmentOption({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -458,30 +659,15 @@ class _MenteeChatPageState extends State<MenteeChatPage> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: color.withAlpha(10),
+              color: color.withAlpha(20),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 28),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 8),
           InAppText(text: label, size: 12, color: AppColors.blue),
         ],
       ),
     );
   }
-}
-
-// Message Model
-class ChatMessage {
-  final String message;
-  final bool isSent;
-  final String time;
-  final bool isRead;
-
-  ChatMessage({
-    required this.message,
-    required this.isSent,
-    required this.time,
-    this.isRead = false,
-  });
 }

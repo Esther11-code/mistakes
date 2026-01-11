@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,23 +20,32 @@ class HomeAppbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final watchAuthCubit = context.watch<AuthenticationCubit>();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: size.width * 0.03),
       child: Row(
         children: [
           AppshadowContainer(
             onTap: () {
-              Navigator.pushNamed(context, Routename.menteeAccount);
+              Navigator.pushNamed(context, Routename.profileSetup);
             },
             radius: size.width * 0.075,
             shadowcolour: AppColors.inactive,
-            child: AppNetwokImage(
-              height: size.width * 0.12,
-              fit: BoxFit.cover,
-              width: size.width * 0.12,
-              radius: size.width * 0.075,
-              imageUrl: HomeImages.avatar,
-            ),
+            child: watchAuthCubit.user.profilePhotoUrl != null
+                ? AppNetwokImage(
+                    height: size.width * 0.15,
+                    width: size.width * 0.15,
+                    fit: BoxFit.cover,
+                    imageUrl: watchAuthCubit.user.profilePhotoUrl ?? "",
+                    isCircular: true,
+                  )
+                : AppNetwokImage(
+                    height: size.width * 0.15,
+                    width: size.width * 0.15,
+                    fit: BoxFit.cover,
+                    imageUrl: HomeImages.avatar,
+                    isCircular: true,
+                  ),
           ),
           SizedBox(width: size.width * 0.03),
           Column(

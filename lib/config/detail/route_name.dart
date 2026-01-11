@@ -1,9 +1,9 @@
-class Routename{
-  static const String splashScreen= '/splashScreen';
-  static const String onboardingOne= '/onboardingOne';
-  static const String onboardingTwo= '/onboardingTwo';
-  static const String onboardingThree= '/onboardingThree';
-  static const String home= '/home';
+class Routename {
+  static const String splashScreen = '/splashScreen';
+  static const String onboardingOne = '/onboardingOne';
+  static const String onboardingTwo = '/onboardingTwo';
+  static const String onboardingThree = '/onboardingThree';
+  static const String home = '/home';
   static const String notification = '/notification';
   static const String login = '/login';
   static const String welcome = '/welcome';
@@ -17,7 +17,10 @@ class Routename{
   static const String mentorAccount = '/mentorAccount';
   static const String menteeAccount = '/menteeAccount';
   static const String goalSetUp = '/goalSetUp';
-  static const String chat = '/chat';
+  static const String menteeChat = '/menteeChat';
+  static const String mentorChat = '/mentorChat';
+  static const String conversationList = '/conversationList';
+  static const String forgotPassword = '/forgotPassword';
 
   static const String bottomNav = '/bottomNav';
   static const String allMentors = '/allMentors';
@@ -46,4 +49,6 @@ class Routename{
   static const String mentorSettings = '/mentorSettings';
   static const String achievementHistory = '/achievementHistory';
   static const String sharedResources = '/sharedResources';
+  static const String addDetails = '/addDetails';
+  static const String messageList = '/MessageList';
 }

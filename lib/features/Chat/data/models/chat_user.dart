@@ -1,4 +1,3 @@
-// chat_user.dart
 class ChatUser {
   final String id;
   final String name;

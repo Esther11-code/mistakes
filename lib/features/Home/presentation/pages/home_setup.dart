@@ -10,6 +10,6 @@ class HomeSetup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return watchAuthCubit.user.role == "Mentor" ? MentorHome() : MenteeHome();
+    return watchAuthCubit.user.role == "mentor" ? MentorHome() : MenteeHome();
   }
 }

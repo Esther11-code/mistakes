@@ -13,34 +13,61 @@ final class AuthLoadingState extends AuthenticationState {}
 
 final class AuthLoadedState extends AuthenticationState {}
 
-final class AcctDeletedState extends AuthenticationState {}
-
-final class AuthLogoutState extends AuthenticationState {}
-
-final class AuthTokenVerifiedState extends AuthenticationState {}
-
-final class AuthRegisterState extends AuthenticationState {}
-
-final class LoginState extends AuthenticationState {}
-
-final class AuthEmailVerifiedState extends AuthenticationState {}
-
-final class AuthEmailOtpSentState extends AuthenticationState {}
-
 final class AuthRoleChangedState extends AuthenticationState {}
 
-final class InvalidOtpState extends AuthenticationState {
-  final String msg;
-  const InvalidOtpState({required this.msg});
-  @override
-  List<Object> get props => [];
-}
+final class AddDetailsLoaded extends AuthenticationState {}
 
-final class AuthTokenSentState extends AuthenticationState {}
+final class AddDetailsSuccess extends AuthenticationState {}
 
+final class AddDetailsSkipped extends AuthenticationState {}
+
+final class AuthLogoutState extends AuthenticationState {}
+final class AuthInterestsSavedState extends AuthenticationState {}
+
+// New states for signup/signin
+final class AuthSignUpSuccessState extends AuthenticationState {}
+
+final class AuthSignInSuccessState extends AuthenticationState {}
+
+final class AuthAutoLoginSuccessState extends AuthenticationState {}
+
+final class AuthProfileUpdatedState extends AuthenticationState {}
+
+final class AuthPasswordResetEmailSentState extends AuthenticationState {}
+
+// Error states
 final class AuthErrorState extends AuthenticationState {
   const AuthErrorState({required this.error});
   final String error;
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [error];
+}
+
+final class AddDetailsError extends AuthenticationState {
+  const AddDetailsError(this.error);
+  final String error;
+
+  @override
+  List<Object> get props => [error];
+}
+
+class PasswordResetEmailSent extends AuthenticationState {
+  final String email;
+
+  const PasswordResetEmailSent(this.email);
+
+  @override
+  List<Object> get props => [email];
+}
+
+class PasswordResetSuccess extends AuthenticationState {}
+
+class PasswordResetError extends AuthenticationState {
+  final String message;
+
+  const PasswordResetError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }
