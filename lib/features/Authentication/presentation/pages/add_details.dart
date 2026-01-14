@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
@@ -113,6 +114,7 @@ class AddDetails extends StatelessWidget {
                       // Profile Picture Section
                       BlocBuilder<AuthenticationCubit, AuthenticationState>(
                         builder: (context, state) {
+                          final isloading = state is AuthLoadingState;
                           return Stack(
                             alignment: Alignment.center,
                             children: [
@@ -135,7 +137,12 @@ class AddDetails extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     color: AppColors.white,
                                   ),
-                                  child: watchAuthCubit.profileImage != null
+                                  child: isloading
+                                      ? LoadingAnimationWidget.threeArchedCircle(
+                                          color: AppColors.blue,
+                                          size: 40.sp,
+                                        )
+                                      : watchAuthCubit.profileImage != null
                                       ? ClipOval(
                                           child: Image.file(
                                             watchAuthCubit.profileImage!,
@@ -263,7 +270,15 @@ class AddDetails extends StatelessWidget {
 
                       // Continue Button
                       AppButton(
-                        onTap: () => readAuthCubit.validateAndSubmit(context),
+                        isLoading: watchAuthCubit.state is AuthLoadingState,
+                        onTap: () {
+                          final submit = readAuthCubit.validateAndSubmit(
+                            context,
+                          );
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            submit;
+                          });
+                        },
                         width: size.width,
                         buttonColor: AppColors.blue,
                         label: 'Continue',
@@ -301,12 +316,13 @@ class ExpertiseField extends StatelessWidget {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.sizeOf(context);
     final watchAuthCubit = context.watch<AuthenticationCubit>();
+    final user = watchAuthCubit.user;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text.rich(
           TextSpan(
-            text: 'Expertise',
+            text: user.isMentor ? 'Expertise' : 'Area of Interest',
             style: GoogleFonts.ptSans(
               fontSize: 20.sp,
               fontWeight: FontWeight.w600,
@@ -332,7 +348,9 @@ class ExpertiseField extends StatelessWidget {
           color: AppColors.white,
           child: ApptextField(
             controller: watchAuthCubit.expertiseController,
-            hintText: "e.g., Senior Software Engineer",
+            hintText: user.isMentor
+                ? "e.g., Senior Software Engineer"
+                : "e.g., Junior Software Engineer",
             prefixIconn: Icon(
               Icons.work_outline,
               color: AppColors.blue,

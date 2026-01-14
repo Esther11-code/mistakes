@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
+import 'package:mistakes/features/Authentication/data/model/user_model.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Home/data/local/images/home_image.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
@@ -87,19 +90,26 @@ class MentorList extends StatelessWidget {
     this.rating,
     this.expertise,
     this.yoe,
+    this.profileImage,
   });
 
   final Size size;
   final String mentorId, mentorName;
-  final String? rating, expertise, yoe;
+  final String? rating, expertise, yoe, profileImage;
 
   @override
   Widget build(BuildContext context) {
     final watchHomeCubit = context.watch<HomeCubit>();
+    final readAuthCubit = context.read<AuthenticationCubit>();
     final readHomeCubit = context.read<HomeCubit>();
 
     return AppshadowContainer(
       onTap: () {
+        final mentor = readHomeCubit.allUsers.firstWhere(
+          (user) => user.id == mentorId,
+          orElse: () => UserModel(),
+        );
+        context.read<ProfileCubit>().setSelectedMentor(mentor);
         readHomeCubit.toggleLike(mentorId);
       },
       shadowcolour: AppColors.inactive.withAlpha(100),
@@ -117,19 +127,19 @@ class MentorList extends StatelessWidget {
         children: [
           Row(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppshadowContainer(
-                    child: Image.asset(
-                      HomeImages.avatar,
-                      height: size.height * 0.08,
+              profileImage != null
+                  ? AppNetwokImage(
+                      height: size.height * 0.07,
+                      width: size.height * 0.07,
+                      imageUrl: profileImage!,
+                      isCircular: true,
+                    )
+                  : AppshadowContainer(
+                      child: Image.asset(
+                        HomeImages.avatar,
+                        height: size.height * 0.08,
+                      ),
                     ),
-                  ),
-              
-                ],
-              ),
               SizedBox(width: size.width * 0.009),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,13 +155,22 @@ class MentorList extends StatelessWidget {
                         text: expertise ?? 'Graphic Designer',
                         size: 18,
                       ),
-                      SizedBox(width: size.width * 0.02),
-                      InAppText(text: "$yoe exp.", size: 18),
+                      SizedBox(width: size.width * 0.018),
+                      InAppText(text: "${yoe}yrs exp", size: 18),
                     ],
                   ),
                   SizedBox(height: size.width * 0.01),
                   AppButton(
                     onTap: () {
+                      final mentor = readHomeCubit.allUsers.firstWhere(
+                        (user) => user.id == mentorId,
+                        orElse: () => UserModel(),
+                      );
+                      context.read<ProfileCubit>().setSelectedMentor(mentor);
+                      context.read<ProfileCubit>().checkMatchStatus(
+                        menteeId: readAuthCubit.user.id ?? "",
+                        mentorId: mentorId,
+                      );
                       Navigator.pushNamed(context, Routename.mentorDetails);
                     },
                     buttonColor: AppColors.background,

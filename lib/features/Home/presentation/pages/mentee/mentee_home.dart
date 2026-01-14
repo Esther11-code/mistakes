@@ -155,10 +155,17 @@ class MenteeHomeState extends State<MenteeHome> {
                             },
                           ),
                           GestureDetector(
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              Routename.allMentors,
-                            ),
+                            onTap: () {
+                              context.read<HomeCubit>().searchAndFilter(
+                                role: 'mentor',
+                                reload: true,
+                              );
+
+                              Navigator.pushNamed(
+                                context,
+                                Routename.allMentors,
+                              );
+                            },
                             child: const InAppText(text: 'View All', size: 16),
                           ),
                         ],
@@ -215,9 +222,10 @@ class MenteeHomeState extends State<MenteeHome> {
                                 size: size,
                                 mentorId: mentor.id ?? "0",
                                 mentorName: mentor.name ?? "rey",
-
+                                profileImage: mentor.profilePhotoUrl,
                                 expertise: mentor.expertise ?? "Expertise",
-                                yoe: mentor.yearsExperience.toString(),
+                                yoe:
+                                    "${mentor.yearsExperience?.toString() ?? 0}",
                               );
                             }).toList(),
                           );
@@ -251,27 +259,27 @@ class MenteeHomeState extends State<MenteeHome> {
                               )
                             : Column(
                                 children: List.generate(
-                                  watchHomeCubit.getMentors().length,
+                                  watchHomeCubit.filteredUsers.length,
                                   (index) => MentorList(
                                     size: size,
                                     mentorId:
-                                        watchHomeCubit.getMentors()[index].id ??
+                                        watchHomeCubit
+                                            .filteredUsers[index]
+                                            .id ??
                                         'mentor$index',
                                     mentorName:
                                         watchHomeCubit
-                                            .getMentors()[index]
+                                            .filteredUsers[index]
                                             .name ??
                                         'Mentor $index',
 
                                     expertise:
                                         watchHomeCubit
-                                            .getMentors()[index]
+                                            .filteredUsers[index]
                                             .expertise ??
                                         'Expertise $index',
-                                    yoe: watchHomeCubit
-                                        .getMentors()[index]
-                                        .yearsExperience
-                                        .toString(),
+                                    yoe:
+                                        "${watchHomeCubit.filteredUsers[index].yearsExperience?.toString() ?? 0}",
                                   ),
                                 ),
                               );

@@ -14,7 +14,7 @@ part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   HomeRepo homeRepo;
-  
+
   HomeCubit(this.homeRepo) : super(HomeInitial());
 
   // Current user (set from AuthenticationCubit)
@@ -23,11 +23,11 @@ class HomeCubit extends Cubit<HomeState> {
   // All users loaded from database
   List<UserModel> allUsers = [];
   List<UserModel> filteredUsers = [];
-  
+
   // Available filters
   List<String> expertiseList = [];
   List<String> allSkills = [];
-  
+
   // Current filters
   String? currentSearchQuery;
   String? currentRoleFilter;
@@ -35,7 +35,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   // Bottom navigation
   int bottonnavSelectedIndex = 0;
-  
+
   final screens = [
     const HomeSetup(),
     const BookmarkSetup(),
@@ -77,23 +77,25 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       allUsers = await homeRepo.getAllUsers();
       filteredUsers = allUsers;
-      
+
       // Load filter options
       expertiseList = await homeRepo.getExpertiseList();
       allSkills = await homeRepo.getAllSkills();
-      
+
       log('✅ Loaded ${allUsers.length} users');
       log('Mentors: ${getMentors().length}');
       log('Mentees: ${getMentees().length}');
-      
-      emit(UserSearchLoadedState(
-        users: filteredUsers,
-        searchQuery: '',
-        roleFilter: null,
-        expertiseFilter: null,
-        minRating: null,
-        minExperience: null,
-      ));
+
+      emit(
+        UserSearchLoadedState(
+          users: filteredUsers,
+          searchQuery: '',
+          roleFilter: null,
+          expertiseFilter: null,
+          minRating: null,
+          minExperience: null,
+        ),
+      );
     } catch (e) {
       log('❌ Error loading users: $e');
       emit(UserSearchErrorState(e.toString()));
@@ -133,11 +135,11 @@ class HomeCubit extends Cubit<HomeState> {
         final searchQuery = query.toLowerCase();
         filtered = filtered.where((user) {
           return user.name!.toLowerCase().contains(searchQuery) ||
-                 (user.email?.toLowerCase().contains(searchQuery) ?? false) ||
-                 (user.bio?.toLowerCase().contains(searchQuery) ?? false) ||
-                 (user.expertise?.toLowerCase().contains(searchQuery) ?? false) ||
-                 (user.username?.toLowerCase().contains(searchQuery) ?? false) ||
-                 user.interests!.any((i) => i.toLowerCase().contains(searchQuery));
+              (user.email?.toLowerCase().contains(searchQuery) ?? false) ||
+              (user.bio?.toLowerCase().contains(searchQuery) ?? false) ||
+              (user.expertise?.toLowerCase().contains(searchQuery) ?? false) ||
+              (user.username?.toLowerCase().contains(searchQuery) ?? false) ||
+              user.interests!.any((i) => i.toLowerCase().contains(searchQuery));
         }).toList();
       }
 
@@ -160,13 +162,12 @@ class HomeCubit extends Cubit<HomeState> {
         }).toList();
       }
 
-   
       // Apply experience filter (mentors only)
       if (experience != null) {
         filtered = filtered.where((user) {
-          return user.isMentor && 
-                 user.yearsExperience != null && 
-                 user.yearsExperience! >= experience;
+          return user.isMentor &&
+              user.yearsExperience != null &&
+              user.yearsExperience! >= experience;
         }).toList();
       }
 
@@ -175,14 +176,16 @@ class HomeCubit extends Cubit<HomeState> {
       log('🔍 Filtered to ${filtered.length} users');
       log('Query: "$query", Role: $role, Expertise: $expertise');
 
-      emit(UserSearchLoadedState(
-        users: filtered,
-        searchQuery: query ?? '',
-        roleFilter: role,
-        expertiseFilter: expertise,
-        minRating: rating,
-        minExperience: experience,
-      ));
+      emit(
+        UserSearchLoadedState(
+          users: filtered,
+          searchQuery: query ?? '',
+          roleFilter: role,
+          expertiseFilter: expertise,
+          minRating: rating,
+          minExperience: experience,
+        ),
+      );
     } catch (e) {
       log('❌ Error filtering users: $e');
       emit(UserSearchErrorState(e.toString()));
@@ -197,17 +200,21 @@ class HomeCubit extends Cubit<HomeState> {
     try {
       final mentors = await homeRepo.getMentors();
       filteredUsers = mentors;
-      
+
       log('✅ Loaded ${mentors.length} mentors');
-      
-      emit(UserSearchLoadedState(
-        users: mentors,
-        searchQuery: '',
-        roleFilter: 'mentor',
-        expertiseFilter: null,
-        minRating: null,
-        minExperience: null,
-      ));
+
+      searchAndFilter(role: 'mentor', reload: true);
+      log('🔍 Filtered to ${filteredUsers.length} mentors');
+      emit(
+        UserSearchLoadedState(
+          users: mentors,
+          searchQuery: '',
+          roleFilter: 'mentor',
+          expertiseFilter: null,
+          minRating: null,
+          minExperience: null,
+        ),
+      );
     } catch (e) {
       log('❌ Error loading mentors: $e');
       emit(UserSearchErrorState(e.toString()));
@@ -243,15 +250,17 @@ class HomeCubit extends Cubit<HomeState> {
     currentRoleFilter = null;
     currentExpertiseFilter = null;
     filteredUsers = allUsers;
-    
-    emit(UserSearchLoadedState(
-      users: filteredUsers,
-      searchQuery: '',
-      roleFilter: null,
-      expertiseFilter: null,
-      minRating: null,
-      minExperience: null,
-    ));
+
+    emit(
+      UserSearchLoadedState(
+        users: filteredUsers,
+        searchQuery: '',
+        roleFilter: null,
+        expertiseFilter: null,
+        minRating: null,
+        minExperience: null,
+      ),
+    );
   }
 
   void updateState() {

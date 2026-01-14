@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class MentorDetails extends StatelessWidget {
@@ -11,6 +14,9 @@ class MentorDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final watchProfileCubit = context.watch<ProfileCubit>();
+    final mentor = watchProfileCubit.selectedMentor;
+    final menteeId = context.read<AuthenticationCubit>().user.id ?? "";
     return AppScaffold(
       body: Column(
         children: [
@@ -29,24 +35,34 @@ class MentorDetails extends StatelessWidget {
                       shadowcolour: AppColors.lightgrey.withAlpha(100),
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.filledColor,
+                          mentor?.profilePhotoUrl != null
+                              ? AppNetwokImage(
+                                  height: size.height * 0.15,
+                                  width: size.height * 0.15,
+                                  imageUrl: mentor?.profilePhotoUrl ?? "",
+                                  isCircular: true,
+                                )
+                              : CircleAvatar(
+                                  backgroundColor: AppColors.filledColor,
 
-                            radius: size.height * 0.07,
+                                  radius: size.height * 0.07,
 
-                            child: Icon(
-                              Icons.person,
-                              size: 50.sp,
-                              color: AppColors.white,
-                            ),
-                          ),
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 50.sp,
+                                    color: AppColors.white,
+                                  ),
+                                ),
                           SizedBox(height: size.height * 0.02),
                           InAppText(
-                            text: "Mentor Name",
+                            text: mentor?.name ?? "Mentor Name",
                             size: 20,
                             fontweight: FontWeight.bold,
                           ),
-                          InAppText(text: "Mentor Expertise", size: 16),
+                          InAppText(
+                            text: mentor?.expertise ?? "Mentor Expertise",
+                            size: 16,
+                          ),
                           SizedBox(height: size.height * 0.02),
 
                           AppshadowContainer(
@@ -65,7 +81,7 @@ class MentorDetails extends StatelessWidget {
                                   size: 20.sp,
                                 ),
                                 InAppText(
-                                  text: "4.8 (100+ reviews)",
+                                  text: "Expert",
                                   size: 16,
                                   color: AppColors.blue,
                                   fontweight: FontWeight.bold,
@@ -93,7 +109,8 @@ class MentorDetails extends StatelessWidget {
                               Column(
                                 children: [
                                   InAppText(
-                                    text: "5yrs",
+                                    text:
+                                        "${mentor?.yearsExperience?.toString() ?? 0}yrs",
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
@@ -132,6 +149,7 @@ class MentorDetails extends StatelessWidget {
                         textAlign: TextAlign.justify,
                         maxline: 10,
                         text:
+                            mentor?.bio ??
                             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
 
                         color: AppColors.blackColor,
@@ -150,9 +168,8 @@ class MentorDetails extends StatelessWidget {
                       spacing: size.width * 0.02,
                       runSpacing: size.height * 0.02,
                       children: List.generate(
-                        7,
+                        mentor?.interests?.length ?? 0,
                         (index) => IntrinsicWidth(
-                          // Add this
                           child: AppshadowContainer(
                             radius: size.height * 0.05,
                             padding: EdgeInsets.symmetric(
@@ -163,7 +180,7 @@ class MentorDetails extends StatelessWidget {
                             borderColor: AppColors.background,
                             color: AppColors.inactive,
                             child: InAppText(
-                              text: "HTML",
+                              text: mentor?.interests?[index] ?? "HTML",
                               color: AppColors.blue,
                               fontweight: FontWeight.w500,
                             ),
@@ -222,14 +239,72 @@ class MentorDetails extends StatelessWidget {
             ),
           ),
           AppButton(
-            onTap: () {
-              Navigator.pushNamed(context, Routename.requestMentorship);
-            },
+            onTap: watchProfileCubit.isRequestButtonDisabled
+                ? () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            size.width * 0.03,
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.all(size.width * 0.06),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline,
+                              size: 150.sp,
+                              color: AppColors.background,
+                            ),
+                            SizedBox(height: size.height * 0.02),
+                            InAppText(
+                              text:watchProfileCubit.dialogText ?? 'Request Sent',
+                              fontweight: FontWeight.w700,
+                              size: 22,
+                              color: AppColors.blue,
+                            ),
+                            SizedBox(height: size.height * 0.01),
+                            InAppText(
+                              text: watchProfileCubit.dialogSubText ??
+                                  'Your mentorship request has been sent successfully',
+                              size: 15,
+                              textAlign: TextAlign.center,
+                              color: AppColors.grey,
+                              maxline: 2,
+                            ),
+                            SizedBox(height: size.height * 0.03),
+                            AppButton(
+                              onTap: () {
+                                final readProfileCubit =
+                                    context.read<ProfileCubit>();
+                                
+                                Navigator.pop(context);
+                                readProfileCubit.loadAllMyRequests(menteeId);
+                                Navigator.pushNamed(
+                                  context,
+                                  Routename.myRequests,
+                                );
+                              },
+                              width: size.width,
+                              buttonColor: AppColors.background,
+                              label: 'View My Requests',
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                : () {
+                    Navigator.pushNamed(context, Routename.requestMentorship);
+                  },
             buttonColor: AppColors.blue,
             width: size.width * 0.9,
             height: size.height * 0.06,
             textSize: 18,
-            label: "Request Mentor",
+            label: watchProfileCubit.buttonText ?? "Request Mentor",
           ),
 
           SizedBox(height: size.height * 0.03),

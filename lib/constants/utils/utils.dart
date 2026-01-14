@@ -31,8 +31,53 @@ class Utils {
     return (month: month, date: date, day: day);
   }
 
+  static String formatdate(String? dateTimeString) {
+    if (dateTimeString == null) return 'Unknown';
+
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      
+      return '${months[dateTime.month - 1]} ${dateTime.day}, ${dateTime.year}';
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+
   static formatTime({value}) {
     DateTime time = DateFormat("HH:mm:ss").parse(value);
     return DateFormat('h:mm a').format(time);
+  }
+
+  static String getTimeAgo(String? dateTimeString) {
+    if (dateTimeString == null) return 'Unknown';
+
+    try {
+      final dateTime = DateTime.parse(dateTimeString);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays > 365) {
+        final years = (difference.inDays / 365).floor();
+        return '$years ${years == 1 ? 'year' : 'years'} ago';
+      } else if (difference.inDays > 30) {
+        final months = (difference.inDays / 30).floor();
+        return '$months ${months == 1 ? 'month' : 'months'} ago';
+      } else if (difference.inDays > 0) {
+        return '${difference.inDays} ${difference.inDays == 1 ? 'day' : 'days'} ago';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours} ${difference.inHours == 1 ? 'hour' : 'hours'} ago';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes} ${difference.inMinutes == 1 ? 'minute' : 'minutes'} ago';
+      } else {
+        return 'Just now';
+      }
+    } catch (e) {
+      return 'Unknown';
+    }
   }
 }

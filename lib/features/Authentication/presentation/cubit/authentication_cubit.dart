@@ -49,7 +49,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (image != null) {
         profileImage = File(image.path);
         log("Image path: ${profileImage!.path}");
-        updateProfileDetails();
+     
         emit(AddDetailsLoaded());
       } else {
         log("No image selected");

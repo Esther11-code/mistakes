@@ -45,12 +45,13 @@ class AppScaffold extends StatelessWidget {
                     SizedBox(height: 220.h),
                     Center(
                       child: LoadingAnimationWidget.fourRotatingDots(
-                        color: AppColors.blackColor,
+                        color: AppColors.background,
                         size: 60.sp,
                       ),
                     ),
                     3.verticalSpace,
-                    const InAppText(
+                    InAppText(
+                      color: AppColors.background,
                       text: ' Please wait...',
                       fontweight: FontWeight.w600,
                     ),

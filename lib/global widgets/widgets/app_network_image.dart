@@ -55,8 +55,8 @@ class AppNetwokImage extends StatelessWidget {
                   ),
                 ),
                 child: Center(
-                  child: LoadingAnimationWidget.twoRotatingArc(
-                    color: AppColors.white,
+                  child: LoadingAnimationWidget.fallingDot(
+                    color: AppColors.background,
                     size: 50.sp,
                   ),
                 ),

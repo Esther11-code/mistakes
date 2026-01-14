@@ -16,6 +16,7 @@ import 'package:mistakes/features/Home/data/remote/home_repo.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mistakes/features/Profile/data/remote/match_repo.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -134,7 +135,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => OnboardingCubit()),
         BlocProvider(create: (context) => AuthenticationCubit(AuthRepo())),
         BlocProvider(create: (context) => GoalCubit(GoalRepo())),
-        BlocProvider(create: (context) => ProfileCubit()),
+        BlocProvider(create: (context) => ProfileCubit(MatchesRepo())),
         BlocProvider(create: (context) => ChatCubit(ChatRepo())),
         BlocProvider(create: (context) => HomeCubit(HomeRepo())),
         BlocProvider(create: (context) => DashboardCubit(DashboardRepo())),
