@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -38,7 +40,11 @@ class _AllMentorState extends State<AllMentor> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.no_accounts, size: 60.sp, color: AppColors.inactive),
+                        Icon(
+                          Icons.no_accounts,
+                          size: 60.sp,
+                          color: AppColors.inactive,
+                        ),
                         SizedBox(height: 16),
                         Text('No mentors available'),
                       ],
@@ -48,6 +54,20 @@ class _AllMentorState extends State<AllMentor> {
                     child: Column(
                       children: watchHomeCubit.filteredUsers.map((mentor) {
                         return MentorList(
+                          onBookmarkTap: () {
+                            final userId = context
+                                .read<AuthenticationCubit>()
+                                .user
+                                .id;
+                            if (userId != null) {
+                              context
+                                  .read<BookmarksCubit>()
+                                  .toggleMentorBookmark(
+                                    menteeId: userId,
+                                    mentorId: mentor.id ?? "0",
+                                  );
+                            }
+                          },
                           size: size,
                           mentorId: mentor.id ?? "0",
                           mentorName: mentor.name ?? "Unknown",

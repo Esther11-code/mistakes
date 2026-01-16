@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
@@ -47,6 +50,9 @@ class LoginSuccessPage extends StatelessWidget {
             AppButton(
               onTap: () {
                 Navigator.pushNamed(context, Routename.bottomNav);
+                context.read<MentorCubit>().loadMentorDashboard(
+                  context.read<AuthenticationCubit>().user.id ?? "",
+                );
               },
               buttonColor: AppColors.background,
               label: 'Proceed',

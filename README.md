@@ -16,7 +16,7 @@ MentorVerse is a cross-platform mobile app that makes mentorship **goal-oriented
 
 | Feature | Description |
 | --------- | ------------- |
-| 🔐 **Authentication** | Secure login/signup with email |
+|  **Authentication** | Secure login/signup with email |
 | 👥 **Dual Roles** | Sign up as Mentor, Mentee, or Both |
 | 🔍 **Mentor Discovery** | Search, filter, and bookmark mentors |
 | 🤝 **Connection Workflow** | Send/Accept mentorship requests |

@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/global%20widgets/widgets/app_button.dart';
 import 'package:mistakes/global%20widgets/widgets/app_container_withshadow.dart';
 import 'package:mistakes/global%20widgets/widgets/app_scaffold.dart';
@@ -18,6 +19,10 @@ class MenteeDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final isRole = context.watch<AuthenticationCubit>().user.role;
+    final watchGoalCubit = context.watch<GoalCubit>();
+    final readGoalCubit = context.read<GoalCubit>();
+    final watchAuthCubit = context.watch<AuthenticationCubit>();
+    final user = watchAuthCubit.user;
 
     return AppScaffold(
       body: Column(
@@ -52,39 +57,46 @@ class MenteeDashboard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Container(
-                              width: size.height * 0.08,
-                              height: size.height * 0.08,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.white,
-                                  width: 3,
-                                ),
-                              ),
-                              child: CircleAvatar(
-                                backgroundColor: AppColors.white,
-                                child: Icon(
-                                  Icons.person,
-                                  color: AppColors.blue,
-                                  size: 30.sp,
-                                ),
-                              ),
-                            ),
+                            user.profilePhotoUrl != null
+                                ? CircleAvatar(
+                                    radius: size.height * 0.04,
+                                    backgroundImage: NetworkImage(
+                                      user.profilePhotoUrl!,
+                                    ),
+                                  )
+                                : Container(
+                                    width: size.height * 0.08,
+                                    height: size.height * 0.08,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppColors.white,
+                                        width: 3,
+                                      ),
+                                    ),
+                                    child: CircleAvatar(
+                                      backgroundColor: AppColors.white,
+                                      child: Icon(
+                                        Icons.person,
+                                        color: AppColors.blue,
+                                        size: 30.sp,
+                                      ),
+                                    ),
+                                  ),
                             SizedBox(width: size.width * 0.04),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   InAppText(
-                                    text: "Stella Sofia",
+                                    text: user.name ?? "Stella Sofia",
                                     fontweight: FontWeight.w800,
                                     size: 20,
                                     color: AppColors.white,
                                   ),
                                   SizedBox(height: size.height * 0.005),
                                   InAppText(
-                                    text: "Senior Developer",
+                                    text: user.expertise ?? "Senior Developer",
                                     fontweight: FontWeight.w500,
                                     size: 15,
                                     color: AppColors.white,
@@ -152,7 +164,8 @@ class MenteeDashboard extends StatelessWidget {
                                     fontweight: FontWeight.w600,
                                   ),
                                   InAppText(
-                                    text: "70%",
+                                    text:
+                                        "${watchGoalCubit.overallProgressPercentage.toString()}%",
                                     fontweight: FontWeight.w900,
                                     color: AppColors.white,
                                     size: 22,
@@ -172,7 +185,10 @@ class MenteeDashboard extends StatelessWidget {
                                 child: Stack(
                                   children: [
                                     FractionallySizedBox(
-                                      widthFactor: 0.7,
+                                      widthFactor:
+                                          watchGoalCubit
+                                              .overallProgressPercentage /
+                                          100,
                                       child: Container(
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
@@ -304,7 +320,7 @@ class MenteeDashboard extends StatelessWidget {
                               size: 30,
                               fontweight: FontWeight.w900,
                             ),
-                            SizedBox(height: 4),
+                            SizedBox(height: size.height * 0.01),
                             InAppText(
                               text: DashboardStaticRepo.stats[index].title,
                               textAlign: TextAlign.center,
@@ -318,7 +334,7 @@ class MenteeDashboard extends StatelessWidget {
                       );
                     },
                   ),
-                  if (isRole == "Mentor") ...[
+                  if (isRole == "mentor") ...[
                     Row(
                       children: [
                         Container(
@@ -451,7 +467,7 @@ class MenteeDashboard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (isRole == "Mentee") ...[
+                  if (isRole == "mentee") ...[
                     Row(
                       children: [
                         Container(

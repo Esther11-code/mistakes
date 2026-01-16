@@ -7,13 +7,13 @@ class GoalRepo {
   Future<List<GoalModel>> getGoals({required String menteeId}) async {
     try {
       log('Fetching goals for mentee: $menteeId');
-      
+
       final response = await supabase
           .from('goals')
           .select()
           .eq('mentee_id', menteeId)
           .order('created_at', ascending: false);
-      
+
       return (response as List)
           .map((json) => GoalModel.fromJson(json))
           .toList();
@@ -29,7 +29,7 @@ class GoalRepo {
   }) async {
     try {
       log('Updating goal $goalId progress to $progressPercentage%');
-      
+
       await supabase
           .from('goals')
           .update({
@@ -37,7 +37,7 @@ class GoalRepo {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', goalId);
-      
+
       log('Goal progress updated successfully');
     } catch (e) {
       log('Error in updateGoalProgress: $e');
@@ -55,7 +55,7 @@ class GoalRepo {
   }) async {
     try {
       log('Creating new goal for mentee: $menteeId');
-      
+
       await supabase.from('goals').insert({
         'mentee_id': menteeId,
         'match_id': matchId,
@@ -66,7 +66,7 @@ class GoalRepo {
         'status': 'active',
         'deadline': deadline?.toIso8601String(),
       });
-      
+
       log('Goal created successfully');
     } catch (e) {
       log('Error in createGoal: $e');
@@ -77,12 +77,9 @@ class GoalRepo {
   Future<void> deleteGoal({required String goalId}) async {
     try {
       log('Deleting goal: $goalId');
-      
-      await supabase
-          .from('goals')
-          .delete()
-          .eq('id', goalId);
-      
+
+      await supabase.from('goals').delete().eq('id', goalId);
+
       log('Goal deleted successfully');
     } catch (e) {
       log('Error in deleteGoal: $e');
@@ -90,26 +87,26 @@ class GoalRepo {
     }
   }
 
-    // ============================================================================
+  // ============================================================================
   // FETCH ALL INTERESTS FROM DATABASE
   // ============================================================================
   Future<List<InterestModel>> getAllInterests() async {
     try {
       log('🔵 Fetching all interests from database');
-      
+
       final response = await supabase
           .from('interests')
           .select('*')
           .order('name', ascending: true);
-      
+
       final interests = (response as List)
           .map((json) => InterestModel.fromJson(json))
           .toList();
-      
-      log('✅ Loaded ${interests.length} interests');
+
+      log('Loaded ${interests.length} interests');
       return interests;
     } catch (e) {
-      log('❌ Error fetching interests: $e');
+      log(' Error fetching interests: $e');
       throw Exception('Failed to load interests: ${e.toString()}');
     }
   }
@@ -120,21 +117,21 @@ class GoalRepo {
   Future<List<InterestModel>> getInterestsByType(String type) async {
     try {
       log('🔵 Fetching $type interests');
-      
+
       final response = await supabase
           .from('interests')
           .select('*')
           .eq('type', type)
           .order('name', ascending: true);
-      
+
       final interests = (response as List)
           .map((json) => InterestModel.fromJson(json))
           .toList();
-      
-      log('✅ Loaded ${interests.length} $type interests');
+
+      log('Loaded ${interests.length} $type interests');
       return interests;
     } catch (e) {
-      log('❌ Error fetching $type interests: $e');
+      log(' Error fetching $type interests: $e');
       throw Exception('Failed to load interests: ${e.toString()}');
     }
   }
@@ -145,22 +142,22 @@ class GoalRepo {
   Future<Map<String, List<InterestModel>>> getInterestsGroupedByType() async {
     try {
       log('🔵 Fetching interests grouped by type');
-      
+
       final allInterests = await getAllInterests();
-      
+
       final Map<String, List<InterestModel>> grouped = {};
-      
+
       for (var interest in allInterests) {
         if (!grouped.containsKey(interest.type)) {
           grouped[interest.type] = [];
         }
         grouped[interest.type]!.add(interest);
       }
-      
-      log('✅ Grouped interests into ${grouped.length} categories');
+
+      log('Grouped interests into ${grouped.length} categories');
       return grouped;
     } catch (e) {
-      log('❌ Error grouping interests: $e');
+      log(' Error grouping interests: $e');
       throw Exception('Failed to group interests: ${e.toString()}');
     }
   }
@@ -174,27 +171,28 @@ class GoalRepo {
   }) async {
     try {
       log('🔵 Saving ${interestNames.length} interests for user: $userId');
-      
+
       // Delete existing interests first
-      await supabase
-          .from('user_skills')
-          .delete()
-          .eq('user_id', userId);
-      
+      await supabase.from('user_skills').delete().eq('user_id', userId);
+
       // Insert new interests
-      final skillsData = interestNames.map((name) => {
-        'user_id': userId,
-        'skill_name': name,
-        'proficiency_level': 'beginner',
-      }).toList();
+      final skillsData = interestNames
+          .map(
+            (name) => {
+              'user_id': userId,
+              'skill_name': name,
+              'proficiency_level': 'beginner',
+            },
+          )
+          .toList();
 
       if (skillsData.isNotEmpty) {
         await supabase.from('user_skills').insert(skillsData);
       }
-      
-      log('✅ Interests saved successfully');
+
+      log('Interests saved successfully');
     } catch (e) {
-      log('❌ Error saving interests: $e');
+      log(' Error saving interests: $e');
       throw Exception('Failed to save interests: ${e.toString()}');
     }
   }
@@ -205,20 +203,20 @@ class GoalRepo {
   Future<List<String>> getUserInterests({required String userId}) async {
     try {
       log('🔵 Fetching interests for user: $userId');
-      
+
       final response = await supabase
           .from('user_skills')
           .select('skill_name')
           .eq('user_id', userId);
-      
+
       final interests = (response as List)
           .map((item) => item['skill_name'] as String)
           .toList();
-      
-      log('✅ Fetched ${interests.length} interests for user');
+
+      log('Fetched ${interests.length} interests for user');
       return interests;
     } catch (e) {
-      log('❌ Error fetching user interests: $e');
+      log(' Error fetching user interests: $e');
       return [];
     }
   }

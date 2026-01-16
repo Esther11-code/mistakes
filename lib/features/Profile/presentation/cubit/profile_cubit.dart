@@ -160,7 +160,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
       emit(RequestSentState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState(e.toString()));
       emit(ProfileLoadedState());
     }
@@ -173,7 +173,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       myPendingRequests = await matchesRepo.getMyPendingRequests(menteeId);
       emit(ProfileLoadedState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to load requests'));
       emit(ProfileLoadedState());
     }
@@ -186,7 +186,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       incomingRequests = await matchesRepo.getIncomingRequests(mentorId);
       emit(ProfileLoadedState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to load requests'));
       emit(ProfileLoadedState());
     }
@@ -202,7 +202,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(RequestAcceptedState());
       emit(ProfileLoadedState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to accept request'));
       emit(ProfileLoadedState());
     }
@@ -218,7 +218,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(RequestDeclinedState());
       emit(ProfileLoadedState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to decline request'));
       emit(ProfileLoadedState());
     }
@@ -235,10 +235,10 @@ class ProfileCubit extends Cubit<ProfileState> {
         userId: userId,
         isMentor: isMentor,
       );
-      log('✅ [ProfileCubit] Active mentorships loaded: $activeMentorships');
+      log('[ProfileCubit] Active mentorships loaded: $activeMentorships');
       emit(ProfileLoadedState());
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to load mentorships'));
       emit(ProfileLoadedState());
     }
@@ -255,7 +255,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         menteeId: menteeId,
         mentorId: mentorId,
       );
-      log('✅ [ProfileCubit] Match status: $status');
+      log('[ProfileCubit] Match status: $status');
       buttonText = status == null
           ? 'Request Mentor'
           : status == 'pending'
@@ -277,7 +277,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       emit(ProfileLoadedState());
       return status;
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to check match status'));
       return null;
     }
@@ -338,9 +338,9 @@ class ProfileCubit extends Cubit<ProfileState> {
       // Apply current filter
       changeStatus(selectedStatusIndex);
 
-      log('✅ [ProfileCubit] Loaded ${allRequests.length} total requests');
+      log('[ProfileCubit] Loaded ${allRequests.length} total requests');
     } catch (e) {
-      log('❌ [ProfileCubit] Error: $e');
+      log(' [ProfileCubit] Error: $e');
       emit(ProfileErrorState('Failed to load requests'));
       emit(ProfileLoadedState());
     }

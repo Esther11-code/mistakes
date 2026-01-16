@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 import '../../../../../constants/utils/app_colors.dart';
-
 
 class MenteeGoal extends StatelessWidget {
   const MenteeGoal({super.key});
@@ -15,7 +15,7 @@ class MenteeGoal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final goalCubit = context.read<GoalCubit>();
-    
+
     // Load goals when screen opens if not already loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (goalCubit.allGoals.isEmpty) {
@@ -46,7 +46,7 @@ class MenteeGoalView extends StatelessWidget {
             backgroundColor: AppColors.errorColor,
           );
         }
-        
+
         if (state is GoalCreatedState) {
           Fluttertoast.showToast(
             msg: "Goal created successfully!",
@@ -54,7 +54,7 @@ class MenteeGoalView extends StatelessWidget {
             backgroundColor: AppColors.success,
           );
         }
-        
+
         if (state is GoalDeletedState) {
           Fluttertoast.showToast(
             msg: "Goal deleted successfully!",
@@ -77,12 +77,12 @@ class MenteeGoalView extends StatelessWidget {
               iconColor: AppColors.white,
             ),
             SizedBox(height: size.height * 0.03),
-            
+
             // Filter Tabs (All, Ongoing, Completed)
             GoalFilterTabs(size: size),
-            
+
             SizedBox(height: size.height * 0.025),
-            
+
             Expanded(
               child: Container(
                 width: MediaQuery.of(context).size.width,
@@ -102,7 +102,8 @@ class MenteeGoalView extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         InAppText(
-                          text: "${watchGoalCubit.goalFilterOptions[watchGoalCubit.selectedGoalFilterIndex]} Goals",
+                          text:
+                              "${watchGoalCubit.goalFilterOptions[watchGoalCubit.selectedGoalFilterIndex]} Goals",
                           color: AppColors.blue,
                           size: 18,
                           fontweight: FontWeight.w600,
@@ -137,15 +138,17 @@ class MenteeGoalView extends StatelessWidget {
                       ],
                     ),
                     SizedBox(height: size.height * 0.02),
-                    
+
                     // Goals List
                     Expanded(
                       child: BlocBuilder<GoalCubit, GoalState>(
                         builder: (context, state) {
-                          if (state is GoalLoadingState && watchGoalCubit.allGoals.isEmpty) {
+                          if (state is GoalLoadingState &&
+                              watchGoalCubit.allGoals.isEmpty) {
                             return Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.blue,
+                              child: LoadingAnimationWidget.hexagonDots(
+                                color: AppColors.background,
+                                size: 50.sp,
                               ),
                             );
                           }
@@ -153,9 +156,10 @@ class MenteeGoalView extends StatelessWidget {
                           if (watchGoalCubit.filteredGoals.isEmpty) {
                             return EmptyGoalsView(
                               size: size,
-                              filterType: watchGoalCubit.goalFilterOptions[
-                                watchGoalCubit.selectedGoalFilterIndex
-                              ],
+                              filterType:
+                                  watchGoalCubit
+                                      .goalFilterOptions[watchGoalCubit
+                                      .selectedGoalFilterIndex],
                             );
                           }
 
@@ -167,14 +171,18 @@ class MenteeGoalView extends StatelessWidget {
                             child: ListView.builder(
                               itemCount: watchGoalCubit.filteredGoals.length,
                               itemBuilder: (context, index) {
-                                final goal = watchGoalCubit.filteredGoals[index];
+                                final goal =
+                                    watchGoalCubit.filteredGoals[index];
                                 return GoalCard(
                                   goal: goal,
                                   size: size,
                                   onTap: () {
                                     readGoalCubit.setSelectedGoalIndex(index);
                                     // Navigate to goal details or edit
-                                    // Navigator.pushNamed(context, Routename.goalDetails);
+                                    Navigator.pushNamed(
+                                      context,
+                                      Routename.progressDashboard,
+                                    );
                                   },
                                   onDelete: () {
                                     _showDeleteConfirmation(
@@ -225,10 +233,7 @@ class MenteeGoalView extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: InAppText(
-              text: "Cancel",
-              color: AppColors.grey,
-            ),
+            child: InAppText(text: "Cancel", color: AppColors.grey),
           ),
           TextButton(
             onPressed: () {
@@ -376,14 +381,15 @@ class GoalCard extends StatelessWidget {
                   children: [
                     InAppText(
                       text: goal.title,
-                      size: 18,
+                      size: 20,
                       fontweight: FontWeight.w700,
                       color: AppColors.blue,
                       maxline: 2,
                     ),
                     SizedBox(height: size.height * 0.005),
                     InAppText(
-                      text: "${_getCategoryIcon(goal.category)} ${goal.category.toUpperCase()}" ,
+                      text:
+                          "${_getCategoryIcon(goal.category)} ${goal.category.toUpperCase()}",
                       size: 12,
                       color: AppColors.grey,
                       fontweight: FontWeight.w600,
@@ -392,30 +398,23 @@ class GoalCard extends StatelessWidget {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: Icon(Icons.more_vert, color: AppColors.grey),
+                color: AppColors.white,
+                icon: Icon(Icons.more_vert, color: AppColors.blue),
                 onSelected: (value) {
                   if (value == 'delete') {
                     onDelete();
-                  } else if (value == 'edit') {
-                    // TODO: Navigate to edit screen
                   }
                 },
                 itemBuilder: (context) => [
                   PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, size: 18, color: AppColors.blue),
-                        SizedBox(width: 8),
-                        InAppText(text: 'Edit'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete, size: 18, color: AppColors.errorColor),
+                        Icon(
+                          Icons.delete,
+                          size: 18,
+                          color: AppColors.errorColor,
+                        ),
                         SizedBox(width: 8),
                         InAppText(text: 'Delete', color: AppColors.errorColor),
                       ],
@@ -425,28 +424,22 @@ class GoalCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           SizedBox(height: size.height * 0.01),
-          
-          // Description
+
           InAppText(
             text: goal.description,
             size: 14,
             color: AppColors.grey,
             maxline: 2,
           ),
-          
+
           SizedBox(height: size.height * 0.015),
-          
-          // Progress Section
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              InAppText(
-                text: "Progress",
-                size: 14,
-                color: AppColors.grey,
-              ),
+              InAppText(text: "Progress", size: 14, color: AppColors.grey),
               InAppText(
                 text: "${goal.progressPercentage}%",
                 size: 16,
@@ -455,15 +448,14 @@ class GoalCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           SizedBox(height: size.height * 0.01),
-          
-          // Progress Bar
+
           Container(
             height: size.height * 0.012,
             width: size.width,
             decoration: BoxDecoration(
-              color: AppColors.inactive,
+              color: AppColors.grey.withAlpha(30),
               borderRadius: BorderRadius.circular(size.width * 0.02),
             ),
             child: Stack(
@@ -473,10 +465,7 @@ class GoalCard extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          AppColors.filledColor,
-                          AppColors.blue,
-                        ],
+                        colors: [AppColors.filledColor, AppColors.blue],
                       ),
                       borderRadius: BorderRadius.circular(size.width * 0.02),
                     ),
@@ -485,9 +474,9 @@ class GoalCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           SizedBox(height: size.height * 0.015),
-          
+
           // Footer Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -501,9 +490,7 @@ class GoalCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: _getStatusColor(goal.status).withAlpha(20),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _getStatusColor(goal.status),
-                  ),
+                  border: Border.all(color: _getStatusColor(goal.status)),
                 ),
                 child: InAppText(
                   text: goal.status.toUpperCase(),
@@ -512,16 +499,12 @@ class GoalCard extends StatelessWidget {
                   color: _getStatusColor(goal.status),
                 ),
               ),
-              
+
               // Deadline
               if (goal.deadline != null)
                 Row(
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 14,
-                      color: AppColors.grey,
-                    ),
+                    Icon(Icons.calendar_today, size: 14, color: AppColors.grey),
                     SizedBox(width: 4),
                     InAppText(
                       text: _formatDeadline(goal.deadline),
@@ -557,7 +540,7 @@ class GoalCard extends StatelessWidget {
       case 'skill':
         return '🎯';
       case 'personal':
-        return '🌱';
+        return '☘️';
       default:
         return '📌';
     }
@@ -566,7 +549,7 @@ class GoalCard extends StatelessWidget {
   String _formatDeadline(DateTime deadline) {
     final now = DateTime.now();
     final difference = deadline.difference(now).inDays;
-    
+
     if (difference < 0) {
       return "Overdue";
     } else if (difference == 0) {

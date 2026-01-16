@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/features/Home/presentation/widgets/src/home_appbar.dart';
@@ -26,6 +28,11 @@ class MenteeHomeState extends State<MenteeHome> {
     super.initState();
     // Load mentors when screen opens
     context.read<HomeCubit>().searchAndFilter(role: 'mentor', reload: true);
+    final userId = context.read<AuthenticationCubit>().user.id;
+    if (userId != null) {
+       context.read<BookmarksCubit>().loadBookmarkedMentors(userId);
+    }
+   
   }
 
   @override
@@ -219,6 +226,7 @@ class MenteeHomeState extends State<MenteeHome> {
                           return Column(
                             children: displayMentors.map((mentor) {
                               return MentorList(
+                                onBookmarkTap: () {},
                                 size: size,
                                 mentorId: mentor.id ?? "0",
                                 mentorName: mentor.name ?? "rey",
@@ -261,6 +269,27 @@ class MenteeHomeState extends State<MenteeHome> {
                                 children: List.generate(
                                   watchHomeCubit.filteredUsers.length,
                                   (index) => MentorList(
+                                    profileImage: watchHomeCubit
+                                        .filteredUsers[index]
+                                        .profilePhotoUrl,
+                                    onBookmarkTap: () {
+                                      final userId = context
+                                          .read<AuthenticationCubit>()
+                                          .user
+                                          .id;
+                                      if (userId != null) {
+                                        context
+                                            .read<BookmarksCubit>()
+                                            .toggleMentorBookmark(
+                                              menteeId: userId,
+                                              mentorId:
+                                                  watchHomeCubit
+                                                      .filteredUsers[index]
+                                                      .id ??
+                                                  "0",
+                                            );
+                                      }
+                                    },
                                     size: size,
                                     mentorId:
                                         watchHomeCubit

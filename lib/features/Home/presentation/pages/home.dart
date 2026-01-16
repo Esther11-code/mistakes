@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/data/local/images/home_image.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
@@ -91,15 +92,17 @@ class MentorList extends StatelessWidget {
     this.expertise,
     this.yoe,
     this.profileImage,
+    this.onBookmarkTap,
   });
 
   final Size size;
   final String mentorId, mentorName;
   final String? rating, expertise, yoe, profileImage;
+  final VoidCallback? onBookmarkTap;
 
   @override
   Widget build(BuildContext context) {
-    final watchHomeCubit = context.watch<HomeCubit>();
+    final watchBookmarksCubit = context.watch<BookmarksCubit>();
     final readAuthCubit = context.read<AuthenticationCubit>();
     final readHomeCubit = context.read<HomeCubit>();
 
@@ -110,7 +113,7 @@ class MentorList extends StatelessWidget {
           orElse: () => UserModel(),
         );
         context.read<ProfileCubit>().setSelectedMentor(mentor);
-        readHomeCubit.toggleLike(mentorId);
+        // readHomeCubit.toggleLike(mentorId);
       },
       shadowcolour: AppColors.inactive.withAlpha(100),
       border: true,
@@ -126,13 +129,18 @@ class MentorList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               profileImage != null
-                  ? AppNetwokImage(
-                      height: size.height * 0.07,
-                      width: size.height * 0.07,
-                      imageUrl: profileImage!,
-                      isCircular: true,
+                  ? Padding(
+                      padding: EdgeInsets.only(right: size.width * 0.02),
+                      child: AppNetwokImage(
+                        height: size.height * 0.068,
+                        width: size.height * 0.068,
+                        imageUrl: profileImage!,
+                        isCircular: true,
+                      ),
                     )
                   : AppshadowContainer(
                       child: Image.asset(
@@ -184,13 +192,20 @@ class MentorList extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () {
-              readHomeCubit.toggleLike(mentorId);
+              // readHomeCubit.toggleLike(mentorId);
+              final userId = context.read<AuthenticationCubit>().user.id;
+              if (userId != null) {
+                context.read<BookmarksCubit>().toggleMentorBookmark(
+                  menteeId: userId,
+                  mentorId: mentorId,
+                );
+              }
             },
             child: Icon(
-              watchHomeCubit.isLiked(mentorId)
+               watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
                   ? Icons.favorite
                   : Icons.favorite_border,
-              color: watchHomeCubit.isLiked(mentorId)
+              color:  watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
                   ? AppColors.errorColor
                   : AppColors.grey,
               size: 25.sp,

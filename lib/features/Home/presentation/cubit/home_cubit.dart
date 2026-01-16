@@ -51,23 +51,25 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   // Like/Bookmark functionality
-  List<String> likedMentorIds = [];
+  // List<String> likedMentorIds = [];
 
-  void toggleLike(String mentorId) {
-    emit(HomeLoadingState());
-    if (likedMentorIds.contains(mentorId)) {
-      likedMentorIds.remove(mentorId);
-    } else {
-      likedMentorIds.add(mentorId);
-    }
-    log('Toggled like for mentor: $mentorId');
-    emit(HomeLikeToggledState());
-    emit(HomeLoadedState());
-  }
+  // void toggleLike(String mentorId) {
+  //   emit(HomeLoadingState());
+  //   if (likedMentorIds.contains(mentorId)) {
+  //     log('Removing like for mentor: $mentorId');
+  //     likedMentorIds.remove(mentorId);
+  //   } else {
+  //     log('Adding like for mentor: $mentorId');
+  //     likedMentorIds.add(mentorId);
+  //   }
+  //   log('Toggled like for mentor: $mentorId');
+  //   emit(HomeLikeToggledState());
+  //   emit(HomeLoadedState());
+  // }
 
-  bool isLiked(String mentorId) {
-    return likedMentorIds.contains(mentorId);
-  }
+  // bool isLiked(String mentorId) {
+  //   return likedMentorIds.contains(mentorId);
+  // }
 
   // ============================================================================
   // LOAD ALL USERS
@@ -82,7 +84,7 @@ class HomeCubit extends Cubit<HomeState> {
       expertiseList = await homeRepo.getExpertiseList();
       allSkills = await homeRepo.getAllSkills();
 
-      log('✅ Loaded ${allUsers.length} users');
+      log('Loaded ${allUsers.length} users');
       log('Mentors: ${getMentors().length}');
       log('Mentees: ${getMentees().length}');
 
@@ -97,7 +99,7 @@ class HomeCubit extends Cubit<HomeState> {
         ),
       );
     } catch (e) {
-      log('❌ Error loading users: $e');
+      log(' Error loading users: $e');
       emit(UserSearchErrorState(e.toString()));
     }
   }
@@ -187,7 +189,7 @@ class HomeCubit extends Cubit<HomeState> {
         ),
       );
     } catch (e) {
-      log('❌ Error filtering users: $e');
+      log(' Error filtering users: $e');
       emit(UserSearchErrorState(e.toString()));
     }
   }
@@ -201,7 +203,7 @@ class HomeCubit extends Cubit<HomeState> {
       final mentors = await homeRepo.getMentors();
       filteredUsers = mentors;
 
-      log('✅ Loaded ${mentors.length} mentors');
+      log('Loaded ${mentors.length} mentors');
 
       searchAndFilter(role: 'mentor', reload: true);
       log('🔍 Filtered to ${filteredUsers.length} mentors');
@@ -216,7 +218,7 @@ class HomeCubit extends Cubit<HomeState> {
         ),
       );
     } catch (e) {
-      log('❌ Error loading mentors: $e');
+      log(' Error loading mentors: $e');
       emit(UserSearchErrorState(e.toString()));
     }
   }

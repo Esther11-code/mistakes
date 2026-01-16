@@ -6,6 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:mistakes/features/Authentication/data/remote/auth_repo.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../data/model/user_model.dart';
 
@@ -49,7 +50,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       if (image != null) {
         profileImage = File(image.path);
         log("Image path: ${profileImage!.path}");
-     
+
         emit(AddDetailsLoaded());
       } else {
         log("No image selected");
@@ -233,14 +234,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       if (stayLogin) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('user_id', user.id!);
+        await prefs.setString('user_id', user.id ?? "");
         await prefs.setBool('login', true);
       }
       clear();
       emit(AuthSignInSuccessState());
-    } catch (e) {
+    } on AuthApiException catch (e) {
       log('Login error: $e');
-      emit(AuthErrorState(error: e.toString()));
+      emit(AuthErrorState(error: e.message));
       emit(AuthLoadedState());
     }
   }
@@ -272,65 +273,66 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
   // Update profile details (after signup)
   updateProfileDetails() async {
-  emit(AuthLoadingState());
-  try {
-    String? profilePhotoUrl;
+    emit(AuthLoadingState());
+    try {
+      String? profilePhotoUrl;
 
-    // 1. ⭐ Upload photo FIRST if user selected one
-    if (profileImage != null) {
-      log('📸 Uploading profile photo...');
-      
-      // Delete old photo if exists
-      if (user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty) {
-        try {
-          await authRepo.deleteProfilePhoto(user.profilePhotoUrl!);
-        } catch (e) {
-          log('⚠️ Failed to delete old photo: $e');
+      // 1. ⭐ Upload photo FIRST if user selected one
+      if (profileImage != null) {
+        log('📸 Uploading profile photo...');
+
+        // Delete old photo if exists
+        if (user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty) {
+          try {
+            await authRepo.deleteProfilePhoto(user.profilePhotoUrl!);
+          } catch (e) {
+            log(' Failed to delete old photo: $e');
+          }
         }
+
+        // Upload new photo
+        profilePhotoUrl = await authRepo.uploadProfilePhoto(
+          userId: user.id!,
+          imageFile: profileImage!,
+        );
+
+        log('Photo uploaded: $profilePhotoUrl');
       }
 
-      // Upload new photo
-      profilePhotoUrl = await authRepo.uploadProfilePhoto(
+      // 2. Update profile with the PUBLIC URL (not local path)
+      await authRepo.updateProfile(
         userId: user.id!,
-        imageFile: profileImage!,
+        bio: bioController.text.trim(),
+        expertise: expertiseController.text.trim(),
+        yearsExperience:
+            int.tryParse(yearsOfExperienceController.text.trim()) ?? 0,
+        profilePhotoUrl: profilePhotoUrl, // ⭐ Use uploaded URL, not local path
       );
-      
-      log('✅ Photo uploaded: $profilePhotoUrl');
+
+      log("Years: ${user.yearsExperience}");
+
+      // 3. Update local user model
+      user.bio = bioController.text.trim();
+      user.expertise = expertiseController.text.trim();
+      user.yearsExperience = int.tryParse(yearsOfExperienceController.text);
+
+      if (profilePhotoUrl != null) {
+        user.profilePhotoUrl = profilePhotoUrl; // ⭐ Save URL, not path
+      }
+
+      getUserInfo();
+      checkLoginStatus();
+
+      log('Profile details updated');
+      clear();
+
+      emit(AuthProfileUpdatedState());
+    } catch (e) {
+      log(' Error updating profile: $e');
+      emit(AuthErrorState(error: e.toString()));
+      emit(AuthLoadedState());
     }
-
-    // 2. Update profile with the PUBLIC URL (not local path)
-    await authRepo.updateProfile(
-      userId: user.id!,
-      bio: bioController.text.trim(),
-      expertise: expertiseController.text.trim(),
-      yearsExperience: int.tryParse(yearsOfExperienceController.text.trim()) ?? 0,
-      profilePhotoUrl: profilePhotoUrl, // ⭐ Use uploaded URL, not local path
-    );
-
-    log("Years: ${user.yearsExperience}");
-
-    // 3. Update local user model
-    user.bio = bioController.text.trim();
-    user.expertise = expertiseController.text.trim();
-    user.yearsExperience = int.tryParse(yearsOfExperienceController.text);
-    
-    if (profilePhotoUrl != null) {
-      user.profilePhotoUrl = profilePhotoUrl; // ⭐ Save URL, not path
-    }
-
-    getUserInfo();
-    checkLoginStatus();
-    
-    log('✅ Profile details updated');
-    clear();
-    
-    emit(AuthProfileUpdatedState());
-  } catch (e) {
-    log('❌ Error updating profile: $e');
-    emit(AuthErrorState(error: e.toString()));
-    emit(AuthLoadedState());
   }
-}
 
   // Check if user is already logged in (for splash screen)
   checkLoginStatus() async {

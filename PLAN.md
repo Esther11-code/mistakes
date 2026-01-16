@@ -1,6 +1,6 @@
 # MentorVerse - Project Status
 
-## ✅ Done
+## Done
 - Login/Signup UI
 - Onboarding screens (3 steps)
 - Mentor & Mentee home dashboards
@@ -30,7 +30,7 @@
 ## 📁 Key Files to Focus On
 | File | Status |
 |------|--------|
-| `lib/features/Goal/pages/Goals/mentor_goal.dart` | ❌ Nearly empty |
+| `lib/features/Goal/pages/Goals/mentor_goal.dart` |  Nearly empty |
 | `lib/features/Goal/pages/Goals/add_goal.dart` | 🟡 UI done, handlers empty |
 | `lib/features/Goal/pages/Goals/progress.dart` | 🟡 Hardcoded 50% |
 | `lib/features/Chat/.../chat.dart` | 🟡 UI done, no persistence |

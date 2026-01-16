@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Chat/data/models/message_model.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -563,6 +565,7 @@ class SendMessageButton extends StatelessWidget {
 }
 
 void showAttachmentOptions(BuildContext context, Size size) {
+  final readAuthCubit = context.read<AuthenticationCubit>();
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -596,7 +599,7 @@ void showAttachmentOptions(BuildContext context, Size size) {
                 color: Colors.purple,
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Pick image from gallery
+                  readAuthCubit.pickImage(context, ImageSource.gallery);
                 },
               ),
               AttachmentOption(
@@ -605,7 +608,7 @@ void showAttachmentOptions(BuildContext context, Size size) {
                 color: Colors.pink,
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Take photo with camera
+                readAuthCubit.pickImage(context, ImageSource.camera);
                 },
               ),
               AttachmentOption(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
@@ -75,6 +76,17 @@ class MenteeAccount extends StatelessWidget {
       listener: (context, state) {
         if (state is AddDetailsLoaded) {
           context.read<AuthenticationCubit>().updateProfileDetails();
+        }
+        if (state is AuthLogoutState) {
+          Fluttertoast.showToast(
+            msg: "Logout Successfully",
+            gravity: ToastGravity.TOP,
+          );
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            Routename.login,
+            (route) => false,
+          );
         }
       },
       child: AppScaffold(

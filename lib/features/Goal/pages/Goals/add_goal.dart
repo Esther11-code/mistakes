@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class AddGoal extends StatelessWidget {
+class AddGoal extends StatefulWidget {
   const AddGoal({super.key});
+
+  @override
+  State<AddGoal> createState() => _AddGoalState();
+}
+
+class _AddGoalState extends State<AddGoal> {
+  @override
+  void initState() {
+    super.initState();
+    final goalCubit = context.read<GoalCubit>();
+    goalCubit.loadInterests();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
-
+    final watchGoalCubit = context.watch<GoalCubit>();
+    final readGoalCubit = context.read<GoalCubit>();
     return AppScaffold(
       body: Column(
         children: [
@@ -99,6 +114,7 @@ class AddGoal extends StatelessWidget {
                     ),
                     color: AppColors.white,
                     child: ApptextField(
+                      controller: watchGoalCubit.titleController,
                       hintText: "e.g., Learn Flutter Development",
                       prefixIconn: Icon(
                         Icons.flag_outlined,
@@ -131,36 +147,24 @@ class AddGoal extends StatelessWidget {
                   Wrap(
                     spacing: size.width * 0.025,
                     runSpacing: size.height * 0.012,
-                    children: [
-                      CategoryChip(
-                        label: "Health",
-                        icon: Icons.favorite_outline,
-                        isSelected: true,
-                        onTap: () {},
-                        size: size,
-                      ),
-                      CategoryChip(
-                        label: "Career",
-                        icon: Icons.work_outline,
-                        isSelected: false,
-                        onTap: () {},
-                        size: size,
-                      ),
-                      CategoryChip(
-                        label: "Personal",
-                        icon: Icons.person_outline,
-                        isSelected: false,
-                        onTap: () {},
-                        size: size,
-                      ),
-                      CategoryChip(
-                        label: "Finance",
-                        icon: Icons.account_balance_wallet_outlined,
-                        isSelected: false,
-                        onTap: () {},
-                        size: size,
-                      ),
-                    ],
+                    children: List.generate(
+                      watchGoalCubit.goalCategories.length,
+                      (index) {
+                        final category = watchGoalCubit.goalCategories[index];
+                        final isSelected =
+                            watchGoalCubit.selectedCategory == category;
+
+                        return CategoryChip(
+                          label:
+                              category[0].toUpperCase() + category.substring(1),
+                          isSelected: isSelected,
+                          onTap: () {
+                            readGoalCubit.changeCategory(category);
+                          },
+                          size: size,
+                        );
+                      },
+                    ),
                   ),
                   SizedBox(height: size.height * 0.025),
                   Text.rich(
@@ -186,6 +190,7 @@ class AddGoal extends StatelessWidget {
                     padding: EdgeInsets.all(size.width * 0.04),
                     color: AppColors.white,
                     child: ApptextField(
+                      controller: watchGoalCubit.descriptionController,
                       maxLine: 4,
                       maxlength: 500,
                       hintText: "Describe what you want to achieve...",
@@ -234,7 +239,7 @@ class AddGoal extends StatelessWidget {
                         },
                       );
                       if (picked != null) {
-                        // Handle date selection
+                        readGoalCubit.setDeadline(picked);
                       }
                     },
                     child: AppshadowContainer(
@@ -252,15 +257,20 @@ class AddGoal extends StatelessWidget {
                               ),
                               SizedBox(width: size.width * 0.03),
                               InAppText(
-                                text: "Select a date",
+                                // FIX: Show selected date or placeholder
+                                text: watchGoalCubit.selectedDeadline != null
+                                    ? "${watchGoalCubit.selectedDeadline!.day}/${watchGoalCubit.selectedDeadline!.month}/${watchGoalCubit.selectedDeadline!.year}"
+                                    : "Select a date",
                                 size: 15,
-                                color: AppColors.grey,
+                                color: watchGoalCubit.selectedDeadline != null
+                                    ? AppColors.blackColor
+                                    : AppColors.grey,
                               ),
                             ],
                           ),
                           Icon(
                             Icons.arrow_forward_ios,
-                            size: 16,
+                            size: 18.sp,
                             color: AppColors.grey,
                           ),
                         ],
@@ -288,21 +298,76 @@ class AddGoal extends StatelessWidget {
                     child: ApptextField(
                       maxLine: 3,
                       maxlength: 300,
-
+                      controller: watchGoalCubit.successCriteriaController,
                       hintText:
                           "e.g., Build 3 Flutter apps, Pass certification exam",
                     ),
                   ),
                   SizedBox(height: size.height * 0.03),
-                  AppButton(
-                    onTap: () {
-                      // Add goal logic
+                  BlocListener<GoalCubit, GoalState>(
+                    listener: (context, state) {
+                      if (state is GoalCreatedState) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Goal created successfully!'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                        Navigator.pop(context);
+                      } else if (state is GoalErrorState) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: AppColors.errorColor,
+                          ),
+                        );
+                      }
                     },
-                    width: size.width,
-                    buttonColor: AppColors.filledColor,
-                    label: 'Create Goal',
-                    textSize: 20,
+                    child: AppButton(
+                      isLoading: watchGoalCubit.state is GoalLoadingState,
+                      onTap: () {
+                        if (watchGoalCubit.titleController.text
+                            .trim()
+                            .isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please enter a goal title'),
+                              backgroundColor: AppColors.errorColor,
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (watchGoalCubit.descriptionController.text
+                            .trim()
+                            .isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please enter a description'),
+                              backgroundColor: AppColors.errorColor,
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (watchGoalCubit.selectedDeadline == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please select a target date'),
+                              backgroundColor: AppColors.errorColor,
+                            ),
+                          );
+                          return;
+                        }
+                        readGoalCubit.createGoal();
+                      },
+                      width: size.width,
+                      buttonColor: AppColors.filledColor,
+                      label: 'Create Goal',
+                      textSize: 20,
+                    ),
                   ),
+
                   SizedBox(height: size.height * 0.015),
                   AppButton(
                     onTap: () {
@@ -329,7 +394,6 @@ class AddGoal extends StatelessWidget {
 
 class CategoryChip extends StatelessWidget {
   final String label;
-  final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
   final Size size;
@@ -337,7 +401,6 @@ class CategoryChip extends StatelessWidget {
   const CategoryChip({
     super.key,
     required this.label,
-    required this.icon,
     required this.isSelected,
     required this.onTap,
     required this.size,
@@ -359,7 +422,7 @@ class CategoryChip extends StatelessWidget {
                 )
               : null,
           color: isSelected ? null : AppColors.grey.withAlpha(20),
-          borderRadius: BorderRadius.circular(25),
+          borderRadius: BorderRadius.circular(size.width * 0.06),
 
           boxShadow: isSelected
               ? [
@@ -371,22 +434,11 @@ class CategoryChip extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 22.sp,
-              color: isSelected ? AppColors.white : AppColors.grey,
-            ),
-            SizedBox(width: 6),
-            InAppText(
-              text: label,
-              size: 20,
-              fontweight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? AppColors.white : AppColors.grey,
-            ),
-          ],
+        child: InAppText(
+          text: label,
+          size: 20,
+          fontweight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          color: isSelected ? AppColors.white : AppColors.grey,
         ),
       ),
     );

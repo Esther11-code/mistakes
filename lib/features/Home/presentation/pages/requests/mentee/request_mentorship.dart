@@ -21,7 +21,6 @@ class RequestMentorship extends StatelessWidget {
     final messageController = watchProfileCubit.messageController;
     final selectedMentor = watchProfileCubit.selectedMentor;
     final menteeId = context.watch<AuthenticationCubit>().user.id ?? "";
-    final user = context.watch<AuthenticationCubit>().user;
     return BlocListener<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is RequestSentState) {

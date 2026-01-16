@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -17,298 +20,340 @@ class MentorDetails extends StatelessWidget {
     final watchProfileCubit = context.watch<ProfileCubit>();
     final mentor = watchProfileCubit.selectedMentor;
     final menteeId = context.read<AuthenticationCubit>().user.id ?? "";
-    return AppScaffold(
-      body: Column(
-        children: [
-          AppbarWidget(size: size, title: "Mentor Details"),
-          SizedBox(height: size.height * 0.03),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(size.width * 0.04),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppshadowContainer(
-                      color: AppColors.white,
-                      padding: EdgeInsets.all(size.width * 0.03),
-                      shadowcolour: AppColors.lightgrey.withAlpha(100),
-                      child: Column(
-                        children: [
-                          mentor?.profilePhotoUrl != null
-                              ? AppNetwokImage(
-                                  height: size.height * 0.15,
-                                  width: size.height * 0.15,
-                                  imageUrl: mentor?.profilePhotoUrl ?? "",
-                                  isCircular: true,
-                                )
-                              : CircleAvatar(
-                                  backgroundColor: AppColors.filledColor,
-
-                                  radius: size.height * 0.07,
-
-                                  child: Icon(
-                                    Icons.person,
-                                    size: 50.sp,
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                          SizedBox(height: size.height * 0.02),
-                          InAppText(
-                            text: mentor?.name ?? "Mentor Name",
-                            size: 20,
-                            fontweight: FontWeight.bold,
-                          ),
-                          InAppText(
-                            text: mentor?.expertise ?? "Mentor Expertise",
-                            size: 16,
-                          ),
-                          SizedBox(height: size.height * 0.02),
-
-                          AppshadowContainer(
-                            alignment: Alignment.center,
-                            color: AppColors.inactive,
-                            border: true,
-                            borderColor: AppColors.background,
-                            width: size.width * 0.5,
-                            padding: EdgeInsets.all(size.width * 0.02),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  color: AppColors.yellow,
-                                  size: 20.sp,
-                                ),
-                                InAppText(
-                                  text: "Expert",
-                                  size: 16,
-                                  color: AppColors.blue,
-                                  fontweight: FontWeight.bold,
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: size.height * 0.02),
-                          AppDivider(),
-                          SizedBox(height: size.height * 0.02),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                children: [
-                                  InAppText(
-                                    text: "24",
-                                    color: AppColors.blue,
-                                    size: 18,
-                                    fontweight: FontWeight.w600,
-                                  ),
-                                  InAppText(text: "Mentees", size: 16),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  InAppText(
-                                    text:
-                                        "${mentor?.yearsExperience?.toString() ?? 0}yrs",
-                                    color: AppColors.blue,
-                                    size: 18,
-                                    fontweight: FontWeight.w600,
-                                  ),
-                                  InAppText(text: "Experience", size: 16),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  InAppText(
-                                    text: "95%",
-                                    color: AppColors.blue,
-                                    size: 18,
-                                    fontweight: FontWeight.w600,
-                                  ),
-                                  InAppText(text: "Success", size: 16),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.03),
-                    InAppText(
-                      text: "About Mentor",
-                      size: 20,
-                      fontweight: FontWeight.w600,
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    AppshadowContainer(
-                      color: AppColors.white,
-                      padding: EdgeInsets.all(size.width * 0.03),
-                      shadowcolour: AppColors.lightgrey.withAlpha(100),
-                      child: InAppText(
-                        textAlign: TextAlign.justify,
-                        maxline: 10,
-                        text:
-                            mentor?.bio ??
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-
-                        color: AppColors.blackColor,
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.03),
-                    InAppText(
-                      text: "Skills & Expertise",
-                      size: 20,
-                      fontweight: FontWeight.w600,
-                    ),
-                    SizedBox(height: size.height * 0.01),
-
-                    Wrap(
-                      alignment: WrapAlignment.start,
-                      spacing: size.width * 0.02,
-                      runSpacing: size.height * 0.02,
-                      children: List.generate(
-                        mentor?.interests?.length ?? 0,
-                        (index) => IntrinsicWidth(
-                          child: AppshadowContainer(
-                            radius: size.height * 0.05,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: size.width * 0.04,
-                              vertical: size.height * 0.01,
-                            ),
-                            border: true,
-                            borderColor: AppColors.background,
-                            color: AppColors.inactive,
-                            child: InAppText(
-                              text: mentor?.interests?[index] ?? "HTML",
-                              color: AppColors.blue,
-                              fontweight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.03),
-                    GestureDetector(
-                      onTap: () =>
-                          Navigator.pushNamed(context, Routename.allReviews),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          InAppText(
-                            text: 'Reviews',
-                            color: AppColors.blue,
-                            fontweight: FontWeight.w500,
-                            size: 21,
-                          ),
-                          GestureDetector(
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              Routename.allReviews,
-                            ),
-                            child: const InAppText(text: 'View All', size: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: size.height * 0.01),
-                    Column(
-                      children: List.generate(
-                        3,
-                        (index) => ReviewsContainer(size: size),
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    AppButton(
-                      onTap: () {
-                        Navigator.pushNamed(context, Routename.bookingSuccess);
-                      },
-                      border: true,
-                      bordercolor: AppColors.blue,
-                      buttonColor: AppColors.background,
-                      width: size.width * 0.9,
-                      height: size.height * 0.06,
-                      textSize: 18,
-                      label: "Save to Favorites",
-                      labelColor: AppColors.blue,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          AppButton(
-            onTap: watchProfileCubit.isRequestButtonDisabled
-                ? () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: AppColors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            size.width * 0.03,
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.all(size.width * 0.06),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
+    return BlocListener<BookmarksCubit, BookmarksState>(
+      listener: (context, state) {
+        if (state is MentorBookmarkAddedState) {
+          Navigator.pushNamed(context, Routename.bookingSuccess);
+        }
+        if (state is MentorBookmarkRemovedState) {
+          Fluttertoast.showToast(
+            msg: "Mentor has been removed from Favorites",
+            gravity: ToastGravity.TOP,
+            backgroundColor: AppColors.orange,
+          );
+        }
+      },
+      child: AppScaffold(
+        body: Column(
+          children: [
+            AppbarWidget(size: size, title: "Mentor Details"),
+            SizedBox(height: size.height * 0.03),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(size.width * 0.04),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppshadowContainer(
+                        color: AppColors.white,
+                        padding: EdgeInsets.all(size.width * 0.03),
+                        shadowcolour: AppColors.lightgrey.withAlpha(100),
+                        child: Column(
                           children: [
-                            Icon(
-                              Icons.check_circle_outline,
-                              size: 150.sp,
-                              color: AppColors.background,
-                            ),
+                            mentor?.profilePhotoUrl != null
+                                ? AppNetwokImage(
+                                    height: size.height * 0.15,
+                                    width: size.height * 0.15,
+                                    imageUrl: mentor?.profilePhotoUrl ?? "",
+                                    isCircular: true,
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor: AppColors.filledColor,
+
+                                    radius: size.height * 0.07,
+
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 50.sp,
+                                      color: AppColors.white,
+                                    ),
+                                  ),
                             SizedBox(height: size.height * 0.02),
                             InAppText(
-                              text:watchProfileCubit.dialogText ?? 'Request Sent',
-                              fontweight: FontWeight.w700,
-                              size: 22,
-                              color: AppColors.blue,
+                              text: mentor?.name ?? "Mentor Name",
+                              size: 20,
+                              fontweight: FontWeight.bold,
                             ),
-                            SizedBox(height: size.height * 0.01),
                             InAppText(
-                              text: watchProfileCubit.dialogSubText ??
-                                  'Your mentorship request has been sent successfully',
-                              size: 15,
-                              textAlign: TextAlign.center,
-                              color: AppColors.grey,
-                              maxline: 2,
+                              text: mentor?.expertise ?? "Mentor Expertise",
+                              size: 16,
                             ),
-                            SizedBox(height: size.height * 0.03),
-                            AppButton(
-                              onTap: () {
-                                final readProfileCubit =
-                                    context.read<ProfileCubit>();
-                                
-                                Navigator.pop(context);
-                                readProfileCubit.loadAllMyRequests(menteeId);
-                                Navigator.pushNamed(
-                                  context,
-                                  Routename.myRequests,
-                                );
-                              },
-                              width: size.width,
-                              buttonColor: AppColors.background,
-                              label: 'View My Requests',
+                            SizedBox(height: size.height * 0.02),
+
+                            AppshadowContainer(
+                              alignment: Alignment.center,
+                              color: AppColors.inactive,
+                              border: true,
+                              borderColor: AppColors.background,
+                              width: size.width * 0.5,
+                              padding: EdgeInsets.all(size.width * 0.02),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.star,
+                                    color: AppColors.yellow,
+                                    size: 20.sp,
+                                  ),
+                                  InAppText(
+                                    text: "Expert",
+                                    size: 16,
+                                    color: AppColors.blue,
+                                    fontweight: FontWeight.bold,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: size.height * 0.02),
+                            AppDivider(),
+                            SizedBox(height: size.height * 0.02),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Column(
+                                  children: [
+                                    InAppText(
+                                      text: "24",
+                                      color: AppColors.blue,
+                                      size: 18,
+                                      fontweight: FontWeight.w600,
+                                    ),
+                                    InAppText(text: "Mentees", size: 16),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    InAppText(
+                                      text:
+                                          "${mentor?.yearsExperience?.toString() ?? 0}yrs",
+                                      color: AppColors.blue,
+                                      size: 18,
+                                      fontweight: FontWeight.w600,
+                                    ),
+                                    InAppText(text: "Experience", size: 16),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    InAppText(
+                                      text: "95%",
+                                      color: AppColors.blue,
+                                      size: 18,
+                                      fontweight: FontWeight.w600,
+                                    ),
+                                    InAppText(text: "Success", size: 16),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                    );
-                  }
-                : () {
-                    Navigator.pushNamed(context, Routename.requestMentorship);
-                  },
-            buttonColor: AppColors.blue,
-            width: size.width * 0.9,
-            height: size.height * 0.06,
-            textSize: 18,
-            label: watchProfileCubit.buttonText ?? "Request Mentor",
-          ),
+                      SizedBox(height: size.height * 0.03),
+                      InAppText(
+                        text: "About Mentor",
+                        size: 20,
+                        fontweight: FontWeight.w600,
+                      ),
+                      SizedBox(height: size.height * 0.01),
+                      AppshadowContainer(
+                        color: AppColors.white,
+                        padding: EdgeInsets.all(size.width * 0.03),
+                        shadowcolour: AppColors.lightgrey.withAlpha(100),
+                        child: InAppText(
+                          textAlign: TextAlign.justify,
+                          maxline: 10,
+                          text:
+                              mentor?.bio ??
+                              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
 
-          SizedBox(height: size.height * 0.03),
-        ],
+                          color: AppColors.blackColor,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.03),
+                      InAppText(
+                        text: "Skills & Expertise",
+                        size: 20,
+                        fontweight: FontWeight.w600,
+                      ),
+                      SizedBox(height: size.height * 0.01),
+
+                      Wrap(
+                        alignment: WrapAlignment.start,
+                        spacing: size.width * 0.02,
+                        runSpacing: size.height * 0.02,
+                        children: List.generate(
+                          mentor?.interests?.length ?? 0,
+                          (index) => IntrinsicWidth(
+                            child: AppshadowContainer(
+                              radius: size.height * 0.05,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: size.width * 0.04,
+                                vertical: size.height * 0.01,
+                              ),
+                              border: true,
+                              borderColor: AppColors.background,
+                              color: AppColors.inactive,
+                              child: InAppText(
+                                text: mentor?.interests?[index] ?? "HTML",
+                                color: AppColors.blue,
+                                fontweight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.03),
+                      GestureDetector(
+                        onTap: () =>
+                            Navigator.pushNamed(context, Routename.allReviews),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            InAppText(
+                              text: 'Reviews',
+                              color: AppColors.blue,
+                              fontweight: FontWeight.w500,
+                              size: 21,
+                            ),
+                            GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                Routename.allReviews,
+                              ),
+                              child: const InAppText(
+                                text: 'View All',
+                                size: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: size.height * 0.01),
+                      Column(
+                        children: List.generate(
+                          3,
+                          (index) => ReviewsContainer(size: size),
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.01),
+                      AppButton(
+                        isLoading:
+                            context.watch<BookmarksCubit>().state
+                                is BookmarksLoadingState,
+                        onTap: () {
+                          final userId = context
+                              .read<AuthenticationCubit>()
+                              .user
+                              .id;
+                          final readBookmarkCubit = context
+                              .read<BookmarksCubit>();
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            if (userId != null) {
+                              readBookmarkCubit.toggleMentorBookmark(
+                                menteeId: userId,
+                                mentorId: mentor?.id ?? "0",
+                              );
+                            }
+                          });
+                        },
+                        border: true,
+                        bordercolor: AppColors.blue,
+                        buttonColor: AppColors.background,
+                        width: size.width * 0.9,
+                        height: size.height * 0.06,
+                        textSize: 18,
+                        label:
+                            context
+                                    .watch<BookmarksCubit>()
+                                    .mentorBookmarkStatus[mentor?.id] ==
+                                true
+                            ? "Remove from Favorites"
+                            : "Save to Favorites",
+                        labelColor: AppColors.blue,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            AppButton(
+              onTap: watchProfileCubit.isRequestButtonDisabled
+                  ? () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: AppColors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              size.width * 0.03,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.all(size.width * 0.06),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle_outline,
+                                size: 150.sp,
+                                color: AppColors.background,
+                              ),
+                              SizedBox(height: size.height * 0.02),
+                              InAppText(
+                                text:
+                                    watchProfileCubit.dialogText ??
+                                    'Request Sent',
+                                fontweight: FontWeight.w700,
+                                size: 22,
+                                color: AppColors.blue,
+                              ),
+                              SizedBox(height: size.height * 0.01),
+                              InAppText(
+                                text:
+                                    watchProfileCubit.dialogSubText ??
+                                    'Your mentorship request has been sent successfully',
+                                size: 15,
+                                textAlign: TextAlign.center,
+                                color: AppColors.grey,
+                                maxline: 2,
+                              ),
+                              SizedBox(height: size.height * 0.03),
+                              AppButton(
+                                onTap: () {
+                                  final readProfileCubit = context
+                                      .read<ProfileCubit>();
+
+                                  Navigator.pop(context);
+                                  readProfileCubit.loadAllMyRequests(menteeId);
+                                  Navigator.pushNamed(
+                                    context,
+                                    Routename.myRequests,
+                                  );
+                                },
+                                width: size.width,
+                                buttonColor: AppColors.background,
+                                label: 'View My Requests',
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                  : () {
+                      Navigator.pushNamed(context, Routename.requestMentorship);
+                    },
+              buttonColor: AppColors.blue,
+              width: size.width * 0.9,
+              height: size.height * 0.06,
+              textSize: 18,
+              label: watchProfileCubit.buttonText ?? "Request Mentor",
+            ),
+
+            SizedBox(height: size.height * 0.03),
+          ],
+        ),
       ),
     );
   }

@@ -41,7 +41,6 @@ import '../../features/Dashboard/pages/mentor/mentor_dashboard.dart';
 import '../../features/Goal/pages/Goals/progress.dart';
 import '../../features/Goal/pages/edit_interests.dart';
 import '../../features/Goal/pages/select_interest.dart';
-import '../../features/Home/presentation/pages/home.dart';
 import '../../features/Home/presentation/pages/requests/mentee/my_request.dart';
 import '../../features/Home/presentation/pages/requests/mentee/request_mentorship.dart';
 import '../../features/Notification/presentation/pages/notification.dart';
@@ -86,8 +85,8 @@ class AppRoute {
         );
       case Routename.loginSuccess:
         return CustomPageRoute(child: const LoginSuccessPage());
-      case Routename.home:
-        return CustomPageRoute(child: const Home());
+      // case Routename.home:
+      //   return CustomPageRoute(child: const Home());
       case Routename.login:
         return CustomPageRoute(child: const LoginPage());
       case Routename.signup:

@@ -11,42 +11,43 @@ part 'goal_state.dart';
 
 class GoalCubit extends Cubit<GoalState> {
   GoalRepo goalRepo;
-  
+
   GoalCubit(this.goalRepo) : super(GoalInitial());
 
   UserModel user = UserModel();
-  
+
   // Controllers for goal creation
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
+  final successCriteriaController = TextEditingController();
   final formKey = GlobalKey<FormState>();
-  
+
   // Goals list and filtering
   List<GoalModel> allGoals = [];
   List<GoalModel> filteredGoals = [];
   List<String> goalFilterOptions = ['All', 'Ongoing', 'Completed'];
   int selectedGoalFilterIndex = 0;
-  
+
   // Goal creation
   String selectedCategory = 'skill';
   List<String> goalCategories = ['career', 'skill', 'personal'];
   DateTime? selectedDeadline;
-  
+
   int selectedGoalIndex = 0;
 
   // ============================================================================
   // INTEREST SELECTION (Dynamic from database)
   // ============================================================================
-  
+
   // All interests from database
   List<InterestModel> allInterests = [];
-  
+
   // Grouped by type
   Map<String, List<InterestModel>> groupedInterests = {};
-  
+
   // Category names (mapped from type)
   List<String> category = [];
-  
+
   // User's selected interests (just names)
   List<String> selectedInterests = [];
 
@@ -57,26 +58,26 @@ class GoalCubit extends Cubit<GoalState> {
     emit(GoalLoadingState());
     try {
       log('🔵 Loading interests from database');
-      
+
       // Fetch all interests grouped by type
       groupedInterests = await goalRepo.getInterestsGroupedByType();
-      
+
       // Extract category names and capitalize them
       category = groupedInterests.keys.map((type) {
         // Capitalize first letter
         return type[0].toUpperCase() + type.substring(1);
       }).toList();
-      
+
       // Sort categories for consistent order
       category.sort();
-      
-      log('✅ Loaded interests in ${category.length} categories');
+
+      log('Loaded interests in ${category.length} categories');
       log('Categories: $category');
-      
+
       emit(GoalInterestsLoadedState());
       emit(GoalLoadedState());
     } catch (e) {
-      log('❌ Error loading interests: $e');
+      log(' Error loading interests: $e');
       emit(GoalErrorState(error: 'Failed to load interests'));
       emit(GoalLoadedState());
     }
@@ -88,20 +89,18 @@ class GoalCubit extends Cubit<GoalState> {
   List<String> getInterestsForCategory(String categoryName) {
     // Convert display name back to type (lowercase)
     final type = categoryName.toLowerCase();
-    
+
     if (!groupedInterests.containsKey(type)) {
       return [];
     }
-    
-    return groupedInterests[type]!
-        .map((interest) => interest.name)
-        .toList();
+
+    return groupedInterests[type]!.map((interest) => interest.name).toList();
   }
 
   // ============================================================================
   // INTEREST SELECTION METHODS
   // ============================================================================
-  
+
   void addInterest(String interest) {
     if (!selectedInterests.contains(interest)) {
       emit(GoalLoadingState());
@@ -135,15 +134,15 @@ class GoalCubit extends Cubit<GoalState> {
   // ============================================================================
   Future<void> loadUserInterests() async {
     if (user.id == null) return;
-    
+
     emit(GoalLoadingState());
     try {
       final interests = await goalRepo.getUserInterests(userId: user.id!);
       selectedInterests = interests;
-      log('✅ Loaded ${interests.length} user interests');
+      log('Loaded ${interests.length} user interests');
       emit(GoalLoadedState());
     } catch (e) {
-      log('❌ Error loading user interests: $e');
+      log(' Error loading user interests: $e');
       emit(GoalLoadedState());
     }
   }
@@ -151,7 +150,7 @@ class GoalCubit extends Cubit<GoalState> {
   // ============================================================================
   // GOAL METHODS (existing code - keep all your goal methods here)
   // ============================================================================
-  
+
   loadGoals() async {
     emit(GoalLoadingState());
     try {
@@ -172,10 +171,14 @@ class GoalCubit extends Cubit<GoalState> {
         filteredGoals = allGoals;
         break;
       case 1: // Ongoing
-        filteredGoals = allGoals.where((goal) => goal.status == 'active').toList();
+        filteredGoals = allGoals
+            .where((goal) => goal.status == 'active')
+            .toList();
         break;
       case 2: // Completed
-        filteredGoals = allGoals.where((goal) => goal.status == 'completed').toList();
+        filteredGoals = allGoals
+            .where((goal) => goal.status == 'completed')
+            .toList();
         break;
       default:
         filteredGoals = allGoals;
@@ -199,7 +202,7 @@ class GoalCubit extends Cubit<GoalState> {
         goalId: goalId,
         progressPercentage: newProgress,
       );
-      
+
       allGoals = allGoals.map((goal) {
         if (goal.id == goalId) {
           return goal.copyWith(
@@ -211,9 +214,9 @@ class GoalCubit extends Cubit<GoalState> {
         }
         return goal;
       }).toList();
-      
+
       filterGoals();
-      
+
       log('Progress updated to $newProgress% for goal $goalId');
       emit(GoalProgressUpdatedState());
       emit(GoalLoadedState());
@@ -225,12 +228,6 @@ class GoalCubit extends Cubit<GoalState> {
   }
 
   createGoal() async {
-    if (!formKey.currentState!.validate()) {
-      emit(GoalErrorState(error: 'Please fill all required fields'));
-      emit(GoalLoadedState());
-      return;
-    }
-
     emit(GoalLoadingState());
     try {
       await goalRepo.createGoal(
@@ -240,13 +237,13 @@ class GoalCubit extends Cubit<GoalState> {
         category: selectedCategory,
         deadline: selectedDeadline,
       );
-      
+
       titleController.clear();
       descriptionController.clear();
       selectedDeadline = null;
-      
+
       await loadGoals();
-      
+
       log('Goal created successfully');
       emit(GoalCreatedState());
     } catch (e) {
@@ -321,6 +318,7 @@ class GoalCubit extends Cubit<GoalState> {
     titleController.clear();
     descriptionController.clear();
     selectedCategory = 'skill';
+    successCriteriaController.clear();
     selectedDeadline = null;
   }
 
@@ -333,6 +331,7 @@ class GoalCubit extends Cubit<GoalState> {
   Future<void> close() {
     titleController.dispose();
     descriptionController.dispose();
+    successCriteriaController.dispose();
     return super.close();
   }
 }

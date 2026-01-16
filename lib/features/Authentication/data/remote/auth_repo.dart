@@ -38,58 +38,60 @@ class AuthRepo {
     }
   }
 
-Future<Map<String, dynamic>> signIn({
-  required String email,
-  required String password,
-}) async {
-  try {
-    log('Starting signin for: $email');
-    
-    final authResponse = await supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+  Future<Map<String, dynamic>> signIn({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      log('Starting signin for: $email');
 
-    if (authResponse.user == null) {
-      throw Exception('Invalid email or password');
+      final authResponse = await supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (authResponse.user == null) {
+        throw Exception('Invalid email or password');
+      }
+
+      final userId = authResponse.user!.id;
+      log('User authenticated: $userId');
+
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+
+      log('Profile fetched from database');
+
+      // ⭐ No more user_skills query! Just get from profiles
+      final interests = profileResponse['area_of_interest'] != null
+          ? List<String>.from(profileResponse['area_of_interest'])
+          : <String>[];
+
+      return {
+        'user_id': userId,
+        'email': authResponse.user!.email,
+        'name': profileResponse['full_name'],
+        'role': profileResponse['role'],
+        'username': profileResponse['username'],
+        'bio': profileResponse['bio'],
+        'expertise': profileResponse['expertise'],
+        'profile_photo_url': profileResponse['profile_photo_url'],
+        'location': profileResponse['location'],
+        'linkedin_url': profileResponse['linkedin_url'],
+        'is_verified': profileResponse['is_verified'],
+        'interests': interests, // ⭐ From profiles, not user_skills
+        'success': true,
+      };
+    } catch (e) {
+      log('Signin error: $e');
+      // throw Exception('Login failed: ${e.toString()}');
+      return {'success': false, 'error': e.toString()};
     }
-
-    final userId = authResponse.user!.id;
-    log('User authenticated: $userId');
-    
-    final profileResponse = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-    log('Profile fetched from database');
-
-    // ⭐ No more user_skills query! Just get from profiles
-    final interests = profileResponse['area_of_interest'] != null
-        ? List<String>.from(profileResponse['area_of_interest'])
-        : <String>[];
-
-    return {
-      'user_id': userId,
-      'email': authResponse.user!.email,
-      'name': profileResponse['full_name'],
-      'role': profileResponse['role'],
-      'username': profileResponse['username'],
-      'bio': profileResponse['bio'],
-      'expertise': profileResponse['expertise'],
-      'profile_photo_url': profileResponse['profile_photo_url'],
-      'location': profileResponse['location'],
-      'linkedin_url': profileResponse['linkedin_url'],
-      'is_verified': profileResponse['is_verified'],
-      'interests': interests, // ⭐ From profiles, not user_skills
-      'success': true,
-    };
-  } catch (e) {
-    log('Signin error: $e');
-    throw Exception('Login failed: ${e.toString()}');
   }
-}
+
   Future<void> updateProfile({
     required String userId,
     String? bio,
@@ -132,28 +134,31 @@ Future<Map<String, dynamic>> signIn({
     }
   }
 
-Future<void> saveInterests(List<String> selectedInterests) async {
-  try {
-    final userId = supabase.auth.currentUser?.id;
+  Future<void> saveInterests(List<String> selectedInterests) async {
+    try {
+      final userId = supabase.auth.currentUser?.id;
 
-    if (userId == null) {
-      throw Exception('User not authenticated');
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      log('🔵 Saving ${selectedInterests.length} interests for user: $userId');
+
+      // ⭐ Just update the profiles table - no user_skills!
+      await supabase
+          .from('profiles')
+          .update({
+            'area_of_interest': selectedInterests, // Save as array
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId);
+
+      log('Interests saved successfully');
+    } catch (e) {
+      log(' Save interests error: $e');
+      rethrow;
     }
-
-    log('🔵 Saving ${selectedInterests.length} interests for user: $userId');
-
-    // ⭐ Just update the profiles table - no user_skills!
-    await supabase.from('profiles').update({
-      'area_of_interest': selectedInterests, // Save as array
-      'updated_at': DateTime.now().toIso8601String(),
-    }).eq('user_id', userId);
-
-    log('✅ Interests saved successfully');
-  } catch (e) {
-    log('❌ Save interests error: $e');
-    rethrow;
   }
-}
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
     try {
@@ -223,10 +228,10 @@ Future<void> saveInterests(List<String> selectedInterests) async {
         redirectTo: 'io.supabase.mentorverse://reset-password',
       );
 
-      log('✅ Password reset email sent successfully');
+      log('Password reset email sent successfully');
       log('📧 Check email for reset link');
     } catch (e) {
-      log('❌ Password reset error: $e');
+      log(' Password reset error: $e');
       throw Exception('Failed to send reset email: ${e.toString()}');
     }
   }
@@ -242,7 +247,7 @@ Future<void> saveInterests(List<String> selectedInterests) async {
     }
   }
 
-   Future<String> uploadProfilePhoto({
+  Future<String> uploadProfilePhoto({
     required String userId,
     required File imageFile,
   }) async {
@@ -251,11 +256,14 @@ Future<void> saveInterests(List<String> selectedInterests) async {
 
       // Generate unique filename
       final fileExt = imageFile.path.split('.').last;
-      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileName =
+          '${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = 'profile-photos/$fileName';
 
       // Upload to Supabase Storage
-      await supabase.storage.from('profile-photos').upload(
+      await supabase.storage
+          .from('profile-photos')
+          .upload(
             filePath,
             imageFile,
             fileOptions: const FileOptions(
@@ -265,12 +273,14 @@ Future<void> saveInterests(List<String> selectedInterests) async {
           );
 
       // Get public URL
-      final publicUrl = supabase.storage.from('profile-photos').getPublicUrl(filePath);
+      final publicUrl = supabase.storage
+          .from('profile-photos')
+          .getPublicUrl(filePath);
 
-      log('✅ Photo uploaded: $publicUrl');
+      log('Photo uploaded: $publicUrl');
       return publicUrl;
     } catch (e) {
-      log('❌ Upload error: $e');
+      log(' Upload error: $e');
       throw Exception('Failed to upload photo: ${e.toString()}');
     }
   }
@@ -280,12 +290,14 @@ Future<void> saveInterests(List<String> selectedInterests) async {
     try {
       // Extract file path from URL
       final uri = Uri.parse(photoUrl);
-      final path = uri.pathSegments.skip(4).join('/'); // Skip /storage/v1/object/public/profile-photos/
+      final path = uri.pathSegments
+          .skip(4)
+          .join('/'); // Skip /storage/v1/object/public/profile-photos/
 
       await supabase.storage.from('profile-photos').remove([path]);
-      log('✅ Old photo deleted: $path');
+      log('Old photo deleted: $path');
     } catch (e) {
-      log('⚠️ Delete error (non-critical): $e');
+      log(' Delete error (non-critical): $e');
       // Don't throw - deleting old photo is not critical
     }
   }

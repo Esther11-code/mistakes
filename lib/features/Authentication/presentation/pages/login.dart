@@ -44,6 +44,9 @@ class LoginPage extends StatelessWidget {
             if (state is AuthSignInSuccessState) {
               Navigator.pushNamed(context, Routename.loginSuccess);
             }
+            if (state is AuthErrorState) {
+              ToastMessage.showErrorToast(message: state.error);
+            }
           },
           child: Scaffold(
             backgroundColor: Colors.transparent, // important!
