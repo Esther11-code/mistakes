@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class AcceptMentorship extends StatelessWidget {
@@ -9,6 +12,8 @@ class AcceptMentorship extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final readMentorCubit = context.read<MentorCubit>();
+    final watchMentorCubit = context.watch<MentorCubit>();
     return AppScaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +75,7 @@ class AcceptMentorship extends StatelessWidget {
                         children: [
                           TextSpan(text: "You're about to accept "),
                           TextSpan(
-                            text: "Sarah Johnson",
+                            text: watchMentorCubit.selectedMenteeName,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: AppColors.blue,
@@ -123,11 +128,11 @@ class AcceptMentorship extends StatelessWidget {
 
                   SizedBox(height: size.height * 0.015),
 
-                  // Text Field
                   AppshadowContainer(
                     padding: EdgeInsets.zero,
                     color: AppColors.white,
                     child: ApptextField(
+                      controller: watchMentorCubit.welcomeMessageController,
                       hintText: "Write a welcome message...",
                       maxLine: 5,
                     ),
@@ -169,11 +174,20 @@ class AcceptMentorship extends StatelessWidget {
                   SizedBox(height: size.height * 0.04),
                   AppButton(
                     onTap: () {
+                      final readAuthCubit = context.read<AuthenticationCubit>();
+                      if (readAuthCubit.user.isMentor) {
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          readMentorCubit.acceptRequest(
+                            readMentorCubit.selectedMatchId!,
+                            readAuthCubit.user.id ?? "",
+                          );
+                        });
+                      }
                       showAdaptiveDialog(
                         barrierDismissible: true,
                         context: context,
                         builder: (context) => AlertDialog(
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppColors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),

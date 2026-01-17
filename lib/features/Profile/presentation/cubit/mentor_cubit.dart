@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:mistakes/features/Profile/data/remote/mentor_repo.dart';
 
 part 'mentor_state.dart';
@@ -22,6 +23,8 @@ class MentorCubit extends Cubit<MentorState> {
   List<Map<String, dynamic>> thisWeeksTasks = [];
   List<Map<String, dynamic>> activeMentees = [];
   List<Map<String, dynamic>> incomingRequests = [];
+
+  TextEditingController welcomeMessageController = TextEditingController();
 
   Map<String, dynamic>? selectedMenteeDetails;
 
@@ -165,4 +168,47 @@ class MentorCubit extends Cubit<MentorState> {
       emit(MentorErrorState(e.toString()));
     }
   }
+
+  Map<String, dynamic>? selectedRequest;
+
+  void setSelectedRequest(Map<String, dynamic> request) {
+    emit(MentorLoadingState());
+    selectedRequest = request;
+    log('Selected request: ${request['match_id']}');
+    emit(MentorRequestSelectedState());
+  }
+
+  // void clearSelectedRequest() {
+  //   emit(MentorLoadingState());
+  //   selectedRequest = null;
+  //   emit(MentorLoadedState());
+  // }
+
+  Map<String, dynamic>? get selectedMentee =>
+      selectedRequest?['mentee'] as Map<String, dynamic>?;
+
+  String? get selectedMessage => selectedRequest?['message'] as String?;
+
+  List<dynamic>? get selectedGoals =>
+      selectedRequest?['goals'] as List<dynamic>?;
+
+  String? get selectedMatchId => selectedRequest?['match_id'] as String?;
+
+  DateTime? get selectedCreatedAt => selectedRequest != null
+      ? DateTime.parse(selectedRequest!['created_at'] as String)
+      : null;
+
+  String get selectedMenteeName =>
+      selectedMentee?['full_name'] ?? selectedMentee?['username'] ?? 'Unknown';
+
+  String get selectedMenteeExpertise =>
+      selectedMentee?['expertise'] ?? 'Not specified';
+
+  String get selectedMenteeBio => selectedMentee?['bio'] ?? 'No bio available';
+
+  String? get selectedMenteeAvatar => selectedMentee?['profile_photo_url'];
+
+  String? get selectedMenteeLocation => selectedMentee?['location'];
+
+  String get selectedMenteeUsername => selectedMentee?['username'] ?? '';
 }

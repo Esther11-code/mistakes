@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
+import 'package:mistakes/constants/utils/utils.dart';
+import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -19,10 +22,10 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
   @override
   void initState() {
     super.initState();
-    _loadRequests();
+    loadRequests();
   }
 
-  Future<void> _loadRequests() async {
+  Future<void> loadRequests() async {
     final mentorCubit = context.read<MentorCubit>();
     final userId = context.read<HomeCubit>().user.id;
 
@@ -44,75 +47,64 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
           Expanded(
             child: BlocConsumer<MentorCubit, MentorState>(
               listener: (context, state) {
-                // Show success/error messages
                 if (state is MentorRequestAcceptedState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Request accepted successfully!'),
-                      backgroundColor: AppColors.success,
-                    ),
+                  Fluttertoast.showToast(
+                    msg: 'Request accepted successfully!',
+                    backgroundColor: AppColors.success,
                   );
                 } else if (state is MentorRequestDeclinedState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Request declined'),
-                      backgroundColor: AppColors.errorColor,
-                    ),
+                  Fluttertoast.showToast(
+                    msg: 'Request declined successfully!',
+                    backgroundColor: AppColors.errorColor,
                   );
                 } else if (state is MentorErrorState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.error),
-                      backgroundColor: AppColors.errorColor,
-                    ),
+                  Fluttertoast.showToast(
+                    msg: state.error,
+                    backgroundColor: AppColors.errorColor,
                   );
                 }
               },
               builder: (context, state) {
-                final cubit = context.read<MentorCubit>();
-
-                // Loading state
+                final readMentorCubit = context.read<MentorCubit>();
                 if (state is MentorLoadingState &&
-                    cubit.incomingRequests.isEmpty) {
+                    readMentorCubit.incomingRequests.isEmpty) {
                   return Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.filledColor,
+                    child: LoadingAnimationWidget.fourRotatingDots(
+                      color: AppColors.background,
+                      size: 50.sp,
                     ),
                   );
                 }
 
-                // Empty state
-                if (cubit.incomingRequests.isEmpty) {
+                if (readMentorCubit.incomingRequests.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.inbox,
-                          size: 80,
-                          color: AppColors.grey.withOpacity(0.5),
+                          size: 80.sp,
+                          color: AppColors.blue.withAlpha(50),
                         ),
-                        SizedBox(height: 16),
+                        SizedBox(height: size.height * 0.02),
                         InAppText(
                           text: 'No Pending Requests',
                           size: 20,
                           fontweight: FontWeight.w600,
-                          color: AppColors.grey,
+                          color: AppColors.blue,
                         ),
-                        SizedBox(height: 8),
+                        SizedBox(height: size.height * 0.01),
                         InAppText(
                           text: 'You don\'t have any mentorship requests yet',
-                          size: 14,
-                          color: AppColors.grey,
+                          size: 15,
+                          color: AppColors.blue,
                         ),
                       ],
                     ),
                   );
                 }
-
-                // List of requests
                 return RefreshIndicator(
-                  onRefresh: _loadRequests,
+                  onRefresh: loadRequests,
                   child: SingleChildScrollView(
                     physics: AlwaysScrollableScrollPhysics(),
                     child: Padding(
@@ -121,7 +113,6 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                       ),
                       child: Column(
                         children: [
-                          // Display count
                           Padding(
                             padding: EdgeInsets.only(
                               bottom: size.height * 0.02,
@@ -130,19 +121,18 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                               children: [
                                 InAppText(
                                   text:
-                                      '${cubit.incomingRequests.length} Pending ${cubit.incomingRequests.length == 1 ? 'Request' : 'Requests'}',
+                                      '${readMentorCubit.incomingRequests.length} Pending ${readMentorCubit.incomingRequests.length == 1 ? 'Request' : 'Requests'}',
                                   size: 16,
                                   fontweight: FontWeight.w600,
-                                  color: AppColors.grey,
+                                  color: AppColors.blue,
                                 ),
                               ],
                             ),
                           ),
 
-                          // Request cards
-                          ...cubit.incomingRequests.map((request) {
-                            return _buildRequestCard(request, size);
-                          }).toList(),
+                          ...readMentorCubit.incomingRequests.map((request) {
+                            return buildRequestCard(request, size);
+                          }),
                         ],
                       ),
                     ),
@@ -156,52 +146,40 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
     );
   }
 
-  // ============================================================================
-  // BUILD REQUEST CARD
-  // ============================================================================
-  Widget _buildRequestCard(Map<String, dynamic> request, Size size) {
+  Widget buildRequestCard(Map<String, dynamic> request, Size size) {
     final mentee = request['mentee'] as Map<String, dynamic>;
     final message = request['message'] as String?;
     final goals = request['goals'] as List<dynamic>?;
     final createdAt = DateTime.parse(request['created_at'] as String);
+    final createdAtString = request['created_at'] as String;
     final matchId = request['match_id'] as String;
 
-    // Get mentee info
     final menteeName = mentee['full_name'] ?? mentee['username'] ?? 'Unknown';
     final menteeExpertise = mentee['expertise'] ?? 'No expertise listed';
     final menteeAvatar = mentee['profile_photo_url'];
-
-    // Check if request is less than 24 hours old
     final isNew = DateTime.now().difference(createdAt).inHours < 24;
-
-    // Get initials for avatar
-    final initials = _getInitials(menteeName);
+    final initials = context.read<ChatCubit>().getInitials(menteeName);
 
     return AppshadowContainer(
       onTap: () {
-        // Navigate to details page with the request data
+        context.read<MentorCubit>().setSelectedRequest(request);
         Navigator.pushNamed(
           context,
           Routename.requestDetails,
-          arguments: request, // Pass the request data
         );
       },
       margin: EdgeInsets.only(bottom: size.height * 0.02),
       padding: EdgeInsets.all(size.width * 0.04),
-      shadowcolour: AppColors.blue.withOpacity(0.2),
+      shadowcolour: AppColors.blue.withAlpha(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row: Avatar, Info, and Badge
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar (with network image or gradient fallback)
-              _buildAvatar(menteeAvatar, initials, size),
+              buildAvatar(menteeAvatar, initials, size),
 
               SizedBox(width: size.width * 0.03),
-
-              // Name and Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,13 +206,13 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                               gradient: LinearGradient(
                                 colors: [
                                   AppColors.orange,
-                                  AppColors.orange.withOpacity(0.7),
+                                  AppColors.orange.withAlpha(70),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.orange.withOpacity(0.2),
+                                  color: AppColors.orange.withAlpha(20),
                                   blurRadius: 8,
                                   offset: Offset(0, 2),
                                 ),
@@ -245,10 +223,10 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                               children: [
                                 Icon(
                                   Icons.fiber_new,
-                                  size: 16,
-                                  color: Colors.white,
+                                  size: 16.sp,
+                                  color: AppColors.white,
                                 ),
-                                SizedBox(width: 4),
+                                SizedBox(width: size.width * 0.02),
                                 InAppText(
                                   text: "New",
                                   color: AppColors.white,
@@ -260,37 +238,37 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                           ),
                       ],
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: size.height * 0.008),
                     Row(
                       children: [
                         Icon(
                           Icons.work_outline,
-                          size: 16,
+                          size: 16.sp,
                           color: AppColors.filledColor,
                         ),
-                        SizedBox(width: 5),
+                        SizedBox(width: size.width * 0.02),
                         Expanded(
                           child: InAppText(
                             text: menteeExpertise,
-                            size: 15,
                             fontweight: FontWeight.w500,
                             color: AppColors.filledColor,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(height: size.height * 0.002),
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 14,
+                          size: 14.sp,
                           color: AppColors.grey,
                         ),
-                        SizedBox(width: 5),
+                        SizedBox(width: size.width * 0.02),
                         InAppText(
-                          text: 'Requested ${_formatDate(createdAt)}',
-                          size: 14,
+                          text:
+                              'Requested ${Utils.getTimeAgo(createdAtString)}',
+                          size: 15,
                           color: AppColors.grey,
                         ),
                       ],
@@ -300,29 +278,26 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
               ),
             ],
           ),
-
-          // Show goals if available
           if (goals != null && goals.isNotEmpty) ...[
             SizedBox(height: size.height * 0.015),
-            Container(height: 1, color: AppColors.inactive),
+            Container(height: size.height * 0.001, color: AppColors.inactive),
             SizedBox(height: size.height * 0.015),
-
             Row(
               children: [
-                Icon(Icons.flag_outlined, size: 18, color: AppColors.blue),
-                SizedBox(width: 8),
+                Icon(Icons.flag_outlined, size: 18.sp, color: AppColors.blue),
+                SizedBox(width: size.width * 0.02),
                 InAppText(
                   text: 'Goals:',
-                  size: 15,
+
                   fontweight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            SizedBox(height: size.height * 0.015),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: size.width * 0.02,
+              runSpacing: size.height * 0.015,
               children: goals.take(3).map((goal) {
                 return Container(
                   padding: EdgeInsets.symmetric(
@@ -330,12 +305,12 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                     vertical: size.height * 0.008,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.blue.withOpacity(0.1),
+                    color: AppColors.blue.withAlpha(10),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: InAppText(
                     text: goal.toString(),
-                    size: 13,
+                    size: 16,
                     color: AppColors.blue,
                   ),
                 );
@@ -346,13 +321,12 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                 padding: EdgeInsets.only(top: 8),
                 child: InAppText(
                   text: '+${goals.length - 3} more',
-                  size: 13,
+                  size: 16,
                   color: AppColors.grey,
                 ),
               ),
           ],
 
-          // Message
           if (message != null && message.isNotEmpty) ...[
             SizedBox(height: size.height * 0.015),
             Container(height: 1, color: AppColors.inactive),
@@ -364,12 +338,12 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                 Container(
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.blue.withOpacity(0.1),
+                    color: AppColors.blue.withAlpha(10),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.format_quote,
-                    size: 18,
+                    size: 18.sp,
                     color: AppColors.blue,
                   ),
                 ),
@@ -377,7 +351,7 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                 Expanded(
                   child: InAppText(
                     text: message,
-                    size: 15,
+                    size: 16,
                     color: AppColors.lightblack,
                     maxline: 3,
                   ),
@@ -385,17 +359,14 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
               ],
             ),
           ],
-
-          // Action buttons
           SizedBox(height: size.height * 0.02),
           Row(
             children: [
               Expanded(
                 child: AppButton(
                   buttonColor: AppColors.success,
-                  onTap: () => _acceptRequest(matchId),
+                  onTap: () => acceptRequest(matchId),
                   label: "Accept",
-                  textSize: 16,
                 ),
               ),
               SizedBox(width: size.width * 0.03),
@@ -404,10 +375,9 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
                   border: true,
                   bordercolor: AppColors.errorColor,
                   buttonColor: AppColors.white,
-                  onTap: () => _declineRequest(matchId),
+                  onTap: () => declineRequest(matchId),
                   label: "Decline",
                   labelColor: AppColors.errorColor,
-                  textSize: 16,
                 ),
               ),
             ],
@@ -417,20 +387,20 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
     );
   }
 
-  // ============================================================================
-  // BUILD AVATAR
-  // ============================================================================
-  Widget _buildAvatar(String? avatarUrl, String initials, Size size) {
+  Widget buildAvatar(String? avatarUrl, String initials, Size size) {
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return Container(
         width: size.height * 0.08,
         height: size.height * 0.08,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.blue.withOpacity(0.3), width: 2),
+          border: Border.all(
+            color: AppColors.blue.withAlpha(30),
+            width: size.width * 0.003,
+          ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.blue.withOpacity(0.2),
+              color: AppColors.blue.withAlpha(20),
               blurRadius: 10,
               offset: Offset(0, 4),
             ),
@@ -441,17 +411,17 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
             avatarUrl,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return _buildGradientAvatar(initials, size);
+              return buildGradientAvatar(initials, size);
             },
           ),
         ),
       );
     }
 
-    return _buildGradientAvatar(initials, size);
+    return buildGradientAvatar(initials, size);
   }
 
-  Widget _buildGradientAvatar(String initials, Size size) {
+  Widget buildGradientAvatar(String initials, Size size) {
     return Container(
       width: size.height * 0.08,
       height: size.height * 0.08,
@@ -464,7 +434,7 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.blue.withOpacity(0.2),
+            color: AppColors.blue.withAlpha(20),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -476,18 +446,16 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppColors.white,
           ),
         ),
       ),
     );
   }
 
-  // ============================================================================
-  // ACCEPT REQUEST
-  // ============================================================================
-  Future<void> _acceptRequest(String matchId) async {
-    // Show confirmation dialog
+  Future<void> acceptRequest(String matchId) async {
+    final mentorCubit = context.read<MentorCubit>();
+    final userId = context.read<HomeCubit>().user.id;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -500,33 +468,30 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
             onPressed: () => Navigator.pop(context, false),
             child: Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-            child: Text('Accept'),
+          AppButton(
+            onTap: () => Navigator.pop(context, true),
+            buttonColor: AppColors.success,
+            label: 'Accept',
+            textSize: 20,
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      final mentorCubit = context.read<MentorCubit>();
-      final userId = context.read<HomeCubit>().user.id;
-
       if (userId != null) {
         await mentorCubit.acceptRequest(matchId, userId);
       }
     }
   }
 
-  // ============================================================================
-  // DECLINE REQUEST
-  // ============================================================================
-  Future<void> _declineRequest(String matchId) async {
-    // Show confirmation dialog
+  Future<void> declineRequest(String matchId) async {
+    final mentorCubit = context.read<MentorCubit>();
+    final userId = context.read<HomeCubit>().user.id;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
         title: Text('Decline Request'),
         content: Text(
           'Are you sure you want to decline this mentorship request?',
@@ -536,54 +501,20 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
             onPressed: () => Navigator.pop(context, false),
             child: Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.errorColor,
-            ),
-            child: Text('Decline'),
+          AppButton(
+            onTap: () => Navigator.pop(context, true),
+            textSize: 20,
+            buttonColor: AppColors.errorColor,
+            label: 'Decline',
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      final mentorCubit = context.read<MentorCubit>();
-      final userId = context.read<HomeCubit>().user.id;
-
       if (userId != null) {
         await mentorCubit.declineRequest(matchId, userId);
       }
-    }
-  }
-
-  // ============================================================================
-  // HELPER FUNCTIONS
-  // ============================================================================
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    } else if (parts.isNotEmpty) {
-      return parts[0].substring(0, 2).toUpperCase();
-    }
-    return 'UN';
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inMinutes < 60) {
-      return '${difference.inMinutes} minutes ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours} hours ago';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return DateFormat('MMM dd, yyyy').format(date);
     }
   }
 }

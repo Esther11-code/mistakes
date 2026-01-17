@@ -10,6 +10,7 @@ sealed class MentorState extends Equatable {
 final class MentorInitial extends MentorState {}
 
 final class MentorLoadingState extends MentorState {}
+final class MentorRequestSelectedState extends MentorState {}
 
 final class MentorLoadedState extends MentorState {}
 
