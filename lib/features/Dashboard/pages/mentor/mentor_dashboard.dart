@@ -1,3 +1,4 @@
+// lib/features/Dashboard/pages/mentor_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,12 +6,30 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Dashboard/data/local/model/mentor_model.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class MentorDashboard extends StatelessWidget {
+class MentorDashboard extends StatefulWidget {
   const MentorDashboard({super.key});
+
+  @override
+  State<MentorDashboard> createState() => _MentorDashboardState();
+}
+
+class _MentorDashboardState extends State<MentorDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    // Load mentees when page opens
+    _loadMentees();
+  }
+
+  Future<void> _loadMentees() async {
+    final cubit = context.read<DashboardCubit>();
+    await cubit.loadMentees(user: context.read<AuthenticationCubit>().user);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +56,7 @@ class MentorDashboard extends StatelessWidget {
             Expanded(
               child: BlocBuilder<DashboardCubit, DashboardState>(
                 builder: (context, state) {
+                  // ⭐ Loading state (only show spinner if no data)
                   if (state is DashboardLoadingState &&
                       watchDashboardCubit.allMentees.isEmpty) {
                     return Center(
@@ -47,53 +67,63 @@ class MentorDashboard extends StatelessWidget {
                     );
                   }
 
-                  return SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.all(size.width * 0.04),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Status Filter Tabs
-                          StatusFilterTabs(size: size),
+                  // ⭐ Add pull-to-refresh
+                  return RefreshIndicator(
+                    onRefresh: _loadMentees,
+                    child: SingleChildScrollView(
+                      physics:
+                          AlwaysScrollableScrollPhysics(), // ⭐ Enable pull-to-refresh even when content is short
+                      child: Padding(
+                        padding: EdgeInsets.all(size.width * 0.04),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Status Filter Tabs
+                            StatusFilterTabs(size: size),
 
-                          SizedBox(height: size.height * 0.03),
+                            SizedBox(height: size.height * 0.03),
 
-                          // Empty State
-                          if (watchDashboardCubit.filteredMentees.isEmpty)
-                            EmptyMenteesState(
-                              size: size,
-                              statusText:
-                                  watchDashboardCubit.status[watchDashboardCubit
-                                      .selectedStatusIndex],
+                            // Empty State
+                            if (watchDashboardCubit.filteredMentees.isEmpty)
+                              EmptyMenteesState(
+                                size: size,
+                                statusText:
+                                    watchDashboardCubit
+                                        .status[watchDashboardCubit
+                                        .selectedStatusIndex],
+                              ),
+
+                            // Mentees List
+                            ...List.generate(
+                              watchDashboardCubit.filteredMentees.length,
+                              (index) {
+                                final mentee =
+                                    watchDashboardCubit.filteredMentees[index];
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: size.height * 0.02,
+                                  ),
+                                  child: MenteeCard(
+                                    mentee: mentee,
+                                    size: size,
+                                    onTap: () {
+                                      readDashboardCubit.setSelectedMenteeIndex(
+                                        index,
+                                      );
+                                      readDashboardCubit.setSelectedMentee(
+                                        mentee,
+                                      );
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routename.menteeDashboard,
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
                             ),
-
-                          // Mentees List
-                          ...List.generate(
-                            watchDashboardCubit.filteredMentees.length,
-                            (index) {
-                              final mentee =
-                                  watchDashboardCubit.filteredMentees[index];
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: size.height * 0.02,
-                                ),
-                                child: MenteeCard(
-                                  mentee: mentee,
-                                  size: size,
-                                  onTap: () {
-                                    readDashboardCubit.setSelectedMenteeIndex(
-                                      index,
-                                    );
-                                    Navigator.pushNamed(
-                                      context,
-                                      Routename.menteeDashboard,
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -170,13 +200,22 @@ class EmptyMenteesState extends StatelessWidget {
             Icon(
               Icons.people_outline,
               size: 80.sp,
-              color: AppColors.blue.withAlpha(100),
+              color: AppColors.blue.withAlpha(40), // ⭐ Slightly more visible
             ),
             SizedBox(height: size.height * 0.02),
             InAppText(
-              text: 'No mentee found ',
+              text: 'No mentees in "$statusText"',
               size: 20,
+              fontweight: FontWeight.w600,
               color: AppColors.lightblack,
+            ),
+            SizedBox(height: size.height * 0.01),
+            InAppText(
+              text: statusText == 'All'
+                  ? 'You don\'t have any mentees yet'
+                  : 'Try selecting a different filter',
+              size: 16,
+              color: AppColors.grey,
             ),
           ],
         ),
@@ -202,7 +241,7 @@ class MenteeCard extends StatelessWidget {
     return AppshadowContainer(
       onTap: onTap,
       padding: EdgeInsets.all(size.width * 0.04),
-      shadowcolour: AppColors.lightgrey.withAlpha(100),
+      shadowcolour: AppColors.lightgrey.withAlpha(40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -310,7 +349,7 @@ class MenteeCard extends StatelessWidget {
                 height: size.height * 0.025,
                 width: size.width,
                 borderRadius: BorderRadius.circular(size.height * 0.02),
-                color: AppColors.grey.withAlpha(40),
+                color: AppColors.grey.withAlpha(16),
                 child: FractionallySizedBox(
                   widthFactor: mentee.overallProgress / 100,
                   child: Container(

@@ -26,13 +26,13 @@ class BottomNav extends StatelessWidget {
         if (state is HomeLoadingState) {
           final chatCubit = context.read<ChatCubit>();
           chatCubit.user = watchAuthCubit.user;
-          chatCubit.loadConversations();
+          chatCubit.loadConversations(user: watchAuthCubit.user);
           final dashboardCubit = context.read<DashboardCubit>();
-          dashboardCubit.user = context.read<AuthenticationCubit>().user;
-          dashboardCubit.loadMentees();
-           final goalCubit = context.read<GoalCubit>();
+          dashboardCubit.loadMentees(user: watchAuthCubit.user);
+          final goalCubit = context.read<GoalCubit>();
           goalCubit.user = context.read<AuthenticationCubit>().user;
           goalCubit.loadGoals();
+          context.read<ChatCubit>().loadConversations(user: context.read<AuthenticationCubit>().user);
         }
         return Scaffold(
           body: watchHome.screens[index],

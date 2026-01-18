@@ -1,4 +1,5 @@
 // lib/features/Profile/data/remote/mentor_repo.dart
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer';
 
@@ -57,42 +58,32 @@ class MentorRepo {
 
   // ============================================================================
   // RECENT ACTIVITIES
-  // ============================================================================
+  // ============================================================================// In mentor_repo.dart, update getRecentActivities:
+
   Future<List<Map<String, dynamic>>> getRecentActivities(
     String mentorId,
   ) async {
     try {
-      final matchesResponse = await _supabase
-          .from('matches')
-          .select('mentee_id')
-          .eq('mentor_id', mentorId)
-          .eq('status', 'accepted');
-
-      if (matchesResponse.isEmpty) {
-        log(' No active mentees found');
-        return [];
-      }
-
-      final menteeIds = matchesResponse
-          .map((m) => m['mentee_id'] as String)
-          .toList();
-
-      log('🔵 Found ${menteeIds.length} active mentees');
-
-      final goalsResponse = await _supabase
-          .from('goals')
-          .select('*')
-          .inFilter('mentee_id', menteeIds)
-          .order('updated_at', ascending: false)
-          .limit(5);
-
       final activities = <Map<String, dynamic>>[];
 
-      for (var goal in goalsResponse) {
-        final menteeId = goal['mentee_id'];
+      // ========================================
+      // 1. Get recently started mentorships (last 7 days)
+      // ========================================
+      final weekAgo = DateTime.now().subtract(Duration(days: 7));
+
+      final newMentorshipsResponse = await _supabase
+          .from('matches')
+          .select('id, created_at, responded_at, mentee_id')
+          .eq('mentor_id', mentorId)
+          .eq('status', 'accepted')
+          .gte('responded_at', weekAgo.toIso8601String())
+          .order('responded_at', ascending: false)
+          .limit(3);
+
+      for (var match in newMentorshipsResponse) {
+        final menteeId = match['mentee_id'];
 
         try {
-          // Get user from profiles table
           final userResponse = await _supabase
               .from('profiles')
               .select('full_name, profile_photo_url')
@@ -100,26 +91,87 @@ class MentorRepo {
               .single();
 
           activities.add({
-            'id': goal['id'],
-            'type': 'goal_updated',
-            'title': goal['title'],
-            'description': goal['description'],
-            'status': goal['status'],
-            'timestamp': DateTime.parse(goal['updated_at']),
+            'id': match['id'],
+            'type': 'mentorship_started',
+            'title': 'New Mentorship Started',
+            'description':
+                'You accepted ${userResponse['full_name']} as your mentee',
+            'status': 'active',
+            'timestamp': DateTime.parse(match['responded_at']),
             'mentee_name': userResponse['full_name'] ?? 'Unknown',
             'mentee_avatar': userResponse['profile_photo_url'],
-            'icon': _getIconForGoalType(goal['category']),
+            'icon': _getIconFromString('handshake'),
           });
         } catch (e) {
-          log(' Could not fetch profile for mentee $menteeId: $e');
+          log('Could not fetch profile for mentee $menteeId: $e');
           continue;
         }
       }
 
-      log('Loaded ${activities.length} recent activities');
-      return activities;
+      // ========================================
+      // 2. Get active mentees' goal updates
+      // ========================================
+      final matchesResponse = await _supabase
+          .from('matches')
+          .select('mentee_id')
+          .eq('mentor_id', mentorId)
+          .eq('status', 'accepted');
+
+      if (matchesResponse.isNotEmpty) {
+        final menteeIds = matchesResponse
+            .map((m) => m['mentee_id'] as String)
+            .toList();
+
+        log('Found ${menteeIds.length} active mentees');
+
+        final goalsResponse = await _supabase
+            .from('goals')
+            .select('*')
+            .inFilter('mentee_id', menteeIds)
+            .order('updated_at', ascending: false)
+            .limit(5);
+
+        for (var goal in goalsResponse) {
+          final menteeId = goal['mentee_id'];
+
+          try {
+            final userResponse = await _supabase
+                .from('profiles')
+                .select('full_name, profile_photo_url')
+                .eq('user_id', menteeId)
+                .single();
+
+            activities.add({
+              'id': goal['id'],
+              'type': 'goal_updated',
+              'title': goal['title'],
+              'description': goal['description'],
+              'status': goal['status'],
+              'timestamp': DateTime.parse(goal['updated_at']),
+              'mentee_name': userResponse['full_name'] ?? 'Unknown',
+              'mentee_avatar': userResponse['profile_photo_url'],
+              'icon': _getIconForGoalType(goal['category']),
+            });
+          } catch (e) {
+            log('Could not fetch profile for mentee $menteeId: $e');
+            continue;
+          }
+        }
+      }
+
+      // Sort all activities by timestamp (most recent first)
+      activities.sort(
+        (a, b) =>
+            (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
+      );
+
+      // Return top 5 activities
+      final topActivities = activities.take(5).toList();
+
+      log('Loaded ${topActivities.length} recent activities');
+      return topActivities;
     } catch (e) {
-      log(' Error fetching recent activities: $e');
+      log('Error fetching recent activities: $e');
       return [];
     }
   }
@@ -137,42 +189,46 @@ class MentorRepo {
     }
   }
 
+  IconData _getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'handshake':
+        return Icons.handshake_rounded;
+      case 'work':
+        return Icons.work_outline;
+      case 'code':
+        return Icons.code;
+      case 'person':
+        return Icons.person_outline;
+      case 'trophy':
+      default:
+        return Icons.emoji_events;
+    }
+  }
   // ============================================================================
   // THIS WEEK'S TASKS
   // ============================================================================
+  // In mentor_repo.dart, update getThisWeeksTasks:
+
   Future<List<Map<String, dynamic>>> getThisWeeksTasks(String mentorId) async {
     try {
       final now = DateTime.now();
       final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
       final endOfWeek = startOfWeek.add(Duration(days: 6));
 
-      final matchesResponse = await _supabase
-          .from('matches')
-          .select('mentee_id')
-          .eq('mentor_id', mentorId)
-          .eq('status', 'accepted');
-
-      if (matchesResponse.isEmpty) {
-        return [];
-      }
-
-      final menteeIds = matchesResponse
-          .map((m) => m['mentee_id'] as String)
-          .toList();
-
-      final goalsResponse = await _supabase
-          .from('goals')
-          .select('*')
-          .inFilter('mentee_id', menteeIds)
-          .gte('deadline', startOfWeek.toIso8601String())
-          .lte('deadline', endOfWeek.toIso8601String())
-          .order('deadline', ascending: true)
-          .limit(10);
-
       final tasks = <Map<String, dynamic>>[];
 
-      for (var goal in goalsResponse) {
-        final menteeId = goal['mentee_id'];
+      // ========================================
+      // 1. Pending mentorship requests to review
+      // ========================================
+      final pendingRequestsResponse = await _supabase
+          .from('matches')
+          .select('id, created_at, mentee_id')
+          .eq('mentor_id', mentorId)
+          .eq('status', 'pending')
+          .order('created_at', ascending: true);
+
+      for (var request in pendingRequestsResponse) {
+        final menteeId = request['mentee_id'];
 
         try {
           final userResponse = await _supabase
@@ -181,25 +237,158 @@ class MentorRepo {
               .eq('user_id', menteeId)
               .single();
 
+          final createdAt = DateTime.parse(request['created_at']);
+          final daysWaiting = now.difference(createdAt).inDays;
+
           tasks.add({
-            'id': goal['id'],
-            'title': goal['title'],
-            'deadline': DateTime.parse(goal['deadline']),
-            'status': goal['status'],
-            'priority': _determinePriority(DateTime.parse(goal['deadline'])),
+            'id': request['id'],
+            'type': 'pending_request',
+            'title': 'Review mentorship request',
+            'deadline': createdAt.add(Duration(days: 3)),
+            'status': 'pending',
+            'priority': daysWaiting >= 2 ? 'high' : 'medium',
             'mentee_name': userResponse['full_name'] ?? 'Unknown',
-            'is_completed': goal['status'] == 'completed',
+            'is_completed': false,
+            'days_waiting': daysWaiting,
           });
         } catch (e) {
-          log(' Could not fetch profile for mentee $menteeId: $e');
+          log('Could not fetch profile for mentee $menteeId: $e');
           continue;
         }
       }
 
+      // ========================================
+      // 2. Goals with recent progress updates (need comments)
+      // ========================================
+      final matchesResponse = await _supabase
+          .from('matches')
+          .select('mentee_id')
+          .eq('mentor_id', mentorId)
+          .eq('status', 'accepted');
+
+      if (matchesResponse.isNotEmpty) {
+        final menteeIds = matchesResponse
+            .map((m) => m['mentee_id'] as String)
+            .toList();
+
+        // Get goals updated in the last 3 days without mentor comments
+        final threeDaysAgo = now.subtract(Duration(days: 3));
+
+        final goalsWithProgressResponse = await _supabase
+            .from('goals')
+            .select('*')
+            .inFilter('mentee_id', menteeIds)
+            .gte('updated_at', threeDaysAgo.toIso8601String())
+            .order('updated_at', ascending: false);
+
+        for (var goal in goalsWithProgressResponse) {
+          final menteeId = goal['mentee_id'];
+          final goalId = goal['id'];
+
+          // Check if mentor has commented on this goal
+          final commentsResponse = await _supabase
+              .from('goal_comments')
+              .select('id')
+              .eq('goal_id', goalId)
+              .eq('user_id', mentorId)
+              .limit(1);
+
+          // If no comments from mentor and progress > 0, add to tasks
+          if (commentsResponse.isEmpty && goal['progress_percentage'] > 0) {
+            try {
+              final userResponse = await _supabase
+                  .from('profiles')
+                  .select('full_name')
+                  .eq('user_id', menteeId)
+                  .single();
+
+              final updatedAt = DateTime.parse(goal['updated_at']);
+              final hoursAgo = now.difference(updatedAt).inHours;
+
+              tasks.add({
+                'id': goal['id'],
+                'type': 'comment_needed',
+                'title': 'Comment on "${goal['title']}"',
+                'deadline': updatedAt.add(
+                  Duration(days: 2),
+                ), // Suggest commenting within 2 days
+                'status': 'active',
+                'priority': hoursAgo >= 48 ? 'high' : 'medium',
+                'mentee_name': userResponse['full_name'] ?? 'Unknown',
+                'is_completed': false,
+                'progress_percentage': goal['progress_percentage'],
+              });
+            } catch (e) {
+              log('Could not fetch profile for mentee $menteeId: $e');
+              continue;
+            }
+          }
+        }
+
+        // ========================================
+        // 3. Goals with deadlines this week
+        // ========================================
+        final goalsResponse = await _supabase
+            .from('goals')
+            .select('*')
+            .inFilter('mentee_id', menteeIds)
+            .gte('deadline', startOfWeek.toIso8601String())
+            .lte('deadline', endOfWeek.toIso8601String())
+            .order('deadline', ascending: true);
+
+        for (var goal in goalsResponse) {
+          final menteeId = goal['mentee_id'];
+
+          try {
+            final userResponse = await _supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('user_id', menteeId)
+                .single();
+
+            tasks.add({
+              'id': goal['id'],
+              'type': 'goal_deadline',
+              'title': goal['title'],
+              'deadline': DateTime.parse(goal['deadline']),
+              'status': goal['status'],
+              'priority': _determinePriority(DateTime.parse(goal['deadline'])),
+              'mentee_name': userResponse['full_name'] ?? 'Unknown',
+              'is_completed': goal['status'] == 'completed',
+            });
+          } catch (e) {
+            log('Could not fetch profile for mentee $menteeId: $e');
+            continue;
+          }
+        }
+      }
+
+      // Sort tasks: pending requests first, then comments needed, then by deadline
+      tasks.sort((a, b) {
+        // Pending requests first
+        if (a['type'] == 'pending_request' && b['type'] != 'pending_request') {
+          return -1;
+        }
+        if (b['type'] == 'pending_request' && a['type'] != 'pending_request') {
+          return 1;
+        }
+
+        // Comment needed second
+        if (a['type'] == 'comment_needed' && b['type'] == 'goal_deadline') {
+          return -1;
+        }
+        if (b['type'] == 'comment_needed' && a['type'] == 'goal_deadline') {
+          return 1;
+        }
+
+        // Then by deadline/priority
+        return (a['deadline'] as DateTime).compareTo(b['deadline'] as DateTime);
+      });
+
       log('Loaded ${tasks.length} tasks for this week');
-      return tasks;
+      return tasks.take(10).toList();
     } catch (e) {
-      log(' Error fetching this week\'s tasks: $e');
+      log('Error fetching this week\'s tasks: $e');
       return [];
     }
   }
@@ -234,7 +423,7 @@ class MentorRepo {
           final userResponse = await _supabase
               .from('profiles')
               .select(
-                'user_id, username, full_name, profile_photo_url, bio, expertise, location',
+                'user_id, username, full_name, profile_photo_url, bio, expertise',
               )
               .eq('user_id', menteeId)
               .single();
@@ -335,19 +524,23 @@ class MentorRepo {
   // ============================================================================
   // ACCEPT/DECLINE REQUEST
   // ============================================================================
-  Future<void> acceptRequest(String matchId) async {
+  Future<void> acceptRequest(String matchId, {String? welcomeMessage}) async {
     try {
-      await _supabase
-          .from('matches')
-          .update({
-            'status': 'accepted',
-            'responded_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', matchId);
+      final updateData = {
+        'status': 'accepted',
+        'responded_at': DateTime.now().toIso8601String(),
+      };
+
+      // Add welcome message if provided
+      if (welcomeMessage != null && welcomeMessage.isNotEmpty) {
+        updateData['welcome_message'] = welcomeMessage;
+      }
+
+      await _supabase.from('matches').update(updateData).eq('id', matchId);
 
       log('Request accepted: $matchId');
     } catch (e) {
-      log(' Error accepting request: $e');
+      log('Error accepting request: $e');
       rethrow;
     }
   }

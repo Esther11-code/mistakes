@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
@@ -323,48 +324,51 @@ class _AddGoalState extends State<AddGoal> {
                         );
                       }
                     },
-                    child: AppButton(
-                      isLoading: watchGoalCubit.state is GoalLoadingState,
-                      onTap: () {
-                        if (watchGoalCubit.titleController.text
-                            .trim()
-                            .isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please enter a goal title'),
-                              backgroundColor: AppColors.errorColor,
-                            ),
-                          );
-                          return;
-                        }
-
-                        if (watchGoalCubit.descriptionController.text
-                            .trim()
-                            .isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please enter a description'),
-                              backgroundColor: AppColors.errorColor,
-                            ),
-                          );
-                          return;
-                        }
-
-                        if (watchGoalCubit.selectedDeadline == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please select a target date'),
-                              backgroundColor: AppColors.errorColor,
-                            ),
-                          );
-                          return;
-                        }
-                        readGoalCubit.createGoal();
-                      },
-                      width: size.width,
-                      buttonColor: AppColors.filledColor,
-                      label: 'Create Goal',
-                      textSize: 20,
+                    child: Visibility(
+                      visible: context.watch<AuthenticationCubit>().user.isMentee,
+                      child: AppButton(
+                        isLoading: watchGoalCubit.state is GoalLoadingState,
+                        onTap: () {
+                          if (watchGoalCubit.titleController.text
+                              .trim()
+                              .isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please enter a goal title'),
+                                backgroundColor: AppColors.errorColor,
+                              ),
+                            );
+                            return;
+                          }
+                      
+                          if (watchGoalCubit.descriptionController.text
+                              .trim()
+                              .isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please enter a description'),
+                                backgroundColor: AppColors.errorColor,
+                              ),
+                            );
+                            return;
+                          }
+                      
+                          if (watchGoalCubit.selectedDeadline == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Please select a target date'),
+                                backgroundColor: AppColors.errorColor,
+                              ),
+                            );
+                            return;
+                          }
+                          readGoalCubit.createGoal();
+                        },
+                        width: size.width,
+                        buttonColor: AppColors.filledColor,
+                        label: 'Create Goal',
+                        textSize: 20,
+                      ),
                     ),
                   ),
 

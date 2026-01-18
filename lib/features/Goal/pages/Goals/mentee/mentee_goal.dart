@@ -108,32 +108,38 @@ class MenteeGoalView extends StatelessWidget {
                           size: 18,
                           fontweight: FontWeight.w600,
                         ),
-                        AppButton(
-                          width: size.width * 0.3,
-                          height: size.height * 0.05,
-                          buttonColor: AppColors.blue,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: size.width * 0.02,
+                        Visibility(
+                          visible: context
+                              .watch<AuthenticationCubit>()
+                              .user
+                              .isMentee,
+                          child: AppButton(
+                            width: size.width * 0.3,
+                            height: size.height * 0.05,
+                            buttonColor: AppColors.blue,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.02,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add,
+                                  color: AppColors.white,
+                                  size: 20.sp,
+                                ),
+                                SizedBox(width: size.width * 0.01),
+                                InAppText(
+                                  text: "Add Goal",
+                                  color: AppColors.white,
+                                  fontweight: FontWeight.w500,
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              Navigator.pushNamed(context, Routename.addGoal);
+                            },
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add,
-                                color: AppColors.white,
-                                size: 20.sp,
-                              ),
-                              SizedBox(width: size.width * 0.01),
-                              InAppText(
-                                text: "Add Goal",
-                                color: AppColors.white,
-                                fontweight: FontWeight.w500,
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.pushNamed(context, Routename.addGoal);
-                          },
                         ),
                       ],
                     ),
@@ -334,11 +340,14 @@ class EmptyGoalsView extends StatelessWidget {
           ),
           if (filterType == "All") ...[
             SizedBox(height: size.height * 0.03),
-            AppButton(
-              onTap: () => Navigator.pushNamed(context, Routename.addGoal),
-              label: "Create Goal",
-              buttonColor: AppColors.blue,
-              width: size.width * 0.5,
+            Visibility(
+              visible: context.watch<AuthenticationCubit>().user.isMentee,
+              child: AppButton(
+                onTap: () => Navigator.pushNamed(context, Routename.addGoal),
+                label: "Create Goal",
+                buttonColor: AppColors.blue,
+                width: size.width * 0.5,
+              ),
             ),
           ],
         ],

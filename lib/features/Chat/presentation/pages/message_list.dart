@@ -1,3 +1,5 @@
+// lib/features/Chat/presentation/pages/message_list_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,11 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Chat/data/models/message.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
-
 import 'package:mistakes/global%20widgets/export.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class MessageListPage extends StatelessWidget {
   const MessageListPage({super.key});
@@ -23,20 +24,16 @@ class MessageListPage extends StatelessWidget {
     return BlocListener<ChatCubit, ChatState>(
       listener: (context, state) {
         if (state is ChatLoadingState) {
-         
+          // Optional: show loading indicator
         } else if (state is ChatNavigateState) {
           readChatCubit.loadMessages();
-          Navigator.pushNamed(context, Routename.chatSetup);
+          Navigator.pushNamed(context, Routename.menteeChat);
         }
       },
       child: AppScaffold(
         body: Column(
           children: [
-            AppbarWidget(
-              title: 'Messages',
-              size: size,
-              onTap: () => Navigator.pop(context),
-            ),
+            AppbarWidget(title: 'Messages', size: size),
 
             ConversationSearchBar(size: size),
 
@@ -45,7 +42,7 @@ class MessageListPage extends StatelessWidget {
                 builder: (context, state) {
                   if (state is ChatLoadingState &&
                       watchChatCubit.conversations.isEmpty) {
-                    Center(
+                    return Center(
                       child: LoadingAnimationWidget.staggeredDotsWave(
                         color: AppColors.blue,
                         size: 30.sp,
@@ -65,7 +62,18 @@ class MessageListPage extends StatelessWidget {
                     size: size,
                     conversations: watchChatCubit.filteredConversations,
                     onTap: (conversation) {
-                      readChatCubit.selectConversation(conversation);
+                      readChatCubit.startConversationWith(
+                        otherUserId: conversation.otherUserId,
+                        currentUserIsMentor: context
+                            .read<AuthenticationCubit>()
+                            .user
+                            .isMentor,
+                        user: context.read<AuthenticationCubit>().user,
+                      );
+                      // readChatCubit.selectConversation(
+                      //   conversation,
+                      //   user: context.watch<AuthenticationCubit>().user,
+                      // );
                     },
                   );
                 },
@@ -77,6 +85,8 @@ class MessageListPage extends StatelessWidget {
     );
   }
 }
+
+// ... ConversationSearchBar stays the same ...
 
 class ConversationSearchBar extends StatelessWidget {
   final Size size;
@@ -116,46 +126,7 @@ class ConversationSearchBar extends StatelessWidget {
   }
 }
 
-class ConversationEmptyState extends StatelessWidget {
-  final Size size;
-  final bool hasSearch;
-
-  const ConversationEmptyState({
-    super.key,
-    required this.size,
-    required this.hasSearch,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            hasSearch ? Icons.search_off : Icons.chat_bubble_outline,
-            size: 80.sp,
-            color: AppColors.blackColor.withAlpha(100),
-          ),
-          SizedBox(height: size.height * 0.02),
-          InAppText(
-            text: hasSearch ? "No results found" : "No conversations yet",
-            size: 18,
-            color: AppColors.blackColor,
-          ),
-          SizedBox(height: size.height * 0.01),
-          InAppText(
-            text: hasSearch
-                ? "Try a different search"
-                : "Start a conversation to connect",
-            size: 14,
-            color: AppColors.blackColor,
-          ),
-        ],
-      ),
-    );
-  }
-}
+// ... ConversationEmptyState stays the same ...
 
 class ConversationsList extends StatelessWidget {
   final Size size;
@@ -206,6 +177,7 @@ class ConversationListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatCubit = context.read<ChatCubit>();
+    final currentUserId = chatCubit.user.id ?? '';
 
     return AppshadowContainer(
       color: AppColors.white,
@@ -216,10 +188,12 @@ class ConversationListItem extends StatelessWidget {
           children: [
             ConversationAvatar(
               size: size,
-              userName: conversation.userName,
-              userAvatar: conversation.userAvatar,
-              isOnline: conversation.isOnline,
-              initials: chatCubit.getInitials(conversation.userName),
+              userName: conversation.otherUserName, // UPDATED
+              userAvatar: conversation.otherUserPhoto, // UPDATED
+              isOnline: conversation.otherUserOnline, // UPDATED
+              initials: chatCubit.getInitials(
+                conversation.otherUserName,
+              ), // UPDATED
             ),
             SizedBox(width: size.width * 0.03),
 
@@ -227,6 +201,7 @@ class ConversationListItem extends StatelessWidget {
               child: ConversationDetails(
                 size: size,
                 conversation: conversation,
+                currentUserId: currentUserId, // ADDED
               ),
             ),
           ],
@@ -263,7 +238,7 @@ class ConversationAvatar extends StatelessWidget {
             shape: BoxShape.circle,
             color: AppColors.blue.withAlpha(30),
           ),
-          child: userAvatar != null
+          child: userAvatar != null && userAvatar!.isNotEmpty
               ? ClipOval(
                   child: Image.network(
                     userAvatar!,
@@ -315,15 +290,19 @@ class ConversationAvatar extends StatelessWidget {
 class ConversationDetails extends StatelessWidget {
   final Size size;
   final ConversationModel conversation;
+  final String currentUserId;
 
   const ConversationDetails({
     super.key,
     required this.size,
     required this.conversation,
+    required this.currentUserId,
   });
 
   @override
   Widget build(BuildContext context) {
+    final unreadCount = conversation.getUnreadCount(currentUserId); // UPDATED
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -332,7 +311,7 @@ class ConversationDetails extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                conversation.userName,
+                conversation.otherUserName, // UPDATED
                 style: GoogleFonts.ptSans(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w600,
@@ -343,7 +322,7 @@ class ConversationDetails extends StatelessWidget {
               ),
             ),
             Text(
-              timeago.format(conversation.timestamp),
+              conversation.lastMessageTime, // UPDATED - using helper method
               style: GoogleFonts.ptSans(fontSize: 12.sp, color: AppColors.grey),
             ),
           ],
@@ -353,21 +332,22 @@ class ConversationDetails extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                conversation.lastMessage,
+                conversation
+                    .displayLastMessage, // UPDATED - using helper method
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.ptSans(
                   fontSize: 14.sp,
-                  color: conversation.unreadCount > 0
+                  color: unreadCount > 0
                       ? AppColors.lightblack
                       : AppColors.grey,
-                  fontWeight: conversation.unreadCount > 0
+                  fontWeight: unreadCount > 0
                       ? FontWeight.w600
                       : FontWeight.normal,
                 ),
               ),
             ),
-            if (conversation.unreadCount > 0) ...[
+            if (unreadCount > 0) ...[
               SizedBox(width: size.width * 0.02),
               Container(
                 padding: EdgeInsets.symmetric(
@@ -379,7 +359,7 @@ class ConversationDetails extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  conversation.unreadCount.toString(),
+                  unreadCount.toString(),
                   style: GoogleFonts.ptSans(
                     fontSize: 12.sp,
                     color: AppColors.white,
@@ -391,6 +371,47 @@ class ConversationDetails extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class ConversationEmptyState extends StatelessWidget {
+  final Size size;
+  final bool hasSearch;
+
+  const ConversationEmptyState({
+    super.key,
+    required this.size,
+    required this.hasSearch,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            hasSearch ? Icons.search_off : Icons.chat_bubble_outline,
+            size: 80.sp,
+            color: AppColors.blackColor.withAlpha(100),
+          ),
+          SizedBox(height: size.height * 0.02),
+          InAppText(
+            text: hasSearch ? "No results found" : "No conversations yet",
+            size: 18,
+            color: AppColors.blackColor,
+          ),
+          SizedBox(height: size.height * 0.01),
+          InAppText(
+            text: hasSearch
+                ? "Try a different search"
+                : "Start a conversation to connect",
+            size: 14,
+            color: AppColors.blackColor,
+          ),
+        ],
+      ),
     );
   }
 }

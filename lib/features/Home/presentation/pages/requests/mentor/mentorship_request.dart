@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/utils.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
@@ -163,10 +164,7 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
     return AppshadowContainer(
       onTap: () {
         context.read<MentorCubit>().setSelectedRequest(request);
-        Navigator.pushNamed(
-          context,
-          Routename.requestDetails,
-        );
+        Navigator.pushNamed(context, Routename.requestDetails);
       },
       margin: EdgeInsets.only(bottom: size.height * 0.02),
       padding: EdgeInsets.all(size.width * 0.04),
@@ -454,27 +452,55 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
   }
 
   Future<void> acceptRequest(String matchId) async {
+    final size = MediaQuery.sizeOf(context);
     final mentorCubit = context.read<MentorCubit>();
     final userId = context.read<HomeCubit>().user.id;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Accept Request'),
-        content: Text(
-          'Are you sure you want to accept this mentorship request?',
+        backgroundColor: AppColors.white,
+        title: InAppText(
+          text: 'Accept Request',
+          size: 20,
+          fontweight: FontWeight.w600,
+          textAlign: TextAlign.center,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
-          ),
-          AppButton(
-            onTap: () => Navigator.pop(context, true),
-            buttonColor: AppColors.success,
-            label: 'Accept',
-            textSize: 20,
-          ),
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            InAppText(
+              textAlign: TextAlign.center,
+              text: 'Are you sure you want to accept this mentorship request?',
+            ),
+            SizedBox(height: size.height * 0.02),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: InAppText(text: 'Cancel'),
+                  ),
+                ),
+                Expanded(
+                  child: AppButton(
+                    onTap: () {
+                      context.read<MentorCubit>().acceptRequest(
+                        matchId,
+                        context.read<AuthenticationCubit>().user.id ?? "",
+                      );
+                      Navigator.pop(context, true);
+                    },
+                    textSize: 20,
+                    buttonColor: AppColors.success,
+                    label: 'Accept',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
 
@@ -486,28 +512,49 @@ class _MentorshipRequestState extends State<MentorshipRequest> {
   }
 
   Future<void> declineRequest(String matchId) async {
+    final size = MediaQuery.sizeOf(context);
     final mentorCubit = context.read<MentorCubit>();
     final userId = context.read<HomeCubit>().user.id;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.white,
-        title: Text('Decline Request'),
-        content: Text(
-          'Are you sure you want to decline this mentorship request?',
+        title: InAppText(
+          text: 'Decline Request',
+          size: 20,
+          fontweight: FontWeight.w600,
+          textAlign: TextAlign.center,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel'),
-          ),
-          AppButton(
-            onTap: () => Navigator.pop(context, true),
-            textSize: 20,
-            buttonColor: AppColors.errorColor,
-            label: 'Decline',
-          ),
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            InAppText(
+              textAlign: TextAlign.center,
+              text: 'Are you sure you want to decline this mentorship request?',
+            ),
+            SizedBox(height: size.height * 0.02),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: InAppText(text: 'Cancel'),
+                  ),
+                ),
+                Expanded(
+                  child: AppButton(
+                    onTap: () => Navigator.pop(context, true),
+                    textSize: 20,
+                    buttonColor: AppColors.errorColor,
+                    label: 'Decline',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
 

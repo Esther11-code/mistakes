@@ -67,9 +67,11 @@ class MentorCubit extends Cubit<MentorState> {
   // LOAD RECENT ACTIVITIES
   // ============================================================================
   Future<void> loadRecentActivities(String mentorId) async {
+    emit(MentorLoadingState());
     try {
       recentActivities = await mentorRepo.getRecentActivities(mentorId);
       log('Loaded ${recentActivities.length} recent activities');
+      emit(MentorLoadedState());
     } catch (e) {
       log(' Error loading activities: $e');
       rethrow;
@@ -80,9 +82,11 @@ class MentorCubit extends Cubit<MentorState> {
   // LOAD THIS WEEK'S TASKS
   // ============================================================================
   Future<void> loadThisWeeksTasks(String mentorId) async {
+    emit(MentorLoadingState());
     try {
       thisWeeksTasks = await mentorRepo.getThisWeeksTasks(mentorId);
       log('Loaded ${thisWeeksTasks.length} tasks for this week');
+      emit(MentorLoadedState());
     } catch (e) {
       log(' Error loading tasks: $e');
       rethrow;
@@ -93,9 +97,11 @@ class MentorCubit extends Cubit<MentorState> {
   // LOAD ACTIVE MENTEES
   // ============================================================================
   Future<void> loadActiveMentees(String mentorId) async {
+    emit(MentorLoadingState());
     try {
       activeMentees = await mentorRepo.getActiveMentees(mentorId);
       log('Loaded ${activeMentees.length} active mentees');
+      emit(MentorLoadedState());
     } catch (e) {
       log(' Error loading active mentees: $e');
       rethrow;
@@ -106,11 +112,13 @@ class MentorCubit extends Cubit<MentorState> {
   // LOAD INCOMING REQUESTS
   // ============================================================================
   Future<void> loadIncomingRequests(String mentorId) async {
+    emit(MentorLoadingState());
     try {
       incomingRequests = await mentorRepo.getIncomingRequestsWithDetails(
         mentorId,
       );
       log('Loaded ${incomingRequests.length} incoming requests');
+      emit(MentorLoadedState());
     } catch (e) {
       log(' Error loading incoming requests: $e');
       rethrow;
@@ -138,14 +146,16 @@ class MentorCubit extends Cubit<MentorState> {
   Future<void> acceptRequest(String matchId, String mentorId) async {
     emit(MentorLoadingState());
     try {
-      await mentorRepo.acceptRequest(matchId);
+      await mentorRepo.acceptRequest(
+        matchId,
+        welcomeMessage: welcomeMessageController.text,
+      );
 
       // Reload data
       await loadIncomingRequests(mentorId);
       await loadMentorStats(mentorId);
 
       emit(MentorRequestAcceptedState());
-      emit(MentorLoadedState());
     } catch (e) {
       log(' Error accepting request: $e');
       emit(MentorErrorState(e.toString()));
@@ -162,7 +172,6 @@ class MentorCubit extends Cubit<MentorState> {
       await loadMentorStats(mentorId);
 
       emit(MentorRequestDeclinedState());
-      emit(MentorLoadedState());
     } catch (e) {
       log(' Error declining request: $e');
       emit(MentorErrorState(e.toString()));
@@ -211,4 +220,6 @@ class MentorCubit extends Cubit<MentorState> {
   String? get selectedMenteeLocation => selectedMentee?['location'];
 
   String get selectedMenteeUsername => selectedMentee?['username'] ?? '';
+
+  
 }

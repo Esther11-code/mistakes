@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
@@ -70,7 +71,10 @@ class ProgressDashboardView extends StatelessWidget {
                   if (state is GoalLoadingState &&
                       watchGoalCubit.allGoals.isEmpty) {
                     return Center(
-                      child: CircularProgressIndicator(color: AppColors.blue),
+                      child: LoadingAnimationWidget.inkDrop(
+                        color: AppColors.filledColor,
+                        size: 50.sp,
+                      ),
                     );
                   }
 
@@ -192,10 +196,13 @@ class EmptyGoalsState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: size.height * 0.04),
-            AppButton(
-              onTap: () => Navigator.pushNamed(context, Routename.goalSetUp),
-              label: "Create Goal",
-              buttonColor: AppColors.filledColor,
+            Visibility(
+              visible: context.watch<AuthenticationCubit>().user.isMentee,
+              child: AppButton(
+                onTap: () => Navigator.pushNamed(context, Routename.goalSetUp),
+                label: "Create Goal",
+                buttonColor: AppColors.filledColor,
+              ),
             ),
           ],
         ),

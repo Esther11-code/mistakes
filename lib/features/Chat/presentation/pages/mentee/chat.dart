@@ -1,9 +1,12 @@
+// lib/features/Chat/presentation/pages/mentee_chat_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
@@ -24,7 +27,7 @@ class MenteeChatPage extends StatelessWidget {
       listener: (context, state) {
         if (state is ChatErrorState) {
           Fluttertoast.showToast(
-            msg: "Failed to load messages",
+            msg: state.error,
             gravity: ToastGravity.TOP,
             backgroundColor: AppColors.errorColor,
           );
@@ -42,6 +45,7 @@ class MenteeChatPage extends StatelessWidget {
                   userName: watchChatCubit.selectedUserName,
                   userAvatar: watchChatCubit.selectedUserAvatar,
                   isOnline: watchChatCubit.selectedUserIsOnline,
+                  userRole: watchChatCubit.selectedUserRole, // NEW
                   size: size,
                 ),
 
@@ -70,6 +74,7 @@ class ChatAppBar extends StatelessWidget {
   final String userName;
   final String? userAvatar;
   final bool isOnline;
+  final String userRole; // NEW
   final Size size;
 
   const ChatAppBar({
@@ -77,6 +82,7 @@ class ChatAppBar extends StatelessWidget {
     required this.userName,
     this.userAvatar,
     required this.isOnline,
+    required this.userRole,
     required this.size,
   });
 
@@ -113,10 +119,28 @@ class ChatAppBar extends StatelessWidget {
                   fontweight: FontWeight.w600,
                   color: AppColors.blue,
                 ),
-                InAppText(
-                  text: isOnline ? 'Online' : 'Offline',
-                  size: 12,
-                  color: isOnline ? Colors.green : AppColors.grey,
+                Row(
+                  children: [
+                    InAppText(
+                      text: isOnline ? 'Online' : 'Offline',
+                      size: 12,
+                      color: isOnline ? Colors.green : AppColors.grey,
+                    ),
+                    if (userRole.isNotEmpty) ...[
+                      Text(
+                        ' • ',
+                        style: TextStyle(
+                          color: AppColors.grey,
+                          fontSize: 12.sp,
+                        ),
+                      ),
+                      InAppText(
+                        text: userRole == 'mentor' ? 'Mentor' : 'Mentee',
+                        size: 12,
+                        color: AppColors.grey,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -124,7 +148,7 @@ class ChatAppBar extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.more_vert, color: AppColors.blue),
             onPressed: () {
-              // Show options menu
+              showChatOptionsMenu(context, size);
             },
           ),
         ],
@@ -160,7 +184,7 @@ class ChatUserAvatar extends StatelessWidget {
             shape: BoxShape.circle,
             color: AppColors.blue.withAlpha(30),
           ),
-          child: userAvatar != null
+          child: userAvatar != null && userAvatar!.isNotEmpty
               ? ClipOval(
                   child: Image.network(
                     userAvatar!,
@@ -268,6 +292,7 @@ class MessagesList extends StatelessWidget {
         final message = messages[index];
         final isMyMessage = readChatCubit.isMyMessage(message);
 
+        // Show avatar only for the last message in a group
         final showAvatar =
             index == messages.length - 1 ||
             (index < messages.length - 1 &&
@@ -278,7 +303,7 @@ class MessagesList extends StatelessWidget {
           isMyMessage: isMyMessage,
           showAvatar: showAvatar,
           size: size,
-          time: readChatCubit.formatTime(message.timestamp),
+          time: readChatCubit.formatTime(message.createdAt), // UPDATED
         );
       },
     );
@@ -312,95 +337,273 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMyMessage && showAvatar)
-            MessageAvatar(size: size, color: AppColors.filledColor),
+            MessageAvatar(
+              size: size,
+              color: AppColors.filledColor,
+              avatarUrl: message.senderPhoto, // UPDATED
+              initials: _getInitials(message.senderName), // UPDATED
+            ),
           if (!isMyMessage && showAvatar) SizedBox(width: size.width * 0.02),
           if (!isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
 
-          Flexible(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: size.width * 0.04,
-                vertical: size.height * 0.015,
-              ),
-              decoration: BoxDecoration(
-                color: isMyMessage ? AppColors.blue : AppColors.filledColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                  bottomLeft: Radius.circular(isMyMessage ? 20 : 4),
-                  bottomRight: Radius.circular(isMyMessage ? 4 : 20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(5),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message.message,
-                    style: GoogleFonts.ptSans(
-                      fontSize: 15.sp,
-                      color: AppColors.white,
-                      height: 1.4,
-                    ),
-                  ),
-                  SizedBox(height: size.height * 0.005),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        time,
-                        style: GoogleFonts.ptSans(
-                          fontSize: 11.sp,
-                          color: AppColors.white.withAlpha(80),
-                        ),
-                      ),
-                      if (isMyMessage) ...[
-                        SizedBox(width: size.width * 0.01),
-                        Icon(
-                          message.isRead
-                              ? Icons.done_all_rounded
-                              : Icons.done_rounded,
-                          size: 16,
-                          color: message.isRead
-                              ? Colors.lightBlueAccent
-                              : AppColors.white.withAlpha(80),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Flexible(child: _buildMessageContent(context)),
 
           if (isMyMessage && showAvatar) SizedBox(width: size.width * 0.02),
           if (isMyMessage && showAvatar)
-            MessageAvatar(size: size, color: AppColors.blue),
+            MessageAvatar(
+              size: size,
+              color: AppColors.blue,
+              avatarUrl: message.senderPhoto, // UPDATED
+              initials: _getInitials(message.senderName), // UPDATED
+            ),
           if (isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
         ],
       ),
     );
+  }
+
+  Widget _buildMessageContent(BuildContext context) {
+    // Handle different message types
+    switch (message.messageType) {
+      case MessageType.image:
+        return _buildImageMessage(context);
+      case MessageType.file:
+        return _buildFileMessage(context);
+      case MessageType.text:
+      default:
+        return _buildTextMessage(context);
+    }
+  }
+
+  Widget _buildTextMessage(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.015,
+      ),
+      decoration: BoxDecoration(
+        color: isMyMessage ? AppColors.blue : AppColors.filledColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(isMyMessage ? 20 : 4),
+          bottomRight: Radius.circular(isMyMessage ? 4 : 20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            message.content, // UPDATED from message.message
+            style: GoogleFonts.ptSans(
+              fontSize: 15.sp,
+              color: AppColors.white,
+              height: 1.4,
+            ),
+          ),
+          SizedBox(height: size.height * 0.005),
+          _buildMessageFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageMessage(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(maxWidth: size.width * 0.7),
+      decoration: BoxDecoration(
+        color: isMyMessage ? AppColors.blue : AppColors.filledColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(isMyMessage ? 20 : 4),
+          bottomRight: Radius.circular(isMyMessage ? 4 : 20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            child: Image.network(
+              message.fileUrl!,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Icon(Icons.broken_image, size: 50),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(size.width * 0.03),
+            child: _buildMessageFooter(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileMessage(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.015,
+      ),
+      decoration: BoxDecoration(
+        color: isMyMessage ? AppColors.blue : AppColors.filledColor,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+          bottomLeft: Radius.circular(isMyMessage ? 20 : 4),
+          bottomRight: Radius.circular(isMyMessage ? 4 : 20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.insert_drive_file, color: AppColors.white, size: 24),
+              SizedBox(width: size.width * 0.02),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message.fileName ?? 'File',
+                      style: GoogleFonts.ptSans(
+                        fontSize: 14.sp,
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (message.fileSize != null)
+                      Text(
+                        message.formattedFileSize,
+                        style: GoogleFonts.ptSans(
+                          fontSize: 12.sp,
+                          color: AppColors.white.withAlpha(80),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: size.height * 0.005),
+          _buildMessageFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageFooter() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          time,
+          style: GoogleFonts.ptSans(
+            fontSize: 11.sp,
+            color: AppColors.white.withAlpha(80),
+          ),
+        ),
+        if (isMyMessage) ...[
+          SizedBox(width: 4),
+          Icon(
+            message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+            size: 16,
+            color: message.isRead
+                ? Colors.lightBlueAccent
+                : AppColors.white.withAlpha(80),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    final nameParts = name.trim().split(' ');
+    if (nameParts.length == 1) {
+      return nameParts[0][0].toUpperCase();
+    }
+    return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
   }
 }
 
 class MessageAvatar extends StatelessWidget {
   final Size size;
   final Color color;
+  final String? avatarUrl;
+  final String initials;
 
-  const MessageAvatar({super.key, required this.size, required this.color});
+  const MessageAvatar({
+    super.key,
+    required this.size,
+    required this.color,
+    this.avatarUrl,
+    required this.initials,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: 16,
       backgroundColor: color,
-      child: Icon(Icons.person, color: AppColors.white, size: 18),
+      backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+          ? NetworkImage(avatarUrl!)
+          : null,
+      child: avatarUrl == null || avatarUrl!.isEmpty
+          ? Text(
+              initials,
+              style: GoogleFonts.ptSans(
+                color: AppColors.white,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
     );
   }
 }
@@ -436,7 +639,7 @@ class ChatMessageInput extends StatelessWidget {
             AttachmentButton(
               size: size,
               onPressed: () {
-                showAttachmentOptions(context, size);
+                showAttachmentOptions(context, size, readChatCubit);
               },
             ),
             SizedBox(width: size.width * 0.03),
@@ -493,7 +696,9 @@ class ChatMessageInput extends StatelessWidget {
 
             SendMessageButton(
               size: size,
-              onPressed: () => readChatCubit.sendMessage(),
+              onPressed: () => readChatCubit.sendMessage(
+                user: context.read<AuthenticationCubit>().user,
+              ),
             ),
           ],
         ),
@@ -564,8 +769,11 @@ class SendMessageButton extends StatelessWidget {
   }
 }
 
-void showAttachmentOptions(BuildContext context, Size size) {
-  final readAuthCubit = context.read<AuthenticationCubit>();
+void showAttachmentOptions(
+  BuildContext context,
+  Size size,
+  ChatCubit chatCubit,
+) {
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -597,18 +805,36 @@ void showAttachmentOptions(BuildContext context, Size size) {
                 icon: Icons.image,
                 label: 'Gallery',
                 color: Colors.purple,
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  readAuthCubit.pickImage(context, ImageSource.gallery);
+                  final picker = ImagePicker();
+                  final image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  if (image != null) {
+                    chatCubit.sendFileMessage(
+                      file: File(image.path),
+                      messageType: MessageType.image,
+                    );
+                  }
                 },
               ),
               AttachmentOption(
                 icon: Icons.camera_alt,
                 label: 'Camera',
                 color: Colors.pink,
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                readAuthCubit.pickImage(context, ImageSource.camera);
+                  final picker = ImagePicker();
+                  final image = await picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+                  if (image != null) {
+                    chatCubit.sendFileMessage(
+                      file: File(image.path),
+                      messageType: MessageType.image,
+                    );
+                  }
                 },
               ),
               AttachmentOption(
@@ -617,7 +843,11 @@ void showAttachmentOptions(BuildContext context, Size size) {
                 color: Colors.blue,
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Pick document
+                  // TODO: Implement file picker
+                  Fluttertoast.showToast(
+                    msg: "Document picker coming soon",
+                    backgroundColor: AppColors.blue,
+                  );
                 },
               ),
               AttachmentOption(
@@ -626,7 +856,11 @@ void showAttachmentOptions(BuildContext context, Size size) {
                 color: Colors.green,
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Share location
+                  // TODO: Implement location sharing
+                  Fluttertoast.showToast(
+                    msg: "Location sharing coming soon",
+                    backgroundColor: AppColors.blue,
+                  );
                 },
               ),
             ],
@@ -673,4 +907,59 @@ class AttachmentOption extends StatelessWidget {
       ),
     );
   }
+}
+
+void showChatOptionsMenu(BuildContext context, Size size) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.05,
+        vertical: size.height * 0.02,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.inactive,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: size.height * 0.02),
+          ListTile(
+            leading: Icon(Icons.person, color: AppColors.blue),
+            title: Text('View Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to profile
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.notifications_off, color: AppColors.blue),
+            title: Text('Mute Notifications'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Mute notifications
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.delete, color: AppColors.errorColor),
+            title: Text('Clear Chat'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Clear chat
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }

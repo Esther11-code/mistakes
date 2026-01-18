@@ -4,13 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/global%20widgets/widgets/app_button.dart';
 import 'package:mistakes/global%20widgets/widgets/app_container_withshadow.dart';
 import 'package:mistakes/global%20widgets/widgets/app_scaffold.dart';
 import 'package:mistakes/global%20widgets/widgets/app_text.dart';
 import 'package:mistakes/global%20widgets/widgets/appbar.dart';
-import '../../data/local/dashboard_static_repo.dart';
 
 class MenteeDashboard extends StatelessWidget {
   const MenteeDashboard({super.key});
@@ -21,13 +21,20 @@ class MenteeDashboard extends StatelessWidget {
     final isRole = context.watch<AuthenticationCubit>().user.role;
     final watchGoalCubit = context.watch<GoalCubit>();
     final readGoalCubit = context.read<GoalCubit>();
+    final watchDashboardCubit = context.watch<DashboardCubit>();
     final watchAuthCubit = context.watch<AuthenticationCubit>();
     final user = watchAuthCubit.user;
 
     return AppScaffold(
       body: Column(
         children: [
-          AppbarWidget(title: 'Dashboard', size: size),
+          AppbarWidget(
+            title: 'Dashboard',
+            size: size,
+            onTap: () {
+              watchAuthCubit.user.isMentee ? null : Navigator.pop(context);
+            },
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
@@ -61,7 +68,9 @@ class MenteeDashboard extends StatelessWidget {
                                 ? CircleAvatar(
                                     radius: size.height * 0.04,
                                     backgroundImage: NetworkImage(
-                                      user.profilePhotoUrl!,
+                                      watchAuthCubit.user.isMentee
+                                          ? "mentor"
+                                          : "${watchDashboardCubit.selectedMentee?.avatarUrl}",
                                     ),
                                   )
                                 : Container(
@@ -89,14 +98,19 @@ class MenteeDashboard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   InAppText(
-                                    text: user.name ?? "Stella Sofia",
+                                    text: watchAuthCubit.user.isMentee
+                                        ? "mentor"
+                                        : "${watchDashboardCubit.selectedMentee?.name}",
+
                                     fontweight: FontWeight.w800,
                                     size: 20,
                                     color: AppColors.white,
                                   ),
                                   SizedBox(height: size.height * 0.005),
                                   InAppText(
-                                    text: user.expertise ?? "Senior Developer",
+                                    text: watchAuthCubit.user.isMentee
+                                        ? "mentor"
+                                        : "${watchDashboardCubit.selectedMentee?.expertise}",
                                     fontweight: FontWeight.w500,
                                     size: 15,
                                     color: AppColors.white,
@@ -121,12 +135,13 @@ class MenteeDashboard extends StatelessWidget {
                                       children: [
                                         Icon(
                                           Icons.calendar_today,
-                                          size: 12,
+                                          size: 12.sp,
                                           color: AppColors.white,
                                         ),
-                                        SizedBox(width: 6),
+                                        SizedBox(width: size.width * 0.01),
                                         InAppText(
-                                          text: "3 months together",
+                                          text:
+                                              "${watchDashboardCubit.monthsTogether} months together",
                                           color: AppColors.white,
                                           fontweight: FontWeight.w600,
                                           size: 13,
@@ -222,7 +237,10 @@ class MenteeDashboard extends StatelessWidget {
                         label: "Messages",
                         color: Colors.blue.shade400,
                         onTap: () {
-                          Navigator.pushNamed(context, Routename.messageList);
+                          Navigator.pushNamed(
+                            context,
+                            Routename.conversationList,
+                          );
                         },
                       ),
                       DashboardOptionCard(
@@ -285,7 +303,7 @@ class MenteeDashboard extends StatelessWidget {
                       crossAxisSpacing: size.width * 0.03,
                       mainAxisSpacing: size.height * 0.015,
                     ),
-                    itemCount: DashboardStaticRepo.stats.length,
+                    itemCount: watchDashboardCubit.menteeStats.length,
                     itemBuilder: (context, index) {
                       final statColors = [
                         [Colors.blue.shade400, Colors.blue.shade600],
@@ -293,6 +311,7 @@ class MenteeDashboard extends StatelessWidget {
                         [Colors.orange.shade400, Colors.orange.shade600],
                         [Colors.green.shade400, Colors.green.shade600],
                       ];
+                      final stats = watchDashboardCubit.menteeStats[index];
                       return Container(
                         padding: EdgeInsets.all(size.width * 0.04),
                         decoration: BoxDecoration(
@@ -315,14 +334,14 @@ class MenteeDashboard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             InAppText(
-                              text: DashboardStaticRepo.stats[index].stat,
+                              text: stats['stat'],
                               color: AppColors.white,
                               size: 30,
                               fontweight: FontWeight.w900,
                             ),
                             SizedBox(height: size.height * 0.01),
                             InAppText(
-                              text: DashboardStaticRepo.stats[index].title,
+                              text: stats['title'],
                               textAlign: TextAlign.center,
 
                               fontweight: FontWeight.w600,
@@ -352,118 +371,53 @@ class MenteeDashboard extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: size.width * 0.03),
-                        InAppText(
-                          text: "Recent Goals",
-                          size: 20,
-                          fontweight: FontWeight.w700,
-                          color: AppColors.blue,
+                        BlocBuilder<DashboardCubit, DashboardState>(
+                          builder: (context, state) {
+                            if (watchDashboardCubit.recentGoals.isEmpty) {
+                              return Column(
+                                children: [
+                                  InAppText(
+                                    text: "Recent Goals",
+                                    size: 20,
+                                    fontweight: FontWeight.w700,
+                                    color: AppColors.blue,
+                                  ),
+                                  SizedBox(height: size.height * 0.015),
+                                  InAppText(
+                                    text: "No recent goals available.",
+                                    size: 16,
+                                    color: AppColors.grey,
+                                  ),
+                                ],
+                              );
+                            }
+                            return Column(
+                              children: [
+                                InAppText(
+                                  text: "Recent Goals",
+                                  size: 20,
+                                  fontweight: FontWeight.w700,
+                                  color: AppColors.blue,
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
                     SizedBox(height: size.height * 0.015),
-                    AppshadowContainer(
-                      padding: EdgeInsets.all(size.width * 0.04),
-                      shadowcolour: AppColors.blue.withAlpha(50),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: InAppText(
-                                  text: "Master Flutter Development",
-                                  fontweight: FontWeight.w700,
-                                  size: 19,
-                                  color: AppColors.blue,
-                                ),
-                              ),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: size.width * 0.03,
-                                  vertical: size.height * 0.006,
-                                ),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.green.shade400,
-                                      Colors.green.shade600,
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: InAppText(
-                                  text: "Active",
-                                  color: AppColors.white,
-                                  fontweight: FontWeight.w700,
-                                  size: 16,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: size.height * 0.015),
-                          Container(
-                            height: size.height * 0.001,
-                            color: AppColors.inactive,
-                          ),
-                          SizedBox(height: size.height * 0.015),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              InAppText(
-                                text: "Progress",
-                                size: 15,
-                                color: AppColors.grey,
-                              ),
-                              InAppText(
-                                text: "70%",
-                                fontweight: FontWeight.w800,
-                                color: AppColors.filledColor,
-                                size: 20,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: size.height * 0.012),
-                          Container(
-                            height: size.height * 0.015,
-                            decoration: BoxDecoration(
-                              color: AppColors.inactive,
-                              borderRadius: BorderRadius.circular(
-                                size.width * 0.03,
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                FractionallySizedBox(
-                                  widthFactor: 0.7,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          AppColors.filledColor,
-                                          AppColors.blue,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: size.height * 0.02),
-                          AppButton(
-                            onTap: () {
-                              Navigator.pushNamed(
-                                context,
-                                Routename.mentorFeedback,
-                              );
-                            },
-                            label: "Add Feedback",
-                            buttonColor: AppColors.filledColor,
-                            textSize: 16,
-                          ),
-                        ],
+                    Column(
+                      children: List.generate(
+                        watchDashboardCubit.recentGoals.length,
+                        (index) => RecentGoals(
+                          size: size,
+                          goalTitle:
+                              watchDashboardCubit.recentGoals[index]['title'],
+                          status:
+                              watchDashboardCubit.recentGoals[index]['status'],
+                          progress: watchDashboardCubit
+                              .recentGoals[index]['progress_percentage'],
+                        ),
                       ),
                     ),
                   ],
@@ -609,6 +563,111 @@ class MenteeDashboard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class RecentGoals extends StatelessWidget {
+  const RecentGoals({
+    super.key,
+    required this.size,
+    required this.goalTitle,
+    required this.status,
+    required this.progress,
+  });
+
+  final Size size;
+  final String goalTitle, status;
+  final int progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppshadowContainer(
+      padding: EdgeInsets.all(size.width * 0.04),
+      shadowcolour: AppColors.blue.withAlpha(50),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: InAppText(
+                  text: goalTitle,
+                  fontweight: FontWeight.w700,
+                  size: 19,
+                  color: AppColors.blue,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.03,
+                  vertical: size.height * 0.006,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.green.shade400, Colors.green.shade600],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: InAppText(
+                  text: status,
+                  color: AppColors.white,
+                  fontweight: FontWeight.w700,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: size.height * 0.015),
+          Container(height: size.height * 0.001, color: AppColors.inactive),
+          SizedBox(height: size.height * 0.015),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InAppText(text: "Progress", size: 15, color: AppColors.grey),
+              InAppText(
+                text: "$progress%",
+                fontweight: FontWeight.w800,
+                color: AppColors.filledColor,
+                size: 20,
+              ),
+            ],
+          ),
+          SizedBox(height: size.height * 0.012),
+          Container(
+            height: size.height * 0.015,
+            decoration: BoxDecoration(
+              color: AppColors.inactive,
+              borderRadius: BorderRadius.circular(size.width * 0.03),
+            ),
+            child: Stack(
+              children: [
+                FractionallySizedBox(
+                  widthFactor: progress / 100,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppColors.filledColor, AppColors.blue],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: size.height * 0.02),
+          AppButton(
+            onTap: () {
+              Navigator.pushNamed(context, Routename.mentorFeedback);
+            },
+            label: "Add Feedback",
+            buttonColor: AppColors.filledColor,
+            textSize: 16,
           ),
         ],
       ),

@@ -391,13 +391,19 @@ class RequestDetails extends StatelessWidget {
                       ),
                       SizedBox(height: size.height * 0.015),
                       AppButton(
+                        isLoading: state is MentorLoadingState,
                         onTap: () {
                           final readAuthCubit = context
                               .read<AuthenticationCubit>();
                           if (readAuthCubit.user.isMentor) {
-                            readMentorCubit.declineRequest(
-                              readMentorCubit.selectedMatchId!,
-                              context.read<AuthenticationCubit>().user.id ?? "",
+                            Future.delayed(
+                              const Duration(milliseconds: 500),
+                              () {
+                                readMentorCubit.declineRequest(
+                                  readMentorCubit.selectedMatchId!,
+                                  readAuthCubit.user.id ?? "",
+                                );
+                              },
                             );
                           }
                         },

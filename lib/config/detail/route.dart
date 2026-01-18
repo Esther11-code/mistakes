@@ -97,8 +97,8 @@ class AppRoute {
         return CustomPageRoute(child: const GoalSetup());
       case Routename.menteeChat:
         return CustomPageRoute(child: const MenteeChatPage());
-      case Routename.mentorChat:
-        return CustomPageRoute(child: const MentorChatPage());
+      // case Routename.mentorChat:
+      //   return CustomPageRoute(child: const MentorChatPage());
       case Routename.profileSetup:
         return CustomPageRoute(child: const ProfileSetUp());
       case Routename.chatSetup:
