@@ -16,14 +16,16 @@ class ConversationModel extends Equatable {
   final String? matchId;
   final String otherUserPhoto;
   final bool otherUserOnline;
-  final String otherUserRole; 
+  final bool? isMuted;
+  final String otherUserRole;
 
-  const ConversationModel( {
+  const ConversationModel({
     required this.id,
     required this.mentorId,
     required this.menteeId,
     this.matchId,
     this.lastMessage,
+    this.isMuted,
     this.lastMessageAt,
     this.lastMessageSenderId,
     this.unreadCountMentor = 0,
@@ -52,6 +54,7 @@ class ConversationModel extends Equatable {
       mentorId: json['mentor_id'] as String,
       menteeId: json['mentee_id'] as String,
       matchId: json['match_id'] as String?,
+      isMuted: json['is_muted'] as bool?,
       lastMessage: json['last_message'] as String?,
       lastMessageAt: json['last_message_at'] != null
           ? DateTime.parse(json['last_message_at'] as String)
@@ -78,11 +81,13 @@ class ConversationModel extends Equatable {
       'last_message_at': lastMessageAt?.toIso8601String(),
       'last_message_sender_id': lastMessageSenderId,
       'unread_count_mentor': unreadCountMentor,
+      'is_muted': isMuted,
       'unread_count_mentee': unreadCountMentee,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
   }
+
   bool isMentor(String currentUserId) => mentorId == currentUserId;
 
   bool isMentee(String currentUserId) => menteeId == currentUserId;
@@ -94,6 +99,7 @@ class ConversationModel extends Equatable {
   bool wasLastMessageByMe(String currentUserId) {
     return lastMessageSenderId == currentUserId;
   }
+
   String get lastMessageTime {
     if (lastMessageAt == null) return '';
 
@@ -140,6 +146,7 @@ class ConversationModel extends Equatable {
     int? unreadCountMentee,
     DateTime? createdAt,
     String? matchId,
+    bool? isMuted,
     DateTime? updatedAt,
     String? otherUserId,
     String? otherUserName,
@@ -159,6 +166,7 @@ class ConversationModel extends Equatable {
       unreadCountMentee: unreadCountMentee ?? this.unreadCountMentee,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isMuted: isMuted ?? this.isMuted,
       otherUserId: otherUserId ?? this.otherUserId,
       otherUserName: otherUserName ?? this.otherUserName,
       otherUserPhoto: otherUserPhoto ?? this.otherUserPhoto,
@@ -169,13 +177,14 @@ class ConversationModel extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        mentorId,
-        menteeId,
-        lastMessage,
-        matchId,
-        lastMessageAt,
-        unreadCountMentor,
-        unreadCountMentee,
-      ];
+    id,
+    mentorId,
+    menteeId,
+    lastMessage,
+    matchId,
+    isMuted,
+    lastMessageAt,
+    unreadCountMentor,
+    unreadCountMentee,
+  ];
 }

@@ -85,10 +85,9 @@ class AuthRepo {
         'interests': interests, // ⭐ From profiles, not user_skills
         'success': true,
       };
-    } catch (e) {
+    } on AuthApiException catch (e) {
       log('Signin error: $e');
-      // throw Exception('Login failed: ${e.toString()}');
-      return {'success': false, 'error': e.toString()};
+      throw AuthApiException('Login failed: ${e.toString()}');
     }
   }
 

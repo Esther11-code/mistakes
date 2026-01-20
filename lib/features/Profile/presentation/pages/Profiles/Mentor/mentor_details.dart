@@ -253,6 +253,7 @@ class MentorDetails extends StatelessWidget {
                           Future.delayed(const Duration(milliseconds: 500), () {
                             if (userId != null) {
                               readBookmarkCubit.toggleMentorBookmark(
+                                context: context,
                                 menteeId: userId,
                                 mentorId: mentor?.id ?? "0",
                               );

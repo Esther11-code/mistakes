@@ -11,11 +11,11 @@ class UserModel {
   String? linkedinUrl;
   bool? isVerified;
   List<String>? interests;
-  
+
   // Mentee-specific
   // String? areaOfInterest;
   String? learningGoals;
-  
+
   // Mentor-specific
   int? yearsExperience;
   String? availability;
@@ -38,9 +38,9 @@ class UserModel {
     this.yearsExperience,
     this.availability,
   });
-  
-  bool get isMentor => role!.toLowerCase() == 'mentor';
-  bool get isMentee => role!.toLowerCase() == 'mentee';
+
+  bool get isMentor => role?.toLowerCase() == 'mentor';
+  bool get isMentee => role?.toLowerCase() == 'mentee';
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['user_id'],
@@ -54,8 +54,8 @@ class UserModel {
       location: json['location'],
       linkedinUrl: json['linkedin_url'],
       isVerified: json['is_verified'] ?? false,
-      interests: json['interests'] != null 
-          ? List<String>.from(json['interests']) 
+      interests: json['interests'] != null
+          ? List<String>.from(json['interests'])
           : [],
       // areaOfInterest: json['area_of_interest'],
       learningGoals: json['learning_goals'],

@@ -64,6 +64,7 @@ class _AllMentorState extends State<AllMentor> {
                                   .read<BookmarksCubit>()
                                   .toggleMentorBookmark(
                                     menteeId: userId,
+                                    context: context,
                                     mentorId: mentor.id ?? "0",
                                   );
                             }

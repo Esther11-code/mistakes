@@ -25,3 +25,14 @@ final class MentorErrorState extends MentorState {
 final class MentorRequestAcceptedState extends MentorState {}
 
 final class MentorRequestDeclinedState extends MentorState {}
+
+final class MentorSettingsLoadedState extends MentorState {}
+
+final class MentorSettingsUpdatedState extends MentorState {
+  final String message;
+
+  const MentorSettingsUpdatedState(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

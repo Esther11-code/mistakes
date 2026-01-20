@@ -1,21 +1,72 @@
 // lib/features/Chat/presentation/pages/mentee_chat_page.dart
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mistakes/config/page%20route/page_route.dart';
 import 'dart:io';
 
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Chat/data/models/message_model.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class MenteeChatPage extends StatelessWidget {
-  const MenteeChatPage({super.key});
+class MenteChatPage extends StatefulWidget {
+  const MenteChatPage({super.key});
+
+  @override
+  State<MenteChatPage> createState() => _MenteChatPageState();
+}
+
+class _MenteChatPageState extends State<MenteChatPage>
+    with WidgetsBindingObserver {
+  late final ChatCubit _chatCubit;
+  late final UserModel _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatCubit = context.read<ChatCubit>();
+    _user = context.read<AuthenticationCubit>().user;
+
+    WidgetsBinding.instance.addObserver(this);
+    _chatCubit.loadConversations(user: _user);
+    _chatCubit.updateOnlineStatus(true, user: _user);
+    _chatCubit.loadMessages(user: _user);
+  }
+
+  @override
+  void dispose() {
+    // ✅ Use saved reference instead of context
+    _chatCubit.updateOnlineStatus(false, user: _user);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _chatCubit.updateOnlineStatus(true, user: _user);
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        _chatCubit.updateOnlineStatus(false, user: _user);
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +107,9 @@ class MenteeChatPage extends StatelessWidget {
                           size: size,
                           messages: watchChatCubit.currentChatMessages,
                           scrollController: watchChatCubit.scrollController,
-                          currentUserId: watchChatCubit.user.id!,
+                          currentUserId:
+                              context.watch<AuthenticationCubit>().user.id ??
+                              "",
                         ),
                 ),
 
@@ -98,7 +151,7 @@ class ChatAppBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: AppColors.blue),
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.background),
             onPressed: () => Navigator.pop(context),
           ),
           ChatUserAvatar(
@@ -127,13 +180,7 @@ class ChatAppBar extends StatelessWidget {
                       color: isOnline ? Colors.green : AppColors.grey,
                     ),
                     if (userRole.isNotEmpty) ...[
-                      Text(
-                        ' • ',
-                        style: TextStyle(
-                          color: AppColors.grey,
-                          fontSize: 12.sp,
-                        ),
-                      ),
+                      InAppText(text: ' • ', size: 14, color: AppColors.grey),
                       InAppText(
                         text: userRole == 'mentor' ? 'Mentor' : 'Mentee',
                         size: 12,
@@ -191,29 +238,20 @@ class ChatUserAvatar extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Center(
-                        child: Text(
-                          initials,
-                          style: GoogleFonts.ptSans(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.blue,
-                          ),
-                        ),
+                        child: InAppText(text: initials, color: AppColors.blue),
                       );
                     },
                   ),
                 )
               : Center(
-                  child: Text(
-                    initials,
-                    style: GoogleFonts.ptSans(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.blue,
-                    ),
+                  child: InAppText(
+                    text: initials,
+                    fontweight: FontWeight.bold,
+                    color: AppColors.blue,
                   ),
                 ),
         ),
+
         if (isOnline)
           Positioned(
             bottom: 0,
@@ -246,16 +284,16 @@ class ChatEmptyState extends StatelessWidget {
         children: [
           Icon(
             Icons.chat_bubble_outline,
-            size: 80,
-            color: AppColors.grey.withAlpha(100),
+            size: 80.sp,
+            color: AppColors.blue.withAlpha(100),
           ),
           SizedBox(height: size.height * 0.02),
-          InAppText(text: "No messages yet", size: 18, color: AppColors.grey),
+          InAppText(text: "No messages yet", color: AppColors.blue),
           SizedBox(height: size.height * 0.01),
           InAppText(
             text: "Start the conversation!",
-            size: 14,
-            color: AppColors.grey,
+            size: 16,
+            color: AppColors.blue,
           ),
         ],
       ),
@@ -280,6 +318,7 @@ class MessagesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final readChatCubit = context.read<ChatCubit>();
+    final watchChatCubit = context.watch<ChatCubit>();
 
     return ListView.builder(
       controller: scrollController,
@@ -290,13 +329,20 @@ class MessagesList extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
-        final isMyMessage = readChatCubit.isMyMessage(message);
+        final isMyMessage = watchChatCubit.isMyMessage(
+          message,
+          user: context.read<AuthenticationCubit>().user,
+        );
 
         // Show avatar only for the last message in a group
         final showAvatar =
             index == messages.length - 1 ||
             (index < messages.length - 1 &&
-                readChatCubit.isMyMessage(messages[index + 1]) != isMyMessage);
+                readChatCubit.isMyMessage(
+                      messages[index + 1],
+                      user: context.read<AuthenticationCubit>().user,
+                    ) !=
+                    isMyMessage);
 
         return MessageBubble(
           message: message,
@@ -400,13 +446,10 @@ class MessageBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            message.content, // UPDATED from message.message
-            style: GoogleFonts.ptSans(
-              fontSize: 15.sp,
-              color: AppColors.white,
-              height: 1.4,
-            ),
+          InAppText(
+            text: message.content, // UPDATED from message.message
+            color: AppColors.white,
+            size: 16,
           ),
           SizedBox(height: size.height * 0.005),
           _buildMessageFooter(),
@@ -452,6 +495,7 @@ class MessageBubble extends StatelessWidget {
                         ? loadingProgress.cumulativeBytesLoaded /
                               loadingProgress.expectedTotalBytes!
                         : null,
+                    color: AppColors.blue,
                   ),
                 );
               },
@@ -507,23 +551,15 @@ class MessageBubble extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      message.fileName ?? 'File',
-                      style: GoogleFonts.ptSans(
-                        fontSize: 14.sp,
-                        color: AppColors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    InAppText(
+                      text: message.fileName ?? 'File',
+                      color: AppColors.white,
                     ),
                     if (message.fileSize != null)
-                      Text(
-                        message.formattedFileSize,
-                        style: GoogleFonts.ptSans(
-                          fontSize: 12.sp,
-                          color: AppColors.white.withAlpha(80),
-                        ),
+                      InAppText(
+                        text: message.formattedFileSize,
+                        size: 14,
+                        color: AppColors.white.withAlpha(80),
                       ),
                   ],
                 ),
@@ -541,18 +577,12 @@ class MessageBubble extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          time,
-          style: GoogleFonts.ptSans(
-            fontSize: 11.sp,
-            color: AppColors.white.withAlpha(80),
-          ),
-        ),
+        InAppText(text: time, size: 12, color: AppColors.white.withAlpha(80)),
         if (isMyMessage) ...[
           SizedBox(width: 4),
           Icon(
             message.isRead ? Icons.done_all_rounded : Icons.done_rounded,
-            size: 16,
+            size: 18.sp,
             color: message.isRead
                 ? Colors.lightBlueAccent
                 : AppColors.white.withAlpha(80),
@@ -595,14 +625,7 @@ class MessageAvatar extends StatelessWidget {
           ? NetworkImage(avatarUrl!)
           : null,
       child: avatarUrl == null || avatarUrl!.isEmpty
-          ? Text(
-              initials,
-              style: GoogleFonts.ptSans(
-                color: AppColors.white,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            )
+          ? InAppText(text: initials, size: 14, fontweight: FontWeight.bold)
           : null,
     );
   }
@@ -774,6 +797,7 @@ void showAttachmentOptions(
   Size size,
   ChatCubit chatCubit,
 ) {
+  final readAuthCubit = context.read<AuthenticationCubit>();
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -813,6 +837,7 @@ void showAttachmentOptions(
                   );
                   if (image != null) {
                     chatCubit.sendFileMessage(
+                      user: readAuthCubit.user,
                       file: File(image.path),
                       messageType: MessageType.image,
                     );
@@ -826,11 +851,13 @@ void showAttachmentOptions(
                 onTap: () async {
                   Navigator.pop(context);
                   final picker = ImagePicker();
+                  final readAuthCubit = context.read<AuthenticationCubit>();
                   final image = await picker.pickImage(
                     source: ImageSource.camera,
                   );
                   if (image != null) {
                     chatCubit.sendFileMessage(
+                      user: readAuthCubit.user,
                       file: File(image.path),
                       messageType: MessageType.image,
                     );
@@ -841,13 +868,27 @@ void showAttachmentOptions(
                 icon: Icons.insert_drive_file,
                 label: 'Document',
                 color: Colors.blue,
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: Implement file picker
-                  Fluttertoast.showToast(
-                    msg: "Document picker coming soon",
-                    backgroundColor: AppColors.blue,
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: [
+                      'pdf',
+                      'doc',
+                      'docx',
+                      'txt',
+                      'xls',
+                      'xlsx',
+                    ],
                   );
+
+                  if (result != null && result.files.single.path != null) {
+                    chatCubit.sendFileMessage(
+                      user: readAuthCubit.user,
+                      file: File(result.files.single.path!),
+                      messageType: MessageType.file,
+                    );
+                  }
                 },
               ),
               AttachmentOption(
@@ -856,7 +897,6 @@ void showAttachmentOptions(
                 color: Colors.green,
                 onTap: () {
                   Navigator.pop(context);
-                  // TODO: Implement location sharing
                   Fluttertoast.showToast(
                     msg: "Location sharing coming soon",
                     backgroundColor: AppColors.blue,
@@ -888,21 +928,23 @@ class AttachmentOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: size.width * 0.15,
+            height: size.width * 0.15,
             decoration: BoxDecoration(
               color: color.withAlpha(20),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: color, size: 28.sp),
           ),
-          SizedBox(height: 8),
-          InAppText(text: label, size: 12, color: AppColors.blue),
+          SizedBox(height: size.height * 0.01),
+          InAppText(text: label, size: 14, color: AppColors.blue),
         ],
       ),
     );
@@ -910,6 +952,12 @@ class AttachmentOption extends StatelessWidget {
 }
 
 void showChatOptionsMenu(BuildContext context, Size size) {
+  final readChatCubit = context.read<ChatCubit>();
+  final conversation = readChatCubit.conversations.firstWhere(
+    (conv) => conv.id == readChatCubit.selectedConversationId,
+    orElse: () => readChatCubit.conversations.first,
+  );
+  final isMuted = conversation.isMuted ?? false;
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
@@ -926,37 +974,113 @@ void showChatOptionsMenu(BuildContext context, Size size) {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40,
-            height: 4,
+            width: size.width * 0.2,
+            height: size.height * 0.006,
             decoration: BoxDecoration(
-              color: AppColors.inactive,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           SizedBox(height: size.height * 0.02),
           ListTile(
-            leading: Icon(Icons.person, color: AppColors.blue),
-            title: Text('View Profile'),
+            leading: Icon(Icons.person, color: AppColors.blue, size: 28.sp),
+            title: InAppText(text: 'View Profile', size: 20),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Navigate to profile
+              context.read<AuthenticationCubit>().user.isMentee
+                  ? null 
+                  // TODO: Handle null case appropriately
+                  : context.read<MentorCubit>().loadMenteeDetails(
+                      readChatCubit.selectedUserId,
+                    );
+              Navigator.pushNamed(context, Routename.menteeDetails);
             },
           ),
           ListTile(
-            leading: Icon(Icons.notifications_off, color: AppColors.blue),
-            title: Text('Mute Notifications'),
+            leading: Icon(
+              Icons.notifications_off,
+              color: AppColors.blue,
+
+              size: 28.sp,
+            ),
+            title: InAppText(text: 'Mute Notifications', size: 20),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Mute notifications
+              readChatCubit.toggleMuteCurrentConversation(
+                user: context.read<AuthenticationCubit>().user,
+              );
+              Fluttertoast.showToast(
+                msg: isMuted ? "Notifications enabled" : "Notifications muted",
+                backgroundColor: AppColors.blue,
+              );
             },
           ),
           ListTile(
-            leading: Icon(Icons.delete, color: AppColors.errorColor),
-            title: Text('Clear Chat'),
+            leading: Icon(
+              Icons.delete,
+              color: AppColors.errorColor,
+              size: 28.sp,
+            ),
+            title: InAppText(
+              text: 'Clear Chat',
+              size: 20,
+              color: AppColors.errorColor,
+            ),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Clear chat
+              _showClearChatConfirmation(context, readChatCubit);
             },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+void _showClearChatConfirmation(BuildContext context, ChatCubit chatCubit) {
+  final size = MediaQuery.sizeOf(context);
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: AppColors.white,
+      title: InAppText(
+        text: 'Clear Chat',
+        fontweight: FontWeight.bold,
+        size: 20,
+        color: AppColors.errorColor,
+        textAlign: TextAlign.center,
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InAppText(
+            textAlign: TextAlign.center,
+            text:
+                'Are you sure you want to delete all messages? This action cannot be undone.',
+          ),
+          SizedBox(height: size.height * 0.02),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: InAppText(text: 'Cancel'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  chatCubit.clearCurrentChat(
+                    user: context.read<AuthenticationCubit>().user,
+                  );
+                  Fluttertoast.showToast(
+                    msg: "Chat cleared",
+                    backgroundColor: AppColors.blue,
+                  );
+                },
+                child: InAppText(text: 'Clear', color: AppColors.errorColor),
+              ),
+            ],
           ),
         ],
       ),

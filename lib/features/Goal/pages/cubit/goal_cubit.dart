@@ -6,6 +6,7 @@ import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/features/Goal/data/domain/goal_repo.dart';
 import 'package:mistakes/features/Goal/data/model/goal_model.dart';
 import 'package:mistakes/features/Goal/data/model/interest_model.dart';
+import 'package:mistakes/global%20widgets/widgets/milestone.dart';
 
 part 'goal_state.dart';
 
@@ -195,7 +196,7 @@ class GoalCubit extends Cubit<GoalState> {
     emit(GoalLoadedState());
   }
 
-  updateProgress(String goalId, int newProgress) async {
+  updateProgress(String goalId, int newProgress,{required BuildContext context}) async {
     emit(GoalLoadingState());
     try {
       await goalRepo.updateGoalProgress(
@@ -218,8 +219,23 @@ class GoalCubit extends Cubit<GoalState> {
       filterGoals();
 
       log('Progress updated to $newProgress% for goal $goalId');
+      if (newProgress == 50) {
+  await checkAndShowAchievement(
+    context,
+    'progress_50_percent',
+    AchievementType.progressMilestone,
+    progressPercentage: 50,
+  );
+} else if (newProgress == 75) {
+  await checkAndShowAchievement(
+    context,
+    'progress_75_percent',
+    AchievementType.progressMilestone,
+    progressPercentage: 75,
+  );
+}
+
       emit(GoalProgressUpdatedState());
-      emit(GoalLoadedState());
     } catch (e) {
       log('Error updating progress: $e');
       emit(GoalErrorState(error: e.toString()));
@@ -227,7 +243,7 @@ class GoalCubit extends Cubit<GoalState> {
     }
   }
 
-  createGoal() async {
+  createGoal({required BuildContext context}) async {
     emit(GoalLoadingState());
     try {
       await goalRepo.createGoal(
@@ -243,7 +259,13 @@ class GoalCubit extends Cubit<GoalState> {
       selectedDeadline = null;
 
       await loadGoals();
-
+      if (context.mounted) {
+        await checkAndShowAchievement(
+          context,
+          'first_goal_created',
+          AchievementType.firstGoal,
+        );
+      }
       log('Goal created successfully');
       emit(GoalCreatedState());
     } catch (e) {
@@ -269,6 +291,7 @@ class GoalCubit extends Cubit<GoalState> {
     }
   }
 
+  
   void changeCategory(String category) {
     emit(GoalLoadingState());
     selectedCategory = category;

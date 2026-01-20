@@ -362,7 +362,7 @@ class _AddGoalState extends State<AddGoal> {
                             );
                             return;
                           }
-                          readGoalCubit.createGoal();
+                          readGoalCubit.createGoal(context: context);
                         },
                         width: size.width,
                         buttonColor: AppColors.filledColor,

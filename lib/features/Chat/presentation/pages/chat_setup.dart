@@ -6,6 +6,6 @@ class ChatSetup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-   return MenteeChatPage();
+    return MenteChatPage();
   }
 }

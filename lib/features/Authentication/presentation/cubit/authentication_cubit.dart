@@ -213,7 +213,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } catch (e) {
       log('Signup error: $e');
       emit(AuthErrorState(error: e.toString()));
-      emit(AuthLoadedState());
     }
   }
 
@@ -242,7 +241,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     } on AuthApiException catch (e) {
       log('Login error: $e');
       emit(AuthErrorState(error: e.message));
-      emit(AuthLoadedState());
     }
   }
 

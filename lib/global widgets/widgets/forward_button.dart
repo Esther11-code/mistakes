@@ -38,8 +38,8 @@ class ForwardButton extends StatelessWidget {
               ),
               duration: const Duration(milliseconds: 300),
               builder: (context, value, _) => CircularProgressIndicator(
-                value: value, // 👈 border fill progress
-                strokeWidth: 4, // 👈 border thickness
+                value: value, 
+                strokeWidth: 4,
                 backgroundColor: AppColors.inactive.withAlpha(100),
                 valueColor: AlwaysStoppedAnimation(
                   AppColors.background.withAlpha(100),

@@ -221,5 +221,135 @@ class MentorCubit extends Cubit<MentorState> {
 
   String get selectedMenteeUsername => selectedMentee?['username'] ?? '';
 
-  
+  // Settings data (stored in cubit, not state)
+  bool acceptingNewRequests = true;
+  int maxActiveMentees = 5;
+  bool autoReply = false;
+  Map<String, bool> notificationSettings = {
+    'new_requests': false,
+    'messages': true,
+    'goal_completions': true,
+  };
+
+  // ============================================================================
+  // LOAD MENTOR SETTINGS
+  // ============================================================================
+  Future<void> loadMentorSettings(String mentorId) async {
+    emit(MentorLoadingState());
+    try {
+      final settings = await mentorRepo.getMentorSettings(mentorId);
+
+      acceptingNewRequests = settings['accepting_requests'] ?? true;
+      maxActiveMentees = settings['max_active_mentees'] ?? 5;
+      autoReply = settings['auto_reply_enabled'] ?? false;
+
+      notificationSettings = {
+        'new_requests': settings['notify_new_requests'] ?? true,
+        'messages': settings['notify_mentee_messages'] ?? true,
+        'goal_completions': settings['notify_goal_completions'] ?? true,
+      };
+
+      emit(MentorSettingsLoadedState());
+    } catch (e) {
+      log('Error loading mentor settings: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // UPDATE ACCEPTING NEW REQUESTS
+  // ============================================================================
+  Future<void> toggleAcceptingNewRequests(String mentorId) async {
+    try {
+      final newValue = !acceptingNewRequests;
+      await mentorRepo.updateAcceptingNewRequests(mentorId, newValue);
+
+      acceptingNewRequests = newValue;
+
+      emit(
+        MentorSettingsUpdatedState(
+          newValue
+              ? 'Now accepting new requests'
+              : 'No longer accepting new requests',
+        ),
+      );
+
+      emit(MentorSettingsLoadedState());
+    } catch (e) {
+      log('Error toggling accepting new requests: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // UPDATE MAX ACTIVE MENTEES
+  // ============================================================================
+  Future<void> updateMaxMentees(String mentorId, int newMax) async {
+    try {
+      await mentorRepo.updateMaxActiveMentees(mentorId, newMax);
+
+      maxActiveMentees = newMax;
+
+      emit(MentorSettingsUpdatedState('Max active mentees updated to $newMax'));
+      emit(MentorSettingsLoadedState());
+    } catch (e) {
+      log('Error updating max mentees: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // TOGGLE AUTO REPLY
+  // ============================================================================
+  Future<void> toggleAutoReply(String mentorId) async {
+    try {
+      final newValue = !autoReply;
+      await mentorRepo.updateAutoReply(mentorId, newValue);
+
+      autoReply = newValue;
+
+      emit(
+        MentorSettingsUpdatedState(
+          newValue ? 'Auto-reply enabled' : 'Auto-reply disabled',
+        ),
+      );
+
+      emit(MentorSettingsLoadedState());
+    } catch (e) {
+      log('Error toggling auto-reply: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // UPDATE NOTIFICATION SETTINGS
+  // ============================================================================
+  Future<void> toggleNotification(
+    String mentorId,
+    String notificationType,
+  ) async {
+    try {
+      final currentValue = notificationSettings[notificationType] ?? false;
+      final newValue = !currentValue;
+
+      await mentorRepo.updateNotificationSetting(
+        mentorId,
+        notificationType,
+        newValue,
+      );
+
+      notificationSettings[notificationType] = newValue;
+
+      emit(
+        MentorSettingsUpdatedState(
+          '${notificationType.replaceAll('_', ' ')} notifications ${newValue ? 'enabled' : 'disabled'}',
+        ),
+      );
+
+      emit(MentorSettingsLoadedState());
+    } catch (e) {
+      log('Error toggling notification: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
 }

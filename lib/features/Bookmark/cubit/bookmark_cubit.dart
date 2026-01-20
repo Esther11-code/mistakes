@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:mistakes/features/Bookmark/data/remote/bookmark_repo.dart';
+import 'package:mistakes/global%20widgets/widgets/milestone.dart';
 
 part 'bookmark_state.dart';
 
@@ -50,6 +52,7 @@ class BookmarksCubit extends Cubit<BookmarksState> {
 
   /// Toggle mentor bookmark
   Future<void> toggleMentorBookmark({
+    required BuildContext context,
     required String menteeId,
     required String mentorId,
   }) async {
@@ -75,6 +78,13 @@ class BookmarksCubit extends Cubit<BookmarksState> {
         mentorBookmarkStatus[mentorId] = true;
 
         log('[BookmarksCubit] Mentor bookmark added');
+        if (context.mounted) {
+  await checkAndShowAchievement(
+    context,
+    'first_bookmark_added',
+    AchievementType.firstBookmark,
+  );
+}
         emit(MentorBookmarkAddedState());
       }
 

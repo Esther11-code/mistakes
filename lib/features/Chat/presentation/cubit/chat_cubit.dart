@@ -23,7 +23,6 @@ class ChatCubit extends Cubit<ChatState> {
   final focusNode = FocusNode();
 
   // Data
-  UserModel user = UserModel();
   List<ConversationModel> conversations = [];
   List<ConversationModel> filteredConversations = [];
   List<MessageModel> currentChatMessages = [];
@@ -40,6 +39,8 @@ class ChatCubit extends Cubit<ChatState> {
   RealtimeChannel? _messagesChannel;
   RealtimeChannel? _conversationsChannel;
 
+  String? currentUserProfileId;
+
   // ==================== CONVERSATIONS ====================
 
   /// Load all conversations for current user
@@ -53,6 +54,8 @@ class ChatCubit extends Cubit<ChatState> {
     try {
       log('📥 Loading conversations for user: ${user.id}');
 
+      currentUserProfileId = await chatRepository.getProfileId(user.id!);
+
       conversations = await chatRepository.getConversations(userId: user.id!);
       filteredConversations = conversations;
 
@@ -60,7 +63,7 @@ class ChatCubit extends Cubit<ChatState> {
       emit(ChatLoadedState());
 
       // Subscribe to conversation updates
-      _subscribeToConversations();
+      _subscribeToConversations(user: user);
     } catch (e) {
       log('❌ Error loading conversations: $e');
       emit(ChatErrorState(error: e.toString()));
@@ -120,11 +123,14 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   /// Mark conversation as read
-  Future<void> markConversationAsRead(String conversationId) async {
+  Future<void> markConversationAsRead(
+    String conversationId, {
+    required UserModel user,
+  }) async {
     try {
       await chatRepository.markMessagesAsRead(
         conversationId: conversationId,
-        userId: user.id!,
+        userId: currentUserProfileId!,
       );
 
       // Update local conversation
@@ -167,7 +173,7 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   /// Get total unread message count
-  Future<int> getTotalUnreadCount() async {
+  Future<int> getTotalUnreadCount({required UserModel user}) async {
     try {
       return await chatRepository.getTotalUnreadCount(userId: user.id!);
     } catch (e) {
@@ -179,7 +185,7 @@ class ChatCubit extends Cubit<ChatState> {
   // ==================== MESSAGES ====================
 
   /// Load messages for selected conversation
-  Future<void> loadMessages() async {
+  Future<void> loadMessages({required UserModel user}) async {
     if (selectedConversationId.isEmpty) {
       log('❌ No conversation selected');
       return;
@@ -194,16 +200,16 @@ class ChatCubit extends Cubit<ChatState> {
       );
 
       log('✅ Messages loaded: ${currentChatMessages.length}');
-      emit(ChatLoadedState());
+      await markConversationAsRead(selectedConversationId, user: user);
 
       scrollToBottom();
 
       // Subscribe to new messages
-      _subscribeToMessages();
+      _subscribeToMessages(user: user);
+      emit(ChatLoadedState());
     } catch (e) {
       log('❌ Error loading messages: $e');
       emit(ChatErrorState(error: e.toString()));
-      emit(ChatLoadedState());
     }
   }
 
@@ -225,13 +231,14 @@ class ChatCubit extends Cubit<ChatState> {
     messageController.clear();
 
     try {
+      emit(ChatLoadingState());
       log('📤 Sending message: $messageText');
 
       // Optimistically add message to UI
       final optimisticMessage = MessageModel(
         id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
         conversationId: selectedConversationId,
-        senderId: user.id!,
+        senderId: currentUserProfileId ?? "",
         receiverId: selectedUserId,
         content: messageText,
         messageType: MessageType.text,
@@ -242,7 +249,7 @@ class ChatCubit extends Cubit<ChatState> {
       );
 
       currentChatMessages.add(optimisticMessage);
-      emit(ChatLoadedState());
+
       scrollToBottom();
 
       // Send to backend
@@ -261,8 +268,10 @@ class ChatCubit extends Cubit<ChatState> {
         currentChatMessages[index] = sentMessage;
         emit(ChatLoadedState());
       }
-
+      loadMessages(user: user);
       log('✅ Message sent successfully');
+      loadConversations(user: user);
+      emit(ChatLoadedState());
     } catch (e) {
       log('❌ Error sending message: $e');
 
@@ -270,7 +279,6 @@ class ChatCubit extends Cubit<ChatState> {
       currentChatMessages.removeWhere((msg) => msg.id.startsWith('temp_'));
 
       emit(ChatErrorState(error: 'Failed to send message'));
-      emit(ChatLoadedState());
     }
   }
 
@@ -278,6 +286,7 @@ class ChatCubit extends Cubit<ChatState> {
   Future<void> sendFileMessage({
     required File file,
     required MessageType messageType,
+    required UserModel user,
   }) async {
     if (selectedConversationId.isEmpty || selectedUserId.isEmpty) {
       log('❌ No conversation or user selected');
@@ -312,7 +321,7 @@ class ChatCubit extends Cubit<ChatState> {
   // ==================== REAL-TIME ====================
 
   /// Subscribe to new messages in current conversation
-  void _subscribeToMessages() {
+  void _subscribeToMessages({required UserModel user}) {
     if (selectedConversationId.isEmpty) return;
 
     // Unsubscribe from previous channel if exists
@@ -328,14 +337,14 @@ class ChatCubit extends Cubit<ChatState> {
         log('📨 New message received: ${newMessage.content}');
 
         // Only add if it's not from current user (we already added optimistically)
-        if (newMessage.senderId != user.id) {
+        if (newMessage.senderId != currentUserProfileId) {
           currentChatMessages.add(newMessage);
           emit(ChatLoadedState());
           scrollToBottom();
 
           // Mark as read since we're in the chat
-          if (newMessage.receiverId == user.id) {
-            markConversationAsRead(selectedConversationId);
+          if (newMessage.receiverId == currentUserProfileId) {
+            markConversationAsRead(selectedConversationId, user: user);
           }
         }
       },
@@ -343,7 +352,7 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   /// Subscribe to conversation updates
-  void _subscribeToConversations() {
+  void _subscribeToConversations({required UserModel user}) {
     if (user.id == null) return;
 
     // Unsubscribe from previous channel if exists
@@ -394,14 +403,15 @@ class ChatCubit extends Cubit<ChatState> {
   }
 
   /// Check if message is from current user
-  bool isMyMessage(MessageModel message) {
-    return message.senderId == user.id;
+  bool isMyMessage(MessageModel message, {required UserModel user}) {
+    return message.senderId == currentUserProfileId;
   }
 
   /// Scroll to bottom of chat
   void scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (scrollController.hasClients) {
+      if (scrollController.hasClients &&
+          scrollController.positions.length == 1) {
         scrollController.animateTo(
           scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
@@ -477,7 +487,10 @@ class ChatCubit extends Cubit<ChatState> {
     return super.close();
   }
 
-  Future<void> selectConversation(ConversationModel conversation,{required UserModel user}) async {
+  Future<void> selectConversation(
+    ConversationModel conversation, {
+    required UserModel user,
+  }) async {
     emit(ChatLoadingState());
 
     try {
@@ -520,13 +533,96 @@ class ChatCubit extends Cubit<ChatState> {
 
       // Mark as read if there are messages
       if (actualConversation.lastMessage != null) {
-        await markConversationAsRead(actualConversation.id);
+        await markConversationAsRead(actualConversation.id, user: user);
       }
 
       emit(ChatNavigateState());
     } catch (e) {
       log('❌ Error selecting conversation: $e');
       emit(ChatErrorState(error: e.toString()));
+      emit(ChatLoadedState());
+    }
+  }
+
+  Future<void> updateOnlineStatus(
+    bool isOnline, {
+    required UserModel user,
+  }) async {
+    emit(ChatLoadingState());
+    if (user.id == null) return;
+
+    try {
+      await chatRepository.updateOnlineStatus(
+        userId: user.id!,
+        isOnline: isOnline,
+      );
+      emit(ChatLoadedState());
+    } catch (e) {
+      log('❌ Error updating online status: $e');
+    }
+  }
+
+  /// Clear all messages in current conversation
+  Future<void> clearCurrentChat({required UserModel user}) async {
+    if (selectedConversationId.isEmpty) {
+      log('❌ No conversation selected');
+      return;
+    }
+
+    emit(ChatLoadingState());
+    try {
+      log('🗑️ Clearing chat: $selectedConversationId');
+
+      await chatRepository.clearChat(conversationId: selectedConversationId);
+
+      // Clear local messages
+      currentChatMessages.clear();
+
+      log('✅ Chat cleared successfully');
+      emit(ChatLoadedState());
+    } catch (e) {
+      log('❌ Error clearing chat: $e');
+      emit(ChatErrorState(error: 'Failed to clear chat'));
+      emit(ChatLoadedState());
+    }
+  }
+
+  /// Toggle mute for current conversation
+  Future<void> toggleMuteCurrentConversation({required UserModel user}) async {
+    if (selectedConversationId.isEmpty) {
+      log('❌ No conversation selected');
+      return;
+    }
+
+    try {
+      // Find current conversation to get mute status
+      final conversation = conversations.firstWhere(
+        (conv) => conv.id == selectedConversationId,
+        orElse: () => throw Exception('Conversation not found'),
+      );
+
+      final newMuteStatus = !(conversation.isMuted ?? false);
+
+      await chatRepository.toggleMuteConversation(
+        conversationId: selectedConversationId,
+        isMuted: newMuteStatus,
+      );
+
+      // Update local conversation
+      final index = conversations.indexWhere(
+        (conv) => conv.id == selectedConversationId,
+      );
+      if (index != -1) {
+        conversations[index] = conversations[index].copyWith(
+          isMuted: newMuteStatus,
+        );
+      }
+
+      log('✅ Conversation ${newMuteStatus ? "muted" : "unmuted"}');
+      emit(ChatLoadedState());
+    } catch (e) {
+      log('❌ Error toggling mute: $e');
+      emit(ChatErrorState(error: 'Failed to toggle mute'));
       emit(ChatLoadedState());
     }
   }

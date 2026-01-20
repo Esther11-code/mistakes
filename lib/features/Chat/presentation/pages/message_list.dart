@@ -12,21 +12,69 @@ import 'package:mistakes/features/Chat/data/models/message.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class MessageListPage extends StatelessWidget {
+class MessageListPage extends StatefulWidget {
   const MessageListPage({super.key});
+
+  @override
+  State<MessageListPage> createState() => _MessageListPageState();
+}
+
+class _MessageListPageState extends State<MessageListPage>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    final chatCubit = context.read<ChatCubit>();
+    final authCubit = context.read<AuthenticationCubit>();
+    WidgetsBinding.instance.addObserver(this);
+
+  
+    chatCubit.loadConversations(user: authCubit.user);
+
+    chatCubit.updateOnlineStatus(true, user: authCubit.user);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    final chatCubit = context.read<ChatCubit>();
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // App came to foreground
+        chatCubit.updateOnlineStatus(
+          true,
+          user: context.read<AuthenticationCubit>().user,
+        );
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        // App went to background
+        chatCubit.updateOnlineStatus(
+          false,
+          user: context.read<AuthenticationCubit>().user,
+        );
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final readChatCubit = context.read<ChatCubit>();
     final watchChatCubit = context.watch<ChatCubit>();
+    final watchAuthCubit = context.read<AuthenticationCubit>();
 
     return BlocListener<ChatCubit, ChatState>(
       listener: (context, state) {
         if (state is ChatLoadingState) {
           // Optional: show loading indicator
         } else if (state is ChatNavigateState) {
-          readChatCubit.loadMessages();
+          readChatCubit.loadMessages(user: watchAuthCubit.user);
           Navigator.pushNamed(context, Routename.menteeChat);
         }
       },
@@ -177,7 +225,7 @@ class ConversationListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatCubit = context.read<ChatCubit>();
-    final currentUserId = chatCubit.user.id ?? '';
+    final currentUserId = context.read<AuthenticationCubit>().user.id ?? '';
 
     return AppshadowContainer(
       color: AppColors.white,

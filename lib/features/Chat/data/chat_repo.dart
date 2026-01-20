@@ -341,7 +341,7 @@ class ChatRepo {
           .from('messages')
           .select('''
             *,
-            sender:profiles!messages_sender_id_fkey(
+            sender:profiles!sender_id(
               full_name, profile_photo_url, is_online
             )
           ''')
@@ -366,34 +366,36 @@ class ChatRepo {
   /// Send a text message
   Future<MessageModel> sendMessage({
     required String conversationId,
-    required String senderId,
-    required String receiverId,
+    required String senderId, // This is auth user ID
+    required String receiverId, // This is auth user ID
     required String content,
   }) async {
     try {
       log('📤 Sending message: $content');
 
-      // Insert message
+      // ✅ Convert auth user IDs to profile IDs
+      final senderProfileId = await getProfileId(senderId);
+      final receiverProfileId = await getProfileId(receiverId);
+
+      // Insert message with profile IDs
       final message = await _supabase
           .from('messages')
           .insert({
             'conversation_id': conversationId,
-            'sender_id': senderId,
-            'receiver_id': receiverId,
+            'sender_id': senderProfileId, // ✅ Use profile ID
+            'receiver_id': receiverProfileId, // ✅ Use profile ID
             'content': content,
             'message_type': 'text',
           })
           .select('''
-            *,
-            sender:profiles!messages_sender_id_fkey(
-              full_name, profile_photo_url, is_online
-            )
-          ''')
+          *,
+          sender:profiles!sender_id(
+            full_name, profile_photo_url, is_online
+          )
+        ''')
           .single();
 
       log('✅ Message sent: ${message['id']}');
-
-      // Note: Conversation update happens automatically via trigger
       return MessageModel.fromJson(message);
     } catch (e) {
       log('❌ Error in sendMessage: $e');
@@ -412,7 +414,11 @@ class ChatRepo {
     try {
       log('📤 Uploading ${messageType.name}...');
 
-      // Determine bucket and generate filename
+      // ✅ Convert auth user IDs to profile IDs
+      final senderProfileId = await getProfileId(senderId);
+      final receiverProfileId = await getProfileId(receiverId);
+
+      // Upload logic stays the same...
       final bucket = messageType == MessageType.image
           ? 'chat-images'
           : 'chat-files';
@@ -420,24 +426,19 @@ class ChatRepo {
           '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
       final filePath = '$senderId/$fileName';
 
-      // Upload to Supabase Storage
       await _supabase.storage.from(bucket).upload(filePath, file);
-
-      // Get public URL
       final fileUrl = _supabase.storage.from(bucket).getPublicUrl(filePath);
-
-      // Get file size
       final fileSize = await file.length();
 
       log('✅ File uploaded: $fileUrl');
 
-      // Insert message with file info
+      // Insert message with profile IDs
       final message = await _supabase
           .from('messages')
           .insert({
             'conversation_id': conversationId,
-            'sender_id': senderId,
-            'receiver_id': receiverId,
+            'sender_id': senderProfileId, // ✅ Use profile ID
+            'receiver_id': receiverProfileId, // ✅ Use profile ID
             'content': messageType == MessageType.image
                 ? 'Sent an image'
                 : 'Sent a file',
@@ -447,11 +448,11 @@ class ChatRepo {
             'file_size': fileSize,
           })
           .select('''
-            *,
-            sender:profiles!messages_sender_id_fkey(
-              full_name, profile_photo_url, is_online
-            )
-          ''')
+          *,
+          sender:profiles!sender_id(
+            full_name, profile_photo_url, is_online
+          )
+        ''')
           .single();
 
       log('✅ File message sent: ${message['id']}');
@@ -531,7 +532,7 @@ class ChatRepo {
                 .from('messages')
                 .select('''
                   *,
-                  sender:profiles!messages_sender_id_fkey(
+                  sender:profiles!sender_id(
                     full_name, profile_photo_url, is_online
                   )
                 ''')
@@ -600,21 +601,74 @@ class ChatRepo {
   }
 
   Future<void> updateOnlineStatus({
-  required String userId,
-  required bool isOnline,
-}) async {
+    required String userId,
+    required bool isOnline,
+  }) async {
+    try {
+      await _supabase
+          .from('profiles')
+          .update({
+            'is_online': isOnline,
+            'last_seen': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId);
+
+      log('✅ Updated online status: $isOnline');
+    } catch (e) {
+      log('❌ Error updating online status: $e');
+    }
+  }
+
+  Future<String> getProfileId(String authUserId) async {
+    try {
+      final profiles = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authUserId)
+          .single();
+
+      return profiles['id'] as String;
+    } catch (e) {
+      log('❌ Error getting profile ID for user: $authUserId');
+      rethrow;
+    }
+  }
+
+/// Delete all messages in a conversation
+Future<void> clearChat({required String conversationId}) async {
   try {
+    log('🗑️ Clearing chat: $conversationId');
+
     await _supabase
-        .from('profiles')
-        .update({
-          'is_online': isOnline,
-          'last_seen': DateTime.now().toIso8601String(),
-        })
-        .eq('user_id', userId);
-    
-    log('✅ Updated online status: $isOnline');
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
+
+    log('✅ Chat cleared successfully');
   } catch (e) {
-    log('❌ Error updating online status: $e');
+    log('❌ Error clearing chat: $e');
+    throw Exception('Failed to clear chat: $e');
   }
 }
+
+/// Mute/unmute a conversation
+Future<void> toggleMuteConversation({
+  required String conversationId,
+  required bool isMuted,
+}) async {
+  try {
+    log('🔕 ${isMuted ? "Muting" : "Unmuting"} conversation: $conversationId');
+
+    await _supabase
+        .from('conversations')
+        .update({'is_muted': isMuted})
+        .eq('id', conversationId);
+
+    log('✅ Conversation ${isMuted ? "muted" : "unmuted"}');
+  } catch (e) {
+    log('❌ Error toggling mute: $e');
+    throw Exception('Failed to toggle mute: $e');
+  }
+}
+  
 }

@@ -142,6 +142,8 @@ class ProgressDashboardView extends StatelessWidget {
                             size: size,
                             onProgressUpdate: (newProgress) {
                               readGoalCubit.updateProgress(
+                                context: context,
+
                                 goal.id,
                                 newProgress,
                               );

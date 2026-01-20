@@ -25,7 +25,6 @@ class BottomNav extends StatelessWidget {
       builder: (context, state) {
         if (state is HomeLoadingState) {
           final chatCubit = context.read<ChatCubit>();
-          chatCubit.user = watchAuthCubit.user;
           chatCubit.loadConversations(user: watchAuthCubit.user);
           final dashboardCubit = context.read<DashboardCubit>();
           dashboardCubit.loadMentees(user: watchAuthCubit.user);

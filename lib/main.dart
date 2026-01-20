@@ -16,6 +16,8 @@ import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/data/domain/goal_repo.dart';
 import 'package:mistakes/features/Home/data/remote/home_repo.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
+import 'package:mistakes/features/Notification/data/remote/notification_repo.dart';
+import 'package:mistakes/features/Notification/presentation/cubit/notification_cubit.dart';
 import 'package:mistakes/features/Onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mistakes/features/Profile/data/remote/match_repo.dart';
@@ -146,6 +148,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (context) => ReviewCubit()),
         BlocProvider(create: (context) => BookmarksCubit(BookmarkRepo())),
         BlocProvider(create: (context) => MentorCubit(MentorRepo())),
+        BlocProvider(create: (context) => NotificationCubit(NotificationRepo())),
       ],
       child: ScreenUtilInit(
         designSize: const Size(370, 800),

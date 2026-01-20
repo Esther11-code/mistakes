@@ -4,7 +4,6 @@ import 'package:mistakes/features/Authentication/presentation/pages/add_details.
 import 'package:mistakes/features/Authentication/presentation/pages/forget_password.dart';
 import 'package:mistakes/features/Chat/presentation/pages/chat_setup.dart';
 import 'package:mistakes/features/Chat/presentation/pages/mentee/chat.dart';
-import 'package:mistakes/features/Chat/presentation/pages/mentor/mentor_chat.dart';
 import 'package:mistakes/features/Chat/presentation/pages/message_list.dart';
 import 'package:mistakes/features/Dashboard/pages/mentee/mentee_dashboard.dart';
 import 'package:mistakes/features/Dashboard/pages/mentee/shared_resources.dart';
@@ -21,6 +20,7 @@ import 'package:mistakes/features/Home/presentation/pages/requests/mentor/reques
 import 'package:mistakes/features/Onboarding/presentation/pages/splashscreen.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/achievement_history.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/mentee_account.dart';
+import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentee/mentee_details.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/all_mentor.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/edit_mentor_profile.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_account.dart';
@@ -96,9 +96,9 @@ class AppRoute {
       case Routename.goalSetUp:
         return CustomPageRoute(child: const GoalSetup());
       case Routename.menteeChat:
-        return CustomPageRoute(child: const MenteeChatPage());
-      // case Routename.mentorChat:
-      //   return CustomPageRoute(child: const MentorChatPage());
+        return CustomPageRoute(child: const MenteChatPage());
+      case Routename.menteeDetails:
+        return CustomPageRoute(child: const MenteeDetails());
       case Routename.profileSetup:
         return CustomPageRoute(child: const ProfileSetUp());
       case Routename.chatSetup:

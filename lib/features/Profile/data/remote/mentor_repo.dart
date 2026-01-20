@@ -455,7 +455,7 @@ class MentorRepo {
       final response = await _supabase
           .from('profiles')
           .select(
-            'user_id, username, full_name, profile_photo_url, bio, expertise, years_experience, location, created_at',
+            'user_id, username, full_name, profile_photo_url, bio, expertise, years_experience, created_at, learning_goals, area_of_interest, availability, linkedin_url',
           )
           .eq('user_id', menteeId)
           .single();
@@ -561,4 +561,172 @@ class MentorRepo {
       rethrow;
     }
   }
+
+
+Future<Map<String, dynamic>> getMentorSettings(String mentorId) async {
+  try {
+    // First, get the profile ID from user_id
+    final profileResponse = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', mentorId)
+        .single();
+
+    final profileId = profileResponse['id'];
+
+    final response = await _supabase
+        .from('mentor_settings')
+        .select(
+          'accepting_requests, max_active_mentees, auto_reply_enabled, auto_reply_message, notify_new_requests, notify_mentee_messages, notify_goal_completions',
+        )
+        .eq('mentor_id', profileId)
+        .maybeSingle();
+
+    // If no settings exist yet, create default settings
+    if (response == null) {
+      await _supabase.from('mentor_settings').insert({
+        'mentor_id': profileId,
+        'accepting_requests': true,
+        'max_active_mentees': 5,
+        'auto_reply_enabled': false,
+        'auto_reply_message': 'Thank you for your interest! I am currently at capacity and unable to accept new mentees at this time.',
+        'notify_new_requests': true,
+        'notify_mentee_messages': true,
+        'notify_goal_completions': true,
+      });
+
+      // Return default values
+      return {
+        'accepting_requests': true,
+        'max_active_mentees': 5,
+        'auto_reply_enabled': false,
+        'auto_reply_message': 'Thank you for your interest! I am currently at capacity and unable to accept new mentees at this time.',
+        'notify_new_requests': true,
+        'notify_mentee_messages': true,
+        'notify_goal_completions': true,
+      };
+    }
+
+    log('Loaded mentor settings: $response');
+    return response;
+  } catch (e) {
+    log('Error fetching mentor settings: $e');
+    rethrow;
+  }
+}
+
+Future<void> updateAcceptingNewRequests(
+  String mentorId,
+  bool accepting,
+) async {
+  try {
+    // Get profile ID first
+    final profileResponse = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', mentorId)
+        .single();
+
+    final profileId = profileResponse['id'];
+
+    await _supabase
+        .from('mentor_settings')
+        .update({'accepting_requests': accepting})
+        .eq('mentor_id', profileId);
+
+    log('Updated accepting_requests to $accepting');
+  } catch (e) {
+    log('Error updating accepting_requests: $e');
+    rethrow;
+  }
+}
+
+Future<void> updateMaxActiveMentees(String mentorId, int maxMentees) async {
+  try {
+    // Get profile ID first
+    final profileResponse = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', mentorId)
+        .single();
+
+    final profileId = profileResponse['id'];
+
+    await _supabase
+        .from('mentor_settings')
+        .update({'max_active_mentees': maxMentees})
+        .eq('mentor_id', profileId);
+
+    log('Updated max_active_mentees to $maxMentees');
+  } catch (e) {
+    log('Error updating max_active_mentees: $e');
+    rethrow;
+  }
+}
+
+Future<void> updateAutoReply(String mentorId, bool autoReply) async {
+  try {
+    // Get profile ID first
+    final profileResponse = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', mentorId)
+        .single();
+
+    final profileId = profileResponse['id'];
+
+    await _supabase
+        .from('mentor_settings')
+        .update({'auto_reply_enabled': autoReply})
+        .eq('mentor_id', profileId);
+
+    log('Updated auto_reply_enabled to $autoReply');
+  } catch (e) {
+    log('Error updating auto_reply: $e');
+    rethrow;
+  }
+}
+
+Future<void> updateNotificationSetting(
+  String mentorId,
+  String notificationType,
+  bool enabled,
+) async {
+  try {
+    // Get profile ID first
+    final profileResponse = await _supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', mentorId)
+        .single();
+
+    final profileId = profileResponse['id'];
+
+    // Map the notification type to the correct column name
+    String columnName;
+    switch (notificationType) {
+      case 'new_requests':
+        columnName = 'notify_new_requests';
+        break;
+      case 'messages':
+        columnName = 'notify_mentee_messages';
+        break;
+      case 'goal_completions':
+        columnName = 'notify_goal_completions';
+        break;
+      default:
+        columnName = 'notify_$notificationType';
+    }
+
+    await _supabase
+        .from('mentor_settings')
+        .update({columnName: enabled})
+        .eq('mentor_id', profileId);
+
+    log('Updated $columnName to $enabled');
+  } catch (e) {
+    log('Error updating notification setting: $e');
+    rethrow;
+  }
+}
 }

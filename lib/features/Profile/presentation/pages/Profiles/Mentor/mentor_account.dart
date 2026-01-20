@@ -1,10 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
@@ -104,7 +104,11 @@ class MentorAccount extends StatelessWidget {
                               Column(
                                 children: [
                                   InAppText(
-                                    text: "24",
+                                    text: context
+                                        .watch<DashboardCubit>()
+                                        .allMentees
+                                        .length
+                                        .toString(),
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
@@ -116,7 +120,7 @@ class MentorAccount extends StatelessWidget {
                                 children: [
                                   InAppText(
                                     text:
-                                        "${watchAuthCubit.user.yearsExperience.toString()} yrs",
+                                        "${watchAuthCubit.user.yearsExperience ?? 0} yrs",
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
@@ -352,39 +356,50 @@ class MentorAccount extends StatelessWidget {
                           SettingsDivider(size: size),
                           Padding(
                             padding: EdgeInsets.all(size.width * 0.04),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.all(
-                                        size.width * 0.03,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Routename.notification,
+                                );
+                              },
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(
+                                          size.width * 0.03,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.purple.withAlpha(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.notifications_outlined,
+                                          color: Colors.purple.shade400,
+                                          size: 25.sp,
+                                        ),
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.purple.withAlpha(10),
-                                        borderRadius: BorderRadius.circular(10),
+                                      SizedBox(width: size.width * 0.03),
+                                      InAppText(
+                                        text: "Notifications",
+                                        fontweight: FontWeight.w500,
+                                        color: AppColors.blue,
                                       ),
-                                      child: Icon(
-                                        Icons.notifications_outlined,
-                                        color: Colors.purple.shade400,
-                                        size: 25.sp,
-                                      ),
-                                    ),
-                                    SizedBox(width: size.width * 0.03),
-                                    InAppText(
-                                      text: "Notifications",
-                                      fontweight: FontWeight.w500,
-                                      color: AppColors.blue,
-                                    ),
-                                  ],
-                                ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 20.sp,
-                                  color: AppColors.grey,
-                                ),
-                              ],
+                                    ],
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 20.sp,
+                                    color: AppColors.grey,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

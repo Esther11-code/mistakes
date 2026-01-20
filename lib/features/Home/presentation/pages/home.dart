@@ -196,6 +196,7 @@ class MentorList extends StatelessWidget {
               final userId = context.read<AuthenticationCubit>().user.id;
               if (userId != null) {
                 context.read<BookmarksCubit>().toggleMentorBookmark(
+                    context: context,
                   menteeId: userId,
                   mentorId: mentorId,
                 );

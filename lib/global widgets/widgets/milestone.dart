@@ -1,15 +1,18 @@
 // lib/features/Profile/presentation/widgets/achievement_celebration.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:confetti/confetti.dart';
+import 'package:mistakes/constants/utils/achievement_service.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/global%20widgets/export.dart';
+
 
 enum AchievementType {
   firstGoal,
   firstCompletedGoal,
   firstBookmark,
-  mentorshipStarted, // ⭐ Changed from firstMentorship
+  mentorshipStarted,
   firstMissedDeadline,
   goalCompleted,
   progressMilestone,
@@ -20,97 +23,90 @@ class AchievementData {
   final String title;
   final String message;
   final IconData icon;
-  final Color color;
+  final List<Color> gradientColors;
   final bool showConfetti;
-  final String? customMessage; // ⭐ For mentor's welcome message
 
   AchievementData({
     required this.type,
     required this.title,
     required this.message,
     required this.icon,
-    required this.color,
+    required this.gradientColors,
     required this.showConfetti,
-    this.customMessage,
   });
 
   static AchievementData fromType(
     AchievementType type, {
-    String? customMessage,
-    String? menteeName,
-    String? mentorName,
     int? progressPercentage,
   }) {
     switch (type) {
       case AchievementType.firstGoal:
         return AchievementData(
           type: type,
-          title: '🎯 First Goal Created!',
+          title: 'First Goal Created!',
           message: 'You\'ve taken the first step in your mentorship journey. Keep setting goals to track your progress!',
-          icon: Icons.flag_outlined,
-          color: Colors.blue,
+          icon: Icons.flag_rounded,
+          gradientColors: [Colors.blue.shade400, Colors.blue.shade600],
           showConfetti: true,
         );
-      
+
       case AchievementType.firstCompletedGoal:
         return AchievementData(
           type: type,
-          title: '🎉 First Goal Completed!',
+          title: 'First Goal Completed!',
           message: 'Amazing work! You\'ve completed your first goal. This is just the beginning of your success story!',
           icon: Icons.emoji_events,
-          color: Colors.amber,
+          gradientColors: [Colors.amber.shade400, Colors.orange.shade600],
           showConfetti: true,
         );
-      
+
       case AchievementType.goalCompleted:
         return AchievementData(
           type: type,
-          title: '✅ Goal Completed!',
+          title: 'Goal Completed!',
           message: 'Fantastic! You\'ve completed another goal. Keep up the momentum!',
-          icon: Icons.check_circle,
-          color: Colors.green,
+          icon: Icons.check_circle_rounded,
+          gradientColors: [Colors.green.shade400, Colors.green.shade600],
           showConfetti: true,
         );
-      
+
       case AchievementType.firstBookmark:
         return AchievementData(
           type: type,
-          title: '⭐ First Mentor Saved!',
+          title: 'First Mentor Saved!',
           message: 'Great choice! You\'ve bookmarked your first mentor. Building connections is key to growth!',
-          icon: Icons.bookmark,
-          color: Colors.purple,
+          icon: Icons.bookmark_rounded,
+          gradientColors: [Colors.purple.shade400, Colors.purple.shade600],
           showConfetti: true,
         );
-      
+
       case AchievementType.mentorshipStarted:
         return AchievementData(
           type: type,
-          title: '🤝 Mentorship Started!',
-          message: customMessage ?? 
-              'Your mentorship journey with ${mentorName ?? 'your mentor'} begins now! Work closely together to achieve your goals.',
+          title: 'Mentorship Started!',
+          message: 'Your mentorship journey begins now! Work closely together to achieve your goals.',
           icon: Icons.handshake_rounded,
-          color: Colors.green,
+          gradientColors: [AppColors.background, AppColors.filledColor],
           showConfetti: true,
-          customMessage: customMessage,
         );
-      
+
       case AchievementType.firstMissedDeadline:
         return AchievementData(
           type: type,
-          title: '⏰ Deadline Missed',
+          title: 'Deadline Missed',
           message: 'Don\'t worry! Missing a deadline happens. Reach out to your mentor to get back on track.',
-          icon: Icons.schedule,
-          color: Colors.orange,
+          icon: Icons.heart_broken_rounded,
+          gradientColors: [Colors.orange.shade400, Colors.red.shade400],
           showConfetti: false,
         );
-      
+
       case AchievementType.progressMilestone:
         return AchievementData(
           type: type,
-          title: '🎊 ${progressPercentage ?? 50}% Complete!',
-          message: 'You\'re making great progress! Keep going, you\'re more than halfway there!',
-          icon: Icons.trending_up,
-          color: Colors.indigo,
+          title: '${progressPercentage ?? 50}% Complete!',
+          message: 'You\'re making great progress! Keep going, you\'re ${progressPercentage != null && progressPercentage >= 50 ? 'more than halfway' : 'on your way'} there!',
+          icon: Icons.trending_up_rounded,
+          gradientColors: [Colors.indigo.shade400, Colors.purple.shade600],
           showConfetti: true,
         );
     }
@@ -119,8 +115,7 @@ class AchievementData {
 
 class AchievementCelebration extends StatefulWidget {
   final AchievementType achievementType;
-  final String? customMessage; // ⭐ Mentor's welcome message
-  final String? menteeName;
+  final String? welcomeMessage;
   final String? mentorName;
   final int? progressPercentage;
   final VoidCallback? onContinue;
@@ -129,8 +124,7 @@ class AchievementCelebration extends StatefulWidget {
   const AchievementCelebration({
     super.key,
     required this.achievementType,
-    this.customMessage,
-    this.menteeName,
+    this.welcomeMessage,
     this.mentorName,
     this.progressPercentage,
     this.onContinue,
@@ -142,53 +136,70 @@ class AchievementCelebration extends StatefulWidget {
 }
 
 class _AchievementCelebrationState extends State<AchievementCelebration>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late ConfettiController _confettiController;
-  late AnimationController _animationController;
+  late AnimationController _scaleController;
+  late AnimationController _slideController;
   late Animation<double> _scaleAnimation;
+  late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     final achievement = AchievementData.fromType(
       widget.achievementType,
-      customMessage: widget.customMessage,
-      menteeName: widget.menteeName,
-      mentorName: widget.mentorName,
       progressPercentage: widget.progressPercentage,
     );
-    
+
     _confettiController = ConfettiController(
-      duration: Duration(seconds: achievement.showConfetti ? 3 : 0),
+      duration: Duration(seconds: achievement.showConfetti ? 4 : 0),
     );
-    
-    _animationController = AnimationController(
+
+    _scaleController = AnimationController(
+      duration: Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _slideController = AnimationController(
       duration: Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _scaleAnimation = CurvedAnimation(
-      parent: _animationController,
+      parent: _scaleController,
       curve: Curves.elasticOut,
     );
-    
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
+
     _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
+      parent: _slideController,
       curve: Curves.easeIn,
     );
-    
-    _animationController.forward();
+
+    _scaleController.forward();
+    _slideController.forward();
+
     if (achievement.showConfetti) {
-      _confettiController.play();
+      Future.delayed(Duration(milliseconds: 300), () {
+        _confettiController.play();
+      });
     }
   }
 
   @override
   void dispose() {
     _confettiController.dispose();
-    _animationController.dispose();
+    _scaleController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
@@ -197,21 +208,20 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
     final size = MediaQuery.sizeOf(context);
     final achievement = AchievementData.fromType(
       widget.achievementType,
-      customMessage: widget.customMessage,
-      menteeName: widget.menteeName,
-      mentorName: widget.mentorName,
       progressPercentage: widget.progressPercentage,
     );
 
     return Dialog(
       backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: size.width * 0.06),
       child: Stack(
-        alignment: Alignment.topCenter,
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
           // Confetti
           if (achievement.showConfetti)
             Positioned(
-              top: 0,
+              top: -50,
               child: ConfettiWidget(
                 confettiController: _confettiController,
                 blastDirectionality: BlastDirectionality.explosive,
@@ -221,76 +231,77 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                   Colors.yellow,
                   Colors.red,
                   Colors.purple,
+                  Colors.pink,
                 ],
-                numberOfParticles: 30,
-                gravity: 0.3,
+                numberOfParticles: 40,
+                gravity: 0.2,
+                emissionFrequency: 0.05,
               ),
             ),
-          
-          // Content Card
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
+
+          // Main Content
+          SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
               child: Container(
-                margin: EdgeInsets.symmetric(horizontal: size.width * 0.08),
                 padding: EdgeInsets.all(size.width * 0.06),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
+                      color: achievement.gradientColors.first.withAlpha(50),
+                      blurRadius: 30,
+                      offset: Offset(0, 15),
                     ),
                   ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Icon
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            achievement.color,
-                            achievement.color.withOpacity(0.7),
+                    // Animated Icon
+                    ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: achievement.gradientColors,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: achievement.gradientColors.first.withAlpha(80),
+                              blurRadius: 25,
+                              offset: Offset(0, 12),
+                            ),
                           ],
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: achievement.color.withOpacity(0.4),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        achievement.icon,
-                        size: 50.sp,
-                        color: Colors.white,
+                        child: Icon(
+                          achievement.icon,
+                          size: 60.sp,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    
+
                     SizedBox(height: size.height * 0.03),
-                    
+
                     // Title
                     InAppText(
                       text: achievement.title,
-                      size: 24,
-                      fontweight: FontWeight.w700,
+                      size: 26,
+                      fontweight: FontWeight.w800,
                       color: AppColors.blue,
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     SizedBox(height: size.height * 0.015),
-                    
+
                     // Message
                     InAppText(
                       text: achievement.message,
@@ -299,21 +310,28 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                       textAlign: TextAlign.center,
                       maxline: 10,
                     ),
-                    
-                    // ⭐ Show custom message if it's a mentorship and there's a welcome message
-                    if (widget.achievementType == AchievementType.mentorshipStarted && 
-                        widget.customMessage != null && 
-                        widget.customMessage!.isNotEmpty) ...[
-                      SizedBox(height: size.height * 0.02),
-                      
+
+                    // Welcome Message Card (only for mentorship started)
+                    if (widget.achievementType == AchievementType.mentorshipStarted &&
+                        widget.welcomeMessage != null &&
+                        widget.welcomeMessage!.isNotEmpty) ...[
+                      SizedBox(height: size.height * 0.025),
                       Container(
+                        width: size.width,
                         padding: EdgeInsets.all(size.width * 0.04),
                         decoration: BoxDecoration(
-                          color: achievement.color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.background.withAlpha(20),
+                              AppColors.filledColor.withAlpha(20),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: achievement.color.withOpacity(0.3),
-                            width: 1,
+                            color: AppColors.filledColor.withAlpha(50),
+                            width: 1.5,
                           ),
                         ),
                         child: Column(
@@ -321,35 +339,53 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                           children: [
                             Row(
                               children: [
-                                Icon(
-                                  Icons.message_outlined,
-                                  size: 18.sp,
-                                  color: achievement.color,
+                                Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [AppColors.background, AppColors.filledColor],
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.mail_outline_rounded,
+                                    size: 18.sp,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                                SizedBox(width: 8),
-                                InAppText(
-                                  text: 'Message from ${widget.mentorName ?? "your mentor"}:',
-                                  size: 14,
-                                  fontweight: FontWeight.w600,
-                                  color: achievement.color,
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: InAppText(
+                                    text: '${widget.mentorName ?? "Your mentor"} says:',
+                                    size: 15,
+                                    fontweight: FontWeight.w700,
+                                    color: AppColors.blue,
+                                  ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 8),
-                            InAppText(
-                              text: '"${widget.customMessage}"',
-                              size: 14,
-                              color: AppColors.lightblack,
-                              textAlign: TextAlign.left,
-                              maxline: 10,
+                            SizedBox(height: 12),
+                            Container(
+                              padding: EdgeInsets.all(size.width * 0.03),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: InAppText(
+                                text: '"${widget.welcomeMessage}"',
+                                size: 15,
+                                color: AppColors.lightblack,
+                                textAlign: TextAlign.left,
+                                maxline: 10,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
-                    
+
                     SizedBox(height: size.height * 0.03),
-                    
+
                     // Continue Button
                     AppButton(
                       onTap: () {
@@ -357,7 +393,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                         widget.onContinue?.call();
                       },
                       width: size.width,
-                      buttonColor: achievement.color,
                       label: widget.continueButtonText ?? 'Continue',
                       textSize: 17,
                     ),
@@ -372,12 +407,11 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
   }
 }
 
-// ⭐ Helper function to show achievement
+// Helper function to show achievement
 void showAchievementCelebration(
   BuildContext context,
   AchievementType type, {
-  String? customMessage,
-  String? menteeName,
+  String? welcomeMessage,
   String? mentorName,
   int? progressPercentage,
   VoidCallback? onContinue,
@@ -388,8 +422,7 @@ void showAchievementCelebration(
     barrierDismissible: false,
     builder: (context) => AchievementCelebration(
       achievementType: type,
-      customMessage: customMessage,
-      menteeName: menteeName,
+      welcomeMessage: welcomeMessage,
       mentorName: mentorName,
       progressPercentage: progressPercentage,
       onContinue: onContinue,
@@ -398,313 +431,41 @@ void showAchievementCelebration(
   );
 }
 
-// // In _MentorshipRequestState._showSuccessDialog(), replace with:
-
-// void _showSuccessDialog() {
-//   final cubit = context.read<MentorCubit>();
-//   final menteeName = cubit.selectedMenteeName;
-//   final firstName = menteeName.split(' ')[0];
-//   final welcomeMessage = _welcomeMessageController.text.trim();
-  
-//   // ⭐ Show achievement celebration instead of simple dialog
-//   showAchievementCelebration(
-//     context,
-//     AchievementType.mentorshipStarted,
-//     customMessage: welcomeMessage.isEmpty ? null : welcomeMessage,
-//     menteeName: firstName,
-//     mentorName: 'you', // Or get actual mentor name from context
-//     onContinue: () {
-//       // Pop AcceptMentorship page
-//       Navigator.pop(context);
-//       // Pop RequestDetails page
-//       Navigator.pop(context);
-//     },
-//     continueButtonText: 'Start Mentoring',
-//   );
-// }
-
-
-
-
-enum MilestoneType {
-  firstGoal,
-  firstCompletedGoal,
-  firstBookmark,
-  firstMentorship,
-  firstMissedDeadline,
-}
-
-class MilestoneData {
-  final MilestoneType type;
-  final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final bool isPositive;
-
-  MilestoneData({
-    required this.type,
-    required this.title,
-    required this.message,
-    required this.icon,
-    required this.color,
-    required this.isPositive,
-  });
-
-  static MilestoneData fromType(MilestoneType type) {
-    switch (type) {
-      case MilestoneType.firstGoal:
-        return MilestoneData(
-          type: type,
-          title: '🎯 First Goal Created!',
-          message: 'You\'ve taken the first step in your mentorship journey. Keep setting goals to track your progress!',
-          icon: Icons.flag_outlined,
-          color: Colors.blue,
-          isPositive: true,
-        );
-      
-      case MilestoneType.firstCompletedGoal:
-        return MilestoneData(
-          type: type,
-          title: '🎉 First Goal Completed!',
-          message: 'Amazing work! You\'ve completed your first goal. This is just the beginning of your success story!',
-          icon: Icons.emoji_events,
-          color: Colors.amber,
-          isPositive: true,
-        );
-      
-      case MilestoneType.firstBookmark:
-        return MilestoneData(
-          type: type,
-          title: '⭐ First Mentor Saved!',
-          message: 'Great choice! You\'ve bookmarked your first mentor. Building connections is key to growth!',
-          icon: Icons.bookmark,
-          color: Colors.purple,
-          isPositive: true,
-        );
-      
-      case MilestoneType.firstMentorship:
-        return MilestoneData(
-          type: type,
-          title: '🤝 Mentorship Started!',
-          message: 'Your mentorship journey begins now! Work closely with your mentor to achieve your goals.',
-          icon: Icons.handshake_rounded,
-          color: Colors.green,
-          isPositive: true,
-        );
-      
-      case MilestoneType.firstMissedDeadline:
-        return MilestoneData(
-          type: type,
-          title: '⏰ Deadline Missed',
-          message: 'Don\'t worry! Missing a deadline happens. Reach out to your mentor to get back on track.',
-          icon: Icons.schedule,
-          color: Colors.orange,
-          isPositive: false,
-        );
-    }
-  }
-}
-
-class MilestoneCelebration extends StatefulWidget {
-  final MilestoneType milestoneType;
-  final VoidCallback? onContinue;
-
-  const MilestoneCelebration({
-    super.key,
-    required this.milestoneType,
-    this.onContinue,
-  });
-
-  @override
-  State<MilestoneCelebration> createState() => _MilestoneCelebrationState();
-}
-
-class _MilestoneCelebrationState extends State<MilestoneCelebration>
-    with SingleTickerProviderStateMixin {
-  late ConfettiController _confettiController;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    final milestone = MilestoneData.fromType(widget.milestoneType);
-    
-    // Only show confetti for positive milestones
-    _confettiController = ConfettiController(
-      duration: Duration(seconds: milestone.isPositive ? 3 : 0),
-    );
-    
-    _animationController = AnimationController(
-      duration: Duration(milliseconds: 800),
-      vsync: this,
-    );
-    
-    _scaleAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    );
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    );
-    
-    // Start animations
-    _animationController.forward();
-    if (milestone.isPositive) {
-      _confettiController.play();
-    }
-  }
-
-  @override
-  void dispose() {
-    _confettiController.dispose();
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final milestone = MilestoneData.fromType(widget.milestoneType);
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          // Confetti
-          if (milestone.isPositive)
-            Positioned(
-              top: 0,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirectionality: BlastDirectionality.explosive,
-                colors: [
-                  Colors.blue,
-                  Colors.green,
-                  Colors.yellow,
-                  Colors.red,
-                  Colors.purple,
-                ],
-                numberOfParticles: 30,
-                gravity: 0.3,
-              ),
-            ),
-          
-          // Content Card
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: size.width * 0.08),
-                padding: EdgeInsets.all(size.width * 0.06),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Icon
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            milestone.color,
-                            milestone.color.withOpacity(0.7),
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: milestone.color.withOpacity(0.4),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        milestone.icon,
-                        size: 50.sp,
-                        color: Colors.white,
-                      ),
-                    ),
-                    
-                    SizedBox(height: size.height * 0.03),
-                    
-                    // Title
-                    InAppText(
-                      text: milestone.title,
-                      size: 24,
-                      fontweight: FontWeight.w700,
-                      color: AppColors.blue,
-                      textAlign: TextAlign.center,
-                    ),
-                    
-                    SizedBox(height: size.height * 0.015),
-                    
-                    // Message
-                    InAppText(
-                      text: milestone.message,
-                      size: 16,
-                      color: AppColors.grey,
-                      textAlign: TextAlign.center,
-                      maxline: 5,
-                    ),
-                    
-                    SizedBox(height: size.height * 0.03),
-                    
-                    // Continue Button
-                    AppButton(
-                      onTap: () {
-                        Navigator.pop(context);
-                        widget.onContinue?.call();
-                      },
-                      width: size.width,
-                      buttonColor: milestone.color,
-                      label: 'Continue',
-                      textSize: 17,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Helper function to show milestone
-void showMilestoneCelebration(
+// Helper to check and show achievement
+Future<void> checkAndShowAchievement(
   BuildContext context,
-  MilestoneType type, {
+  String achievementKey,
+  AchievementType achievementType, {
+  String? welcomeMessage,
+  String? mentorName,
+  int? progressPercentage,
   VoidCallback? onContinue,
-}) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => MilestoneCelebration(
-      milestoneType: type,
-      onContinue: onContinue,
-    ),
-  );
+  String? continueButtonText,
+}) async {
+  final service = AchievementService();
+
+  // Check if already achieved
+  final alreadyAchieved = await service.hasAchieved(achievementKey);
+
+  if (!alreadyAchieved) {
+    // Mark as achieved
+    await service.markAchieved(achievementKey, metadata: {
+      'mentor_name': mentorName,
+      'welcome_message': welcomeMessage,
+      'progress_percentage': progressPercentage,
+    });
+
+    // Show celebration
+    if (context.mounted) {
+      showAchievementCelebration(
+        context,
+        achievementType,
+        welcomeMessage: welcomeMessage,
+        mentorName: mentorName,
+        progressPercentage: progressPercentage,
+        onContinue: onContinue,
+        continueButtonText: continueButtonText,
+      );
+    }
+  }
 }
