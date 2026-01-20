@@ -160,7 +160,6 @@ class _NotificationPageState extends State<NotificationPage> {
     final message = notification['message'] as String;
     final avatar = notification['avatar'] as String?;
     final timestamp = notification['timestamp'] as DateTime;
-    final isRead = notification['is_read'] as bool;
 
     return AppshadowContainer(
       shadowcolour: AppColors.lightgrey.withAlpha(50),
@@ -170,14 +169,13 @@ class _NotificationPageState extends State<NotificationPage> {
       ),
       margin: EdgeInsets.symmetric(vertical: size.width * 0.015),
       width: size.width,
-      color: isRead ? AppColors.white : AppColors.filledColor.withAlpha(10),
+      color: AppColors.white,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar or Icon
           Container(
-            width: 45,
-            height: 45,
+            width: size.width * 0.15,
+            height: size.width * 0.15,
             decoration: BoxDecoration(
               color: _getNotificationColor(type).withAlpha(20),
               shape: BoxShape.circle,
@@ -197,8 +195,6 @@ class _NotificationPageState extends State<NotificationPage> {
                 : null,
           ),
           SizedBox(width: size.width * 0.03),
-
-          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,14 +208,13 @@ class _NotificationPageState extends State<NotificationPage> {
                         text: title,
                         color: AppColors.blue,
                         fontweight: FontWeight.w600,
-                        size: 16,
                       ),
                     ),
                     InAppText(
                       text: timeago.format(timestamp),
-                      size: 12,
+                      size: 14,
                       fontweight: FontWeight.w500,
-                      color: AppColors.lightgrey,
+                      color: AppColors.lightblack,
                     ),
                   ],
                 ),
@@ -227,7 +222,7 @@ class _NotificationPageState extends State<NotificationPage> {
                 InAppText(
                   text: message,
                   color: AppColors.blue,
-                  size: 14,
+                  size: 15,
                   maxline: 2,
                 ),
               ],

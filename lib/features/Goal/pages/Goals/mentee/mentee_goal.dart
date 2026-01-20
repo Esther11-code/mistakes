@@ -184,7 +184,7 @@ class MenteeGoalView extends StatelessWidget {
                                   size: size,
                                   onTap: () {
                                     readGoalCubit.setSelectedGoalIndex(index);
-                                    // Navigate to goal details or edit
+
                                     Navigator.pushNamed(
                                       context,
                                       Routename.progressDashboard,
@@ -226,33 +226,46 @@ class MenteeGoalView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
         title: InAppText(
-          text: "Delete Goal?",
-          size: 18,
-          fontweight: FontWeight.bold,
+          textAlign: TextAlign.center,
+          text: "Delete Goal",
+          size: 20,
+          fontweight: FontWeight.w700,
           color: AppColors.blue,
         ),
-        content: InAppText(
-          text: "Are you sure you want to delete '$goalTitle'?",
-          size: 14,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: InAppText(text: "Cancel", color: AppColors.grey),
-          ),
-          TextButton(
-            onPressed: () {
-              cubit.deleteGoal(goalId);
-              Navigator.pop(context);
-            },
-            child: InAppText(
-              text: "Delete",
-              color: AppColors.errorColor,
-              fontweight: FontWeight.bold,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InAppText(
+              textAlign: TextAlign.center,
+              text: "Are you sure you want to delete '$goalTitle'?",
+              size: 16,
             ),
-          ),
-        ],
+            SizedBox(height: size.height * 0.009),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: InAppText(text: "Cancel", color: AppColors.grey),
+                ),
+                TextButton(
+                  onPressed: () {
+                    cubit.deleteGoal(goalId);
+                    Navigator.pop(context);
+                  },
+                  child: InAppText(
+                    text: "Delete",
+                    color: AppColors.errorColor,
+                    fontweight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -514,7 +527,7 @@ class GoalCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.calendar_today, size: 14, color: AppColors.grey),
-                    SizedBox(width: 4),
+                    SizedBox(width: size.width * 0.01),
                     InAppText(
                       text: _formatDeadline(goal.deadline),
                       size: 12,

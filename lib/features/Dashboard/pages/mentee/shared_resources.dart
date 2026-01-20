@@ -1,7 +1,10 @@
 // lib/features/Dashboard/presentation/pages/shared_resources.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 // Simple Resource Model
@@ -39,91 +42,42 @@ class SharedResources extends StatefulWidget {
 class _SharedResourcesState extends State<SharedResources> {
   String selectedFilter = 'All';
 
-  // All resources data here
-  final List<Resource> resources = [
-    Resource(
-      id: '1',
-      title: 'Flutter State Management Guide',
-      type: 'Article',
-      mentor: 'Louis Vuiton',
-      date: '2 days ago',
-      description:
-          'Complete guide to state management in Flutter using Cubit and Bloc',
-      icon: Icons.article_outlined,
-      color: Colors.blue.shade400,
-    ),
-    Resource(
-      id: '2',
-      title: 'Advanced Dart Programming',
-      type: 'Video',
-      mentor: 'Louis Vuiton',
-      date: '5 days ago',
-      description: 'Learn advanced Dart concepts and best practices',
-      icon: Icons.play_circle_outline,
-      color: Colors.red.shade400,
-    ),
-    Resource(
-      id: '3',
-      title: 'The Complete Flutter Course',
-      type: 'Course',
-      mentor: 'Louis Vuiton',
-      date: '1 week ago',
-      description: 'Build production-ready mobile apps with Flutter',
-      icon: Icons.school_outlined,
-      color: Colors.purple.shade400,
-      isBookmarked: true,
-    ),
-    Resource(
-      id: '4',
-      title: 'Clean Architecture Book',
-      type: 'Book',
-      mentor: 'Louis Vuiton',
-      date: '1 week ago',
-      description: 'A comprehensive guide to clean architecture principles',
-      icon: Icons.menu_book_outlined,
-      color: Colors.orange.shade400,
-    ),
-    Resource(
-      id: '5',
-      title: 'E-commerce App Project',
-      type: 'Project',
-      mentor: 'Louis Vuiton',
-      date: '2 weeks ago',
-      description:
-          'Full-stack e-commerce application with Flutter and Firebase',
-      icon: Icons.folder_outlined,
-      color: Colors.green.shade400,
-    ),
-    Resource(
-      id: '6',
-      title: 'API Documentation',
-      type: 'Docs',
-      mentor: 'Louis Vuiton',
-      date: '2 weeks ago',
-      description: 'RESTful API documentation and integration guide',
-      icon: Icons.description_outlined,
-      color: Colors.teal.shade400,
-    ),
-  ];
-
-  List<Resource> get filteredResources {
-    if (selectedFilter == 'All') return resources;
-    return resources.where((r) => r.type == selectedFilter).toList();
-  }
-
-  Map<String, int> get resourceCounts {
-    return {
-      'All': resources.length,
-      'Video': resources.where((r) => r.type == 'Video').length,
-      'Article': resources.where((r) => r.type == 'Article').length,
-      'Course': resources.where((r) => r.type == 'Course').length,
-      'Book': resources.where((r) => r.type == 'Book').length,
-    };
+  @override
+  void initState() {
+    super.initState();
+    context.read<ReviewCubit>().loadSharedResources(
+      context.read<AuthenticationCubit>().user.id ?? "",
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final cubit = context.watch<ReviewCubit>();
+
+    // Filter resources based on selected filter
+    final filteredResources = selectedFilter == 'All'
+        ? cubit.sharedResources
+        : cubit.sharedResources
+              .where((r) => r['resource_type'] == selectedFilter)
+              .toList();
+
+    // Calculate counts for each filter
+    final resourceCounts = {
+      'All': cubit.sharedResources.length,
+      'Video': cubit.sharedResources
+          .where((r) => r['resource_type'] == 'Video')
+          .length,
+      'Article': cubit.sharedResources
+          .where((r) => r['resource_type'] == 'Article')
+          .length,
+      'Course': cubit.sharedResources
+          .where((r) => r['resource_type'] == 'Course')
+          .length,
+      'Book': cubit.sharedResources
+          .where((r) => r['resource_type'] == 'Book')
+          .length,
+    };
 
     return AppScaffold(
       // color: AppColors.background,
@@ -198,7 +152,17 @@ class _SharedResourcesState extends State<SharedResources> {
                     padding: EdgeInsets.all(size.width * 0.04),
                     itemCount: filteredResources.length,
                     itemBuilder: (context, index) {
-                      final resource = filteredResources[index];
+                      final resourceMap = filteredResources[index];
+                      final resource = Resource(
+                        id: resourceMap['id'] ?? '',
+                        title: resourceMap['title'] ?? '',
+                        type: resourceMap['resource_type'] ?? '',
+                        mentor: resourceMap['mentor_name'] ?? '',
+                        date: resourceMap['created_at'] ?? '',
+                        description: resourceMap['description'] ?? '',
+                        icon: Icons.description,
+                        color: AppColors.blue,
+                      );
                       return _buildResourceCard(resource, size);
                     },
                   ),

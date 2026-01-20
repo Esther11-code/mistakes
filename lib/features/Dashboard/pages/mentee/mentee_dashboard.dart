@@ -6,6 +6,7 @@ import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/widgets/app_button.dart';
 import 'package:mistakes/global%20widgets/widgets/app_container_withshadow.dart';
 import 'package:mistakes/global%20widgets/widgets/app_scaffold.dart';
@@ -20,9 +21,9 @@ class MenteeDashboard extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final isRole = context.watch<AuthenticationCubit>().user.role;
     final watchGoalCubit = context.watch<GoalCubit>();
-    final readGoalCubit = context.read<GoalCubit>();
     final watchDashboardCubit = context.watch<DashboardCubit>();
     final watchAuthCubit = context.watch<AuthenticationCubit>();
+    final watchMentorCubit = context.watch<MentorCubit>();
     final user = watchAuthCubit.user;
 
     return AppScaffold(
@@ -64,12 +65,16 @@ class MenteeDashboard extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            user.profilePhotoUrl != null
+                            watchMentorCubit.currentMentorAvatar != null ||
+                                    watchDashboardCubit
+                                            .selectedMentee
+                                            ?.avatarUrl !=
+                                        null
                                 ? CircleAvatar(
                                     radius: size.height * 0.04,
                                     backgroundImage: NetworkImage(
                                       watchAuthCubit.user.isMentee
-                                          ? "mentor"
+                                          ? "${watchMentorCubit.currentMentorAvatar}"
                                           : "${watchDashboardCubit.selectedMentee?.avatarUrl}",
                                     ),
                                   )
@@ -99,7 +104,7 @@ class MenteeDashboard extends StatelessWidget {
                                 children: [
                                   InAppText(
                                     text: watchAuthCubit.user.isMentee
-                                        ? "mentor"
+                                        ? "${watchMentorCubit.currentMentorName}"
                                         : "${watchDashboardCubit.selectedMentee?.name}",
 
                                     fontweight: FontWeight.w800,
@@ -109,7 +114,7 @@ class MenteeDashboard extends StatelessWidget {
                                   SizedBox(height: size.height * 0.005),
                                   InAppText(
                                     text: watchAuthCubit.user.isMentee
-                                        ? "mentor"
+                                        ? "${watchMentorCubit.currentMentorExpertise}"
                                         : "${watchDashboardCubit.selectedMentee?.expertise}",
                                     fontweight: FontWeight.w500,
                                     size: 15,
@@ -409,14 +414,25 @@ class MenteeDashboard extends StatelessWidget {
                     Column(
                       children: List.generate(
                         watchDashboardCubit.recentGoals.length,
-                        (index) => RecentGoals(
-                          size: size,
-                          goalTitle:
-                              watchDashboardCubit.recentGoals[index]['title'],
-                          status:
-                              watchDashboardCubit.recentGoals[index]['status'],
-                          progress: watchDashboardCubit
-                              .recentGoals[index]['progress_percentage'],
+                        (index) => GestureDetector(
+                          onTap: () {
+                            final readDashboardCubit = context
+                                .read<DashboardCubit>();
+                            readDashboardCubit.setSelectedRecentGoal(
+                              recentGoals:
+                                  watchDashboardCubit.recentGoals[index],
+                            );
+                          },
+                          child: RecentGoals(
+                            recentGoals: watchDashboardCubit.recentGoals[index],
+                            size: size,
+                            goalTitle:
+                                watchDashboardCubit.recentGoals[index]['title'],
+                            status: watchDashboardCubit
+                                .recentGoals[index]['status'],
+                            progress: watchDashboardCubit
+                                .recentGoals[index]['progress_percentage'],
+                          ),
                         ),
                       ),
                     ),
@@ -577,17 +593,25 @@ class RecentGoals extends StatelessWidget {
     required this.goalTitle,
     required this.status,
     required this.progress,
+    required this.recentGoals,
   });
 
   final Size size;
   final String goalTitle, status;
   final int progress;
+  final Map<String, dynamic> recentGoals;
 
   @override
   Widget build(BuildContext context) {
+    final hasFeedback = recentGoals['has_feedback'] ?? false;
+    final feedbackText = recentGoals['feedback_text'] ?? '';
+    final feedbackRating = recentGoals['feedback_rating'] ?? 0;
+    final mentorName = recentGoals['mentor_name'] ?? 'Your Mentor';
+
     return AppshadowContainer(
       padding: EdgeInsets.all(size.width * 0.04),
       shadowcolour: AppColors.blue.withAlpha(50),
+      margin: EdgeInsets.only(bottom: size.height * 0.015),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -661,14 +685,78 @@ class RecentGoals extends StatelessWidget {
             ),
           ),
           SizedBox(height: size.height * 0.02),
-          AppButton(
-            onTap: () {
-              Navigator.pushNamed(context, Routename.mentorFeedback);
-            },
-            label: "Add Feedback",
-            buttonColor: AppColors.filledColor,
-            textSize: 16,
-          ),
+
+          // ⭐ CONDITIONAL RENDERING: Show Feedback or Button
+          if (hasFeedback) ...[
+            // Show existing feedback
+            Container(
+              padding: EdgeInsets.all(size.width * 0.04),
+              decoration: BoxDecoration(
+                color: AppColors.filledColor.withAlpha(10),
+                borderRadius: BorderRadius.circular(size.width * 0.03),
+                border: Border.all(
+                  color: AppColors.filledColor.withAlpha(50),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InAppText(
+                        text: "Mentor Feedback",
+                        fontweight: FontWeight.w700,
+                        size: 20,
+                        color: AppColors.blue,
+                      ),
+                      // Star rating display
+                      Row(
+                        children: List.generate(
+                          5,
+                          (index) => Icon(
+                            index < feedbackRating
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.orange.shade400,
+                            size: 20.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  InAppText(
+                    text: feedbackText,
+                    size: 17,
+                    color: AppColors.lightblack,
+                    maxline: 5,
+                  ),
+                  SizedBox(height: size.height * 0.01),
+                  InAppText(
+                    text: "— $mentorName",
+                    size: 14,
+                    color: AppColors.grey,
+                    fontweight: FontWeight.w600,
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // Show "Add Feedback" button
+            AppButton(
+              onTap: () {
+                final readDashboardCubit = context.read<DashboardCubit>();
+                readDashboardCubit.setSelectedRecentGoal(
+                  recentGoals: recentGoals,
+                );
+                Navigator.pushNamed(context, Routename.mentorFeedback);
+              },
+              label: "Add Feedback",
+              buttonColor: AppColors.filledColor,
+              textSize: 16,
+            ),
+          ],
         ],
       ),
     );

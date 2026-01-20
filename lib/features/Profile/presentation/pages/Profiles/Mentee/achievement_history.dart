@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/constants/utils/achievement_service.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/global%20widgets/export.dart';
@@ -61,8 +62,9 @@ class _AchievementHistoryState extends State<AchievementHistory> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.filledColor,
+                    child: LoadingAnimationWidget.fourRotatingDots(
+                      color: AppColors.background,
+                      size: 60.sp,
                     ),
                   )
                 : _achievements.isEmpty
@@ -103,8 +105,6 @@ class _AchievementHistoryState extends State<AchievementHistory> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: size.height * 0.025),
-
-                          // Achievement Count Card
                           Container(
                             width: size.width,
                             padding: EdgeInsets.all(size.width * 0.05),
@@ -181,8 +181,6 @@ class _AchievementHistoryState extends State<AchievementHistory> {
                           ),
 
                           SizedBox(height: size.height * 0.015),
-
-                          // Achievement List
                           Column(
                             children: _achievements.map((achievement) {
                               return AchievementWidget(
@@ -311,7 +309,7 @@ class AchievementWidget extends StatelessWidget {
                 InAppText(
                   text: description,
                   size: 15,
-                  color: AppColors.grey,
+                  color: AppColors.blackColor,
                   maxline: 2,
                 ),
                 SizedBox(height: size.height * 0.006),
@@ -320,10 +318,14 @@ class AchievementWidget extends StatelessWidget {
                     Icon(
                       Icons.calendar_today,
                       size: 14.sp,
-                      color: AppColors.lightgrey,
+                      color: AppColors.lightblack,
                     ),
                     SizedBox(width: size.width * 0.01),
-                    InAppText(text: date, size: 13, color: AppColors.lightgrey),
+                    InAppText(
+                      text: date,
+                      size: 13,
+                      color: AppColors.lightblack,
+                    ),
                   ],
                 ),
               ],

@@ -132,13 +132,14 @@ class _MentorHomeState extends State<MentorHome> {
                         Visibility(
                           visible: watchMentorCubit.thisWeeksTasks.isNotEmpty,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               InAppText(
                                 text: "This Week's Tasks",
                                 size: 21,
                                 fontweight: FontWeight.w700,
                               ),
-                              SizedBox(height: size.height * 0.02),
+                              SizedBox(height: size.height * 0.015),
 
                               // Multiple tasks with better styling
                               Column(
@@ -150,9 +151,11 @@ class _MentorHomeState extends State<MentorHome> {
                                   ),
                                 ),
                               ),
+                              SizedBox(height: size.height * 0.02),
                             ],
                           ),
                         ),
+                        SizedBox(height: size.height * 0.4),
                       ],
                     ),
                   ),

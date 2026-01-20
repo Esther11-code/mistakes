@@ -243,10 +243,11 @@ class GoalCubit extends Cubit<GoalState> {
     }
   }
 
-  createGoal({required BuildContext context}) async {
+  createGoal({required BuildContext context, required String matchId}) async {
     emit(GoalLoadingState());
     try {
       await goalRepo.createGoal(
+        matchId: matchId,
         menteeId: user.id!,
         title: titleController.text.trim(),
         description: descriptionController.text.trim(),

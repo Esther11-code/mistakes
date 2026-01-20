@@ -4,21 +4,48 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class MentorReview extends StatelessWidget {
+class MentorReview extends StatefulWidget {
   const MentorReview({super.key});
+
+  @override
+  State<MentorReview> createState() => _MentorReviewState();
+}
+
+class _MentorReviewState extends State<MentorReview> {
+  @override
+  void initState() {
+    super.initState();
+    // Load feedback when page opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<DashboardCubit>().loadFeedbackForSelectedGoal();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final watchReviewCubit = context.watch<ReviewCubit>();
-    final watchGoalCubit = context.watch<GoalCubit>();
+    final watchDashboardCubit = context.watch<DashboardCubit>();
+
+    // Check if feedback exists
+    final hasFeedback =
+        watchDashboardCubit.selectedRecentGoals['has_feedback'] ?? false;
+    final feedbackText =
+        watchDashboardCubit.selectedRecentGoals['feedback_text'] ?? '';
+    final feedbackRating =
+        watchDashboardCubit.selectedRecentGoals['feedback_rating'] ?? 0;
+    final mentorName =
+        watchDashboardCubit.selectedRecentGoals['mentor_name'] ?? 'Mentor';
+
     return BlocListener<ReviewCubit, ReviewState>(
       listener: (context, state) {
-        if (state is ReviewFeedbackLoadedState) {
+        if (state is ReviewFeedbackAddedState) {
           showAdaptiveDialog(
             context: context,
             builder: (context) {
@@ -53,7 +80,7 @@ class MentorReview extends StatelessWidget {
                     AppButton(
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pop(context);
+                        Navigator.pushNamed(context, Routename.shareResources);
                       },
                       width: size.width,
                       buttonColor: AppColors.filledColor,
@@ -70,7 +97,7 @@ class MentorReview extends StatelessWidget {
         body: Column(
           children: [
             AppbarWidget(
-              title: 'Selected Mentee Goals',
+              title: 'Goal Feedback',
               size: size,
               onTap: () {
                 Navigator.pop(context);
@@ -85,42 +112,6 @@ class MentorReview extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppshadowContainer(
-                        border: true,
-                        borderColor: AppColors.filledColor,
-                        color: Colors.transparent,
-                        width: size.width * 0.9,
-
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(
-                            watchGoalCubit.goalFilterOptions.length,
-                            (int index) => AppshadowContainer(
-                              color: watchGoalCubit.selectedGoalIndex == index
-                                  ? AppColors.filledColor
-                                  : Colors.transparent,
-                              onTap: () {
-                                context.read<GoalCubit>().changeGoalFilter(
-                                  index,
-                                );
-                              },
-                              padding: EdgeInsets.symmetric(
-                                vertical: size.height * 0.015,
-                                horizontal: size.width * 0.04,
-                              ),
-                              child: InAppText(
-                                text: watchGoalCubit.goalFilterOptions[index],
-                                color: watchGoalCubit.selectedGoalIndex == index
-                                    ? AppColors.white
-                                    : AppColors.grey,
-                                fontweight: FontWeight.w500,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: size.height * 0.03),
-                      AppshadowContainer(
                         padding: EdgeInsets.all(size.width * 0.04),
                         shadowcolour: AppColors.lightgrey.withAlpha(100),
                         child: Column(
@@ -128,137 +119,204 @@ class MentorReview extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  children: [
-                                    InAppText(
-                                      text: "Master Flutter",
-                                      fontweight: FontWeight.w800,
-                                      size: 20,
-                                    ),
-                                    InAppText(
-                                      text: "Due: Dec 31, 2024",
-                                      size: 16,
-                                      color: AppColors.grey,
-                                    ),
-                                  ],
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      InAppText(
+                                        text:
+                                            watchDashboardCubit
+                                                .selectedRecentGoals['title'] ??
+                                            "Master Flutter",
+                                        fontweight: FontWeight.w800,
+                                        size: 20,
+                                        maxline: 2,
+                                      ),
+                                      SizedBox(height: size.height * 0.005),
+                                      InAppText(
+                                        text:
+                                            "Due: ${watchDashboardCubit.selectedRecentGoals['deadline'] ?? 'No deadline'}",
+                                        size: 16,
+                                        color: AppColors.grey,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                StatusContainer(size: size, status: "Active"),
+                                SizedBox(width: size.width * 0.02),
+                                StatusContainer(
+                                  size: size,
+                                  status:
+                                      watchDashboardCubit
+                                          .selectedRecentGoals['status'] ??
+                                      "Active",
+                                ),
                               ],
                             ),
-                            SizedBox(height: size.height * 0.01),
+                            SizedBox(height: size.height * 0.02),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 InAppText(text: "Progress"),
                                 InAppText(
-                                  text: " 70%",
+                                  text:
+                                      "${watchDashboardCubit.selectedRecentGoals['progress_percentage'] ?? 0}%",
                                   fontweight: FontWeight.w800,
                                   color: AppColors.filledColor,
                                   size: 20,
                                 ),
                               ],
                             ),
-
                             SizedBox(height: size.height * 0.012),
                             AppProgressIndicator(
                               size: size,
-                              width: size.width * 0.7,
+                              width:
+                                  size.width *
+                                  ((watchDashboardCubit
+                                              .selectedRecentGoals['progress_percentage'] ??
+                                          0) /
+                                      100),
                             ),
+
                             SizedBox(height: size.height * 0.02),
-                            if (watchReviewCubit.state is ReviewFeedbackLoading)
-                              LoadingAnimationWidget.threeArchedCircle(
-                                size: 50,
-                                color: AppColors.filledColor,
-                              )
-                            else
-                              Visibility(
-                                visible: !watchReviewCubit.displayFeedbackField,
-                                child: ApptextField(
+
+                            // ⭐ CONDITIONAL RENDERING: Show Feedback or Input Form
+                            if (hasFeedback) ...[
+                              // Show existing feedback
+                              Container(
+                                width: size.width,
+                                padding: EdgeInsets.all(size.width * 0.04),
+                                decoration: BoxDecoration(
+                                  color: AppColors.filledColor.withAlpha(10),
+                                  borderRadius: BorderRadius.circular(
+                                    size.width * 0.03,
+                                  ),
+                                  border: Border.all(
+                                    color: AppColors.filledColor.withAlpha(50),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        InAppText(
+                                          text: "Your Feedback",
+                                          fontweight: FontWeight.w700,
+                                          size: 20,
+                                          color: AppColors.blue,
+                                        ),
+                                        // Star rating display
+                                        Row(
+                                          children: List.generate(
+                                            5,
+                                            (index) => Icon(
+                                              index < feedbackRating
+                                                  ? Icons.star
+                                                  : Icons.star_border,
+                                              color: Colors.orange.shade400,
+                                              size: 20.sp,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    // SizedBox(height: size.height * 0.009),
+                                    InAppText(
+                                      text: feedbackText,
+
+                                      color: AppColors.lightblack,
+                                      maxline: 10,
+                                    ),
+                                    SizedBox(height: size.height * 0.01),
+                                  ],
+                                ),
+                              ),
+                            ] else ...[
+                              // Show input form
+                              if (watchReviewCubit.state
+                                  is ReviewFeedbackLoading)
+                                Center(
+                                  child:
+                                      LoadingAnimationWidget.threeArchedCircle(
+                                        size: 50,
+                                        color: AppColors.filledColor,
+                                      ),
+                                )
+                              else ...[
+                                SizedBox(height: size.height * 0.015),
+                                ApptextField(
                                   controller:
                                       watchReviewCubit.feedbackController,
                                   hintText: "Write your feedback here...",
-                                  maxLine: 4,
+                                  maxLine: 5,
                                 ),
-                              ),
-                            Visibility(
-                              visible: watchReviewCubit.displayFeedbackField,
-                              child: AppshadowContainer(
-                                color: AppColors.background,
+                                SizedBox(height: size.height * 0.02),
 
-                                child: AppshadowContainer(
-                                  padding: EdgeInsets.all(size.width * 0.02),
-                                  color: AppColors.active,
-                                  margin: EdgeInsets.only(
-                                    left: size.width * 0.025,
+                                // Star Rating
+                                InAppText(
+                                  text: "Rate Progress",
+                                  fontweight: FontWeight.w600,
+                                  size: 16,
+                                ),
+                                SizedBox(height: size.height * 0.01),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    5,
+                                    (index) => GestureDetector(
+                                      onTap: () {
+                                        context.read<ReviewCubit>().showColor(
+                                          index: index + 1,
+                                        );
+                                      },
+                                      child: Icon(
+                                        index <
+                                                watchReviewCubit
+                                                    .selectedStarIndex
+                                            ? Icons.star
+                                            : Icons.star_border,
+                                        color: Colors.orange.shade400,
+                                        size: 40.sp,
+                                      ),
+                                    ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          InAppText(
-                                            text: "Goal Set",
-                                            fontweight: FontWeight.w700,
-                                            size: 20,
-                                          ),
+                                ),
+                                SizedBox(height: size.height * 0.025),
 
-                                          InAppText(
-                                            text: "Today",
-                                            color: AppColors.blue.withAlpha(
-                                              100,
-                                            ),
-                                            size: 16,
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        width: size.width * 0.775,
-                                        child: InAppText(
-                                          text:
-                                              "Set SMART goals: Specific, Measurable, Achievable, Relevant, Time-bound",
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: size.height * 0.02),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: AppButton(
-                                    onTap: () {
-                                      context
-                                          .read<ReviewCubit>()
-                                          .submitFeedback();
-                                    },
-                                    label: "Submit Feedback",
-                                    buttonColor: AppColors.filledColor,
-                                    textSize: 18,
-                                  ),
-                                ),
-                                SizedBox(width: size.width * 0.04),
-                                Expanded(
-                                  child: AppButton(
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        Routename.addFeedback,
-                                      );
-                                    },
-                                    label: "View Details",
-                                    buttonColor: AppColors.grey.withAlpha(40),
-                                    bordercolor: AppColors.grey.withAlpha(80),
-                                    labelColor: AppColors.blackColor,
-                                    textSize: 18,
-                                  ),
+                                // Submit Button
+                                AppButton(
+                                  isLoading:
+                                      watchReviewCubit.state
+                                          is ReviewFeedbackLoading,
+                                  onTap: () async {
+                                    await context
+                                        .read<ReviewCubit>()
+                                        .submitGoalFeedback(
+                                          goalId: watchDashboardCubit
+                                              .selectedRecentGoals['id'],
+                                          userId:
+                                              context
+                                                  .read<AuthenticationCubit>()
+                                                  .user
+                                                  .id ??
+                                              "",
+                                        );
+
+                                    // Reload feedback after submission
+                                    await context
+                                        .read<DashboardCubit>()
+                                        .loadFeedbackForSelectedGoal();
+                                  },
+                                  label: "Submit Feedback",
+                                  buttonColor: AppColors.filledColor,
+                                  textSize: 18,
                                 ),
                               ],
-                            ),
+                            ],
                           ],
                         ),
                       ),
@@ -317,16 +375,17 @@ class StatusContainer extends StatelessWidget {
     return AppshadowContainer(
       padding: EdgeInsets.symmetric(
         horizontal: size.width * 0.03,
-        // vertical: size.height * 0.009,
+        vertical: size.height * 0.008,
       ),
       borderRadius: BorderRadius.circular(size.width * 0.07),
       border: true,
       borderColor: AppColors.filledColor,
       color: AppColors.inactive,
       child: InAppText(
-        text: "Active",
+        text: status,
         color: AppColors.background,
         fontweight: FontWeight.w700,
+        size: 14,
       ),
     );
   }

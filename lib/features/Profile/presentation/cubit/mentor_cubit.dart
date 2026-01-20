@@ -41,6 +41,7 @@ class MentorCubit extends Cubit<MentorState> {
         loadThisWeeksTasks(mentorId),
         loadActiveMentees(mentorId),
         loadIncomingRequests(mentorId),
+        
       ]);
 
       emit(MentorLoadedState());
@@ -86,6 +87,8 @@ class MentorCubit extends Cubit<MentorState> {
     try {
       thisWeeksTasks = await mentorRepo.getThisWeeksTasks(mentorId);
       log('Loaded ${thisWeeksTasks.length} tasks for this week');
+      await mentorRepo.debugThisWeeksTasks(mentorId);
+
       emit(MentorLoadedState());
     } catch (e) {
       log(' Error loading tasks: $e');
@@ -150,7 +153,24 @@ class MentorCubit extends Cubit<MentorState> {
         matchId,
         welcomeMessage: welcomeMessageController.text,
       );
+      // ⭐ Save achievement for MENTEE
+      final menteeId = selectedRequest?['mentee_id'] as String?;
+      if (menteeId != null) {
+        // Get mentor's name from repo
+        final mentorName = await mentorRepo.getMentorName(mentorId);
 
+        // Save achievement through repo
+        await mentorRepo.saveAchievementForMentee(
+          menteeId,
+          'first_mentorship_started',
+          metadata: {
+            'mentor_name': mentorName,
+            'welcome_message': welcomeMessageController.text,
+          },
+        );
+
+        log('✅ Achievement saved for mentee: $menteeId');
+      }
       // Reload data
       await loadIncomingRequests(mentorId);
       await loadMentorStats(mentorId);
@@ -349,6 +369,105 @@ class MentorCubit extends Cubit<MentorState> {
       emit(MentorSettingsLoadedState());
     } catch (e) {
       log('Error toggling notification: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  Map<String, dynamic>? currentMentor;
+  List<Map<String, dynamic>> allMentorships = [];
+
+  // ============================================================================
+  // LOAD MENTEE'S CURRENT MENTOR
+  // ============================================================================
+  Future<void> loadMenteeMentor(String menteeId) async {
+    emit(MentorLoadingState());
+    try {
+      currentMentor = await mentorRepo.getMenteeMentorDetails(menteeId);
+
+      if (currentMentor == null) {
+        log('Mentee has no active mentor');
+        emit(MentorLoadedState());
+      } else {
+        log('Loaded current mentor: ${currentMentor!['full_name']}');
+        emit(MentorLoadedState());
+      }
+    } catch (e) {
+      log('Error loading mentee\'s mentor: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // LOAD ALL MENTORSHIPS FOR MENTEE
+  // ============================================================================
+  Future<void> loadAllMenteeMentorships(String menteeId) async {
+    emit(MentorLoadingState());
+    try {
+      allMentorships = await mentorRepo.getAllMenteeMentorships(menteeId);
+      log('Loaded ${allMentorships.length} mentorships');
+      emit(MentorLoadedState());
+    } catch (e) {
+      log('Error loading mentorships: $e');
+      emit(MentorErrorState(e.toString()));
+    }
+  }
+
+  // ============================================================================
+  // HELPER GETTERS FOR CURRENT MENTOR
+  // ============================================================================
+  String? get currentMentorName => currentMentor?['full_name'];
+  String? get currentMentorId => currentMentor?['mentor_id'];
+  String? get currentMentorBio => currentMentor?['bio'];
+  String? get currentMentorExpertise => currentMentor?['expertise'];
+  String? get currentMentorAvatar => currentMentor?['profile_photo_url'];
+  int? get currentMentorYearsExperience => currentMentor?['years_experience'];
+  String? get currentMentorLinkedIn => currentMentor?['linkedin_url'];
+  String? get currentMentorMatchId => currentMentor?['match_id'];
+  String? get currentMentorUsername => currentMentor?['username'];
+  List<dynamic>? get currentMentorSkills => currentMentor?['skills'];
+  int? get totalGoalsWithMentor => currentMentor?['total_goals'];
+  int? get completedGoalsWithMentor => currentMentor?['completed_goals'];
+  String? get mentorshipWelcomeMessage => currentMentor?['welcome_message'];
+  DateTime? get mentorshipStartedAt =>
+      currentMentor?['mentorship_started_at'] != null
+      ? DateTime.parse(currentMentor!['mentorship_started_at'])
+      : null;
+
+  bool get hasMentor => currentMentor != null;
+
+  // Active mentor check
+  bool hasActiveMentor = false;
+
+  // ============================================================================
+  // CHECK IF MENTEE HAS ACTIVE MENTOR
+  // ============================================================================
+  Future<void> checkActiveMentor(String menteeId) async {
+    try {
+      hasActiveMentor = await mentorRepo.hasActiveMentor(menteeId);
+      log('Has active mentor: $hasActiveMentor');
+      emit(MentorLoadedState());
+    } catch (e) {
+      log('Error checking active mentor: $e');
+    }
+  }
+
+  // ============================================================================
+  // END MENTORSHIP
+  // ============================================================================
+  Future<void> endMentorship(String matchId, String reason) async {
+    emit(MentorLoadingState());
+    try {
+      await mentorRepo.endMentorship(matchId, reason);
+
+      // Clear current mentor
+      currentMentor = null;
+      hasActiveMentor = false;
+
+      log('✅ Mentorship ended successfully');
+      emit(MentorshipEndedState());
+      emit(MentorLoadedState());
+    } catch (e) {
+      log('❌ Error ending mentorship: $e');
       emit(MentorErrorState(e.toString()));
     }
   }

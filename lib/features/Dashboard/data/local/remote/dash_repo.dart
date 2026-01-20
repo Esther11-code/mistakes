@@ -174,24 +174,6 @@ class DashboardRepo {
   }
 
   // ============================================================================
-  // GET MATCH DETAILS
-  // ============================================================================
-  Future<Map<String, dynamic>> getMatchDetails(String matchId) async {
-    try {
-      final response = await _supabase
-          .from('matches')
-          .select('id, created_at, responded_at, mentor_id, mentee_id')
-          .eq('id', matchId)
-          .single();
-
-      return response;
-    } catch (e) {
-      log('❌ Error fetching match details: $e');
-      rethrow;
-    }
-  }
-
-  // ============================================================================
   // GET MENTEE RECENT GOALS
   // ============================================================================
   Future<List<Map<String, dynamic>>> getMenteeRecentGoals({
@@ -206,10 +188,110 @@ class DashboardRepo {
           .order('updated_at', ascending: false)
           .limit(limit);
 
-      return List<Map<String, dynamic>>.from(response);
+      log('✅ Loaded ${response.length} recent goals for mentee $menteeId');
+
+      return response.map<Map<String, dynamic>>((goal) {
+        return {
+          'id': goal['id'],
+          'title': goal['title'],
+          'description': goal['description'],
+          'mentee_id': goal['mentee_id'],
+          'category': goal['category'],
+          'status': goal['status'],
+          'progress_percentage': goal['progress_percentage'],
+          'deadline': goal['deadline'],
+          'created_at': goal['created_at'],
+          'updated_at': goal['updated_at'],
+          'completed_at': goal['completed_at'],
+        };
+      }).toList();
     } catch (e) {
       log('❌ Error fetching recent goals: $e');
       rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getMatchDetails(String matchId) async {
+    try {
+      final response = await _supabase
+          .from('matches')
+          .select('*')
+          .eq('id', matchId)
+          .single();
+
+      log('✅ Loaded match details for $matchId');
+      return response;
+    } catch (e) {
+      log('❌ Error fetching match details: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
+    try {
+      // First, get the comments
+      final commentsResponse = await _supabase
+          .from('goal_comments')
+          .select('*')
+          .eq('goal_id', goalId)
+          .order('created_at', ascending: false);
+
+      if (commentsResponse.isEmpty) {
+        log('No feedback found for goal $goalId');
+        return [];
+      }
+
+      // Then, manually fetch profile details for each comment
+      List<Map<String, dynamic>> feedbackList = [];
+
+      for (var comment in commentsResponse) {
+        final userId = comment['user_id']; // This is auth user_id
+
+        try {
+          // Get profile details using user_id (auth ID)
+          final profileResponse = await _supabase
+              .from('profiles')
+              .select('full_name, username')
+              .eq('user_id', userId) // Match on profiles.user_id
+              .maybeSingle();
+
+          String mentorName = 'Mentor';
+          if (profileResponse != null) {
+            mentorName =
+                profileResponse['full_name'] ??
+                profileResponse['username'] ??
+                'Mentor';
+          }
+
+          feedbackList.add({
+            'comment_text': comment['comment_text'],
+            'rating': comment['rating'],
+            'created_at': comment['created_at'],
+            'mentor_name': mentorName,
+          });
+
+          log(
+            '✅ Added feedback: ${comment['comment_text'].toString().substring(0, 20)}... by $mentorName',
+          );
+        } catch (e) {
+          log('⚠️ Error fetching profile for user $userId: $e');
+          // Still add the comment even if we can't get the profile
+          feedbackList.add({
+            'comment_text': comment['comment_text'],
+            'rating': comment['rating'],
+            'created_at': comment['created_at'],
+            'mentor_name': 'Mentor',
+          });
+        }
+      }
+
+      log(
+        '✅ Fetched ${feedbackList.length} feedback comments for goal $goalId',
+      );
+      return feedbackList;
+    } catch (e) {
+      log('❌ Error fetching goal feedback: $e');
+      return [];
     }
   }
 }

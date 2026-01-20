@@ -7,7 +7,6 @@ import 'package:mistakes/constants/utils/achievement_service.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-
 enum AchievementType {
   firstGoal,
   firstCompletedGoal,
@@ -44,7 +43,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'First Goal Created!',
-          message: 'You\'ve taken the first step in your mentorship journey. Keep setting goals to track your progress!',
+          message:
+              'You\'ve taken the first step in your mentorship journey. Keep setting goals to track your progress!',
           icon: Icons.flag_rounded,
           gradientColors: [Colors.blue.shade400, Colors.blue.shade600],
           showConfetti: true,
@@ -54,7 +54,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'First Goal Completed!',
-          message: 'Amazing work! You\'ve completed your first goal. This is just the beginning of your success story!',
+          message:
+              'Amazing work! You\'ve completed your first goal. This is just the beginning of your success story!',
           icon: Icons.emoji_events,
           gradientColors: [Colors.amber.shade400, Colors.orange.shade600],
           showConfetti: true,
@@ -64,7 +65,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'Goal Completed!',
-          message: 'Fantastic! You\'ve completed another goal. Keep up the momentum!',
+          message:
+              'Fantastic! You\'ve completed another goal. Keep up the momentum!',
           icon: Icons.check_circle_rounded,
           gradientColors: [Colors.green.shade400, Colors.green.shade600],
           showConfetti: true,
@@ -74,7 +76,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'First Mentor Saved!',
-          message: 'Great choice! You\'ve bookmarked your first mentor. Building connections is key to growth!',
+          message:
+              'Great choice! You\'ve bookmarked your first mentor. Building connections is key to growth!',
           icon: Icons.bookmark_rounded,
           gradientColors: [Colors.purple.shade400, Colors.purple.shade600],
           showConfetti: true,
@@ -84,7 +87,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'Mentorship Started!',
-          message: 'Your mentorship journey begins now! Work closely together to achieve your goals.',
+          message:
+              'Your mentorship journey begins now! Work closely together to achieve your goals.',
           icon: Icons.handshake_rounded,
           gradientColors: [AppColors.background, AppColors.filledColor],
           showConfetti: true,
@@ -94,7 +98,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: 'Deadline Missed',
-          message: 'Don\'t worry! Missing a deadline happens. Reach out to your mentor to get back on track.',
+          message:
+              'Don\'t worry! Missing a deadline happens. Reach out to your mentor to get back on track.',
           icon: Icons.heart_broken_rounded,
           gradientColors: [Colors.orange.shade400, Colors.red.shade400],
           showConfetti: false,
@@ -104,7 +109,8 @@ class AchievementData {
         return AchievementData(
           type: type,
           title: '${progressPercentage ?? 50}% Complete!',
-          message: 'You\'re making great progress! Keep going, you\'re ${progressPercentage != null && progressPercentage >= 50 ? 'more than halfway' : 'on your way'} there!',
+          message:
+              'You\'re making great progress! Keep going, you\'re ${progressPercentage != null && progressPercentage >= 50 ? 'more than halfway' : 'on your way'} there!',
           icon: Icons.trending_up_rounded,
           gradientColors: [Colors.indigo.shade400, Colors.purple.shade600],
           showConfetti: true,
@@ -172,13 +178,10 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
       curve: Curves.elasticOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation = Tween<Offset>(begin: Offset(0, 0.3), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _fadeAnimation = CurvedAnimation(
       parent: _slideController,
@@ -275,7 +278,9 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: achievement.gradientColors.first.withAlpha(80),
+                              color: achievement.gradientColors.first.withAlpha(
+                                80,
+                              ),
                               blurRadius: 25,
                               offset: Offset(0, 12),
                             ),
@@ -312,7 +317,8 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                     ),
 
                     // Welcome Message Card (only for mentorship started)
-                    if (widget.achievementType == AchievementType.mentorshipStarted &&
+                    if (widget.achievementType ==
+                            AchievementType.mentorshipStarted &&
                         widget.welcomeMessage != null &&
                         widget.welcomeMessage!.isNotEmpty) ...[
                       SizedBox(height: size.height * 0.025),
@@ -343,7 +349,10 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                                   padding: EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [AppColors.background, AppColors.filledColor],
+                                      colors: [
+                                        AppColors.background,
+                                        AppColors.filledColor,
+                                      ],
                                     ),
                                     shape: BoxShape.circle,
                                   ),
@@ -356,7 +365,8 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                                 SizedBox(width: 10),
                                 Expanded(
                                   child: InAppText(
-                                    text: '${widget.mentorName ?? "Your mentor"} says:',
+                                    text:
+                                        '${widget.mentorName ?? "Your mentor"} says:',
                                     size: 15,
                                     fontweight: FontWeight.w700,
                                     color: AppColors.blue,
@@ -395,6 +405,7 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                       width: size.width,
                       label: widget.continueButtonText ?? 'Continue',
                       textSize: 17,
+                      buttonColor: AppColors.background,
                     ),
                   ],
                 ),
@@ -449,11 +460,14 @@ Future<void> checkAndShowAchievement(
 
   if (!alreadyAchieved) {
     // Mark as achieved
-    await service.markAchieved(achievementKey, metadata: {
-      'mentor_name': mentorName,
-      'welcome_message': welcomeMessage,
-      'progress_percentage': progressPercentage,
-    });
+    await service.markAchieved(
+      achievementKey,
+      metadata: {
+        'mentor_name': mentorName,
+        'welcome_message': welcomeMessage,
+        'progress_percentage': progressPercentage,
+      },
+    );
 
     // Show celebration
     if (context.mounted) {

@@ -28,6 +28,7 @@ final class MentorRequestDeclinedState extends MentorState {}
 
 final class MentorSettingsLoadedState extends MentorState {}
 
+final class MentorshipEndedState extends MentorState {}
 final class MentorSettingsUpdatedState extends MentorState {
   final String message;
 

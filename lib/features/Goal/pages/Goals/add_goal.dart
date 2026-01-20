@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class AddGoal extends StatefulWidget {
@@ -325,7 +326,10 @@ class _AddGoalState extends State<AddGoal> {
                       }
                     },
                     child: Visibility(
-                      visible: context.watch<AuthenticationCubit>().user.isMentee,
+                      visible: context
+                          .watch<AuthenticationCubit>()
+                          .user
+                          .isMentee,
                       child: AppButton(
                         isLoading: watchGoalCubit.state is GoalLoadingState,
                         onTap: () {
@@ -340,7 +344,7 @@ class _AddGoalState extends State<AddGoal> {
                             );
                             return;
                           }
-                      
+
                           if (watchGoalCubit.descriptionController.text
                               .trim()
                               .isEmpty) {
@@ -352,7 +356,7 @@ class _AddGoalState extends State<AddGoal> {
                             );
                             return;
                           }
-                      
+
                           if (watchGoalCubit.selectedDeadline == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -362,7 +366,14 @@ class _AddGoalState extends State<AddGoal> {
                             );
                             return;
                           }
-                          readGoalCubit.createGoal(context: context);
+                          readGoalCubit.createGoal(
+                            context: context,
+                            matchId:
+                                context
+                                    .read<MentorCubit>()
+                                    .currentMentorMatchId ??
+                                "",
+                          );
                         },
                         width: size.width,
                         buttonColor: AppColors.filledColor,

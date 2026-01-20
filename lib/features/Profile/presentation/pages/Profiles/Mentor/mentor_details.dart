@@ -6,8 +6,10 @@ import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
@@ -280,79 +282,278 @@ class MentorDetails extends StatelessWidget {
                 ),
               ),
             ),
-            AppButton(
-              onTap: watchProfileCubit.isRequestButtonDisabled
-                  ? () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: AppColors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              size.width * 0.03,
-                            ),
-                          ),
-                          contentPadding: EdgeInsets.all(size.width * 0.06),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.check_circle_outline,
-                                size: 150.sp,
-                                color: AppColors.background,
-                              ),
-                              SizedBox(height: size.height * 0.02),
-                              InAppText(
-                                text:
-                                    watchProfileCubit.dialogText ??
-                                    'Request Sent',
-                                fontweight: FontWeight.w700,
-                                size: 22,
-                                color: AppColors.blue,
-                              ),
-                              SizedBox(height: size.height * 0.01),
-                              InAppText(
-                                text:
-                                    watchProfileCubit.dialogSubText ??
-                                    'Your mentorship request has been sent successfully',
-                                size: 15,
-                                textAlign: TextAlign.center,
-                                color: AppColors.grey,
-                                maxline: 2,
-                              ),
-                              SizedBox(height: size.height * 0.03),
-                              AppButton(
-                                onTap: () {
-                                  final readProfileCubit = context
-                                      .read<ProfileCubit>();
+            BlocBuilder<MentorCubit, MentorState>(
+              builder: (context, state) {
+                final mentorCubit = context.read<MentorCubit>();
+                final isCurrentMentor =
+                    mentorCubit.currentMentor?['mentor_id'] == mentor?.id;
+                final readChatCubit = context.read<ChatCubit>();
 
-                                  Navigator.pop(context);
-                                  readProfileCubit.loadAllMyRequests(menteeId);
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routename.myRequests,
-                                  );
-                                },
-                                width: size.width,
-                                buttonColor: AppColors.background,
-                                label: 'View My Requests',
-                              ),
-                            ],
-                          ),
+                // If this is the user's current mentor
+                if (isCurrentMentor) {
+                  return Column(
+                    children: [
+                      // Message Mentor Button
+                      AppButton(
+                        onTap: () {
+                          final conversation = readChatCubit.conversations
+                              .firstWhere(
+                                (conversation) =>
+                                    conversation.otherUserId ==
+                                    mentorCubit.currentMentorId,
+                              );
+                          readChatCubit.startConversationWith(
+                            otherUserId: conversation.otherUserId,
+                            currentUserIsMentor: context
+                                .read<AuthenticationCubit>()
+                                .user
+                                .isMentor,
+                            user: context.read<AuthenticationCubit>().user,
+                          );
+                          Navigator.pushNamed(context, Routename.menteeChat);
+                        },
+                        buttonColor: AppColors.blue,
+                        width: size.width * 0.9,
+                        height: size.height * 0.06,
+                        textSize: 18,
+                        label: "Message Mentor",
+                      ),
+                      SizedBox(height: size.height * 0.01),
+
+                      // End Mentorship Button
+                      AppButton(
+                        onTap: () => _showEndMentorshipDialog(
+                          context,
+                          size,
+                          mentorCubit,
                         ),
+                        border: true,
+                        bordercolor: AppColors.errorColor,
+                        buttonColor: AppColors.white,
+                        width: size.width * 0.9,
+                        height: size.height * 0.06,
+                        textSize: 18,
+                        label: "End Mentorship",
+                        labelColor: AppColors.errorColor,
+                      ),
+                    ],
+                  );
+                }
+
+                // If user has a different active mentor
+                if (mentorCubit.hasActiveMentor) {
+                  return AppButton(
+                    onTap: () {
+                      Fluttertoast.showToast(
+                        msg:
+                            "You already have an active mentor. End your current mentorship first.",
+                        gravity: ToastGravity.TOP,
+                        backgroundColor: AppColors.orange,
+                        toastLength: Toast.LENGTH_LONG,
                       );
-                    }
-                  : () {
-                      Navigator.pushNamed(context, Routename.requestMentorship);
                     },
-              buttonColor: AppColors.blue,
-              width: size.width * 0.9,
-              height: size.height * 0.06,
-              textSize: 18,
-              label: watchProfileCubit.buttonText ?? "Request Mentor",
+                    buttonColor: AppColors.lightgrey,
+                    width: size.width * 0.9,
+                    height: size.height * 0.06,
+                    textSize: 18,
+                    label: "Already in Mentorship",
+                  );
+                }
+
+                return AppButton(
+                  onTap: watchProfileCubit.isRequestButtonDisabled
+                      ? () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: AppColors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  size.width * 0.03,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.all(size.width * 0.06),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.check_circle_outline,
+                                    size: 150.sp,
+                                    color: AppColors.background,
+                                  ),
+                                  SizedBox(height: size.height * 0.02),
+                                  InAppText(
+                                    text:
+                                        watchProfileCubit.dialogText ??
+                                        'Request Sent',
+                                    fontweight: FontWeight.w700,
+                                    size: 22,
+                                    color: AppColors.blue,
+                                  ),
+                                  SizedBox(height: size.height * 0.01),
+                                  InAppText(
+                                    text:
+                                        watchProfileCubit.dialogSubText ??
+                                        'Your mentorship request has been sent successfully',
+                                    size: 15,
+                                    textAlign: TextAlign.center,
+                                    color: AppColors.grey,
+                                    maxline: 2,
+                                  ),
+                                  SizedBox(height: size.height * 0.03),
+                                  AppButton(
+                                    onTap: () {
+                                      final readProfileCubit = context
+                                          .read<ProfileCubit>();
+
+                                      Navigator.pop(context);
+                                      readProfileCubit.loadAllMyRequests(
+                                        menteeId,
+                                      );
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routename.myRequests,
+                                      );
+                                    },
+                                    width: size.width,
+                                    buttonColor: AppColors.background,
+                                    label: 'View My Requests',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                      : () {
+                          Navigator.pushNamed(
+                            context,
+                            Routename.requestMentorship,
+                          );
+                        },
+                  buttonColor: AppColors.blue,
+                  width: size.width * 0.9,
+                  height: size.height * 0.06,
+                  textSize: 18,
+                  label: watchProfileCubit.buttonText ?? "Request Mentor",
+                );
+              },
             ),
 
             SizedBox(height: size.height * 0.03),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEndMentorshipDialog(
+    BuildContext context,
+    Size size,
+    MentorCubit mentorCubit,
+  ) {
+    final reasonController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: EdgeInsets.all(size.width * 0.06),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              size: 80.sp,
+              color: AppColors.orange,
+            ),
+            SizedBox(height: size.height * 0.02),
+            InAppText(
+              text: 'End Mentorship',
+              fontweight: FontWeight.w700,
+              size: 22,
+              color: AppColors.blue,
+            ),
+            SizedBox(height: size.height * 0.01),
+            InAppText(
+              text:
+                  'Are you sure you want to end your mentorship with ${mentorCubit.currentMentorName}?',
+              textAlign: TextAlign.center,
+              color: AppColors.grey,
+              maxline: 3,
+            ),
+            SizedBox(height: size.height * 0.02),
+
+            // Reason TextField
+            TextField(
+              controller: reasonController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Optional: Tell us why (helps us improve)',
+                hintStyle: TextStyle(color: AppColors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.inactive),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.inactive),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.blue),
+                ),
+              ),
+            ),
+
+            SizedBox(height: size.height * 0.03),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButton(
+                    onTap: () => Navigator.pop(context),
+                    label: 'Cancel',
+                    buttonColor: AppColors.grey.withAlpha(30),
+                    labelColor: AppColors.blackColor,
+                    textSize: 17,
+                  ),
+                ),
+                SizedBox(width: size.width * 0.03),
+                Expanded(
+                  child: BlocBuilder<MentorCubit, MentorState>(
+                    builder: (context, state) {
+                      return AppButton(
+                        isLoading: state is MentorLoadingState,
+                        onTap: () async {
+                          final matchId =
+                              mentorCubit.currentMentor?['match_id'];
+                          if (matchId != null) {
+                            await context.read<MentorCubit>().endMentorship(
+                              matchId,
+                              reasonController.text.trim(),
+                            );
+
+                            if (context.mounted) {
+                              Navigator.pop(context); // Close dialog
+                              Navigator.pop(context); // Go back to home
+
+                              Fluttertoast.showToast(
+                                msg: "Mentorship ended successfully",
+                                gravity: ToastGravity.TOP,
+                                backgroundColor: AppColors.filledColor,
+                              );
+                            }
+                          }
+                        },
+                        label: 'End',
+                        buttonColor: AppColors.errorColor,
+                        textSize: 17,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

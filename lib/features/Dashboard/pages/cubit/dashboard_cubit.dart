@@ -190,6 +190,15 @@ class DashboardCubit extends Cubit<DashboardState> {
     return selectedMenteeRecentGoals;
   }
 
+  Map<String, dynamic> selectedRecentGoals = {};
+
+  void setSelectedRecentGoal({required Map<String, dynamic> recentGoals}) {
+    emit(DashboardLoadingState());
+    selectedRecentGoals = recentGoals;
+    log('Selected recent goals: ${selectedRecentGoals.length}');
+    emit(DashboardLoadedState());
+  }
+
   // ============================================================================
   // CLEAR SELECTED MENTEE
   // ============================================================================
@@ -199,6 +208,42 @@ class DashboardCubit extends Cubit<DashboardState> {
     selectedMenteeRecentGoals = [];
     emit(DashboardLoadedState());
   }
+
+  // Add to DashboardCubit class
+ // Load feedback for a specific goal
+Future<void> loadFeedbackForSelectedGoal() async {
+  if (selectedRecentGoals.isEmpty) {
+    log('⚠️ No goal selected');
+    return;
+  }
+
+  emit(DashboardLoadingState());
+  try {
+    final goalId = selectedRecentGoals['id'];
+    
+    // Get comments for this goal
+    final comments = await dashboardRepo.getGoalFeedback(goalId);
+    
+    // Add feedback to the selected goal
+    if (comments.isNotEmpty) {
+      // Get the latest feedback
+      final latestFeedback = comments.first;
+      selectedRecentGoals['has_feedback'] = true;
+      selectedRecentGoals['feedback_text'] = latestFeedback['comment_text'];
+      selectedRecentGoals['feedback_rating'] = latestFeedback['rating'];
+      selectedRecentGoals['mentor_name'] = latestFeedback['mentor_name'];
+    } else {
+      selectedRecentGoals['has_feedback'] = false;
+    }
+    
+    log('✅ Loaded feedback for goal $goalId');
+    emit(DashboardLoadedState());
+  } catch (e) {
+    log('❌ Error loading goal feedback: $e');
+    selectedRecentGoals['has_feedback'] = false;
+    emit(DashboardLoadedState());
+  }
+}
 
   // ============================================================================
   // UPDATE STATE

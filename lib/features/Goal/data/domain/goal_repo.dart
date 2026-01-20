@@ -47,11 +47,11 @@ class GoalRepo {
 
   Future<void> createGoal({
     required String menteeId,
-    String? matchId,
     required String title,
     required String description,
     required String category,
     DateTime? deadline,
+    required String matchId
   }) async {
     try {
       log('Creating new goal for mentee: $menteeId');
