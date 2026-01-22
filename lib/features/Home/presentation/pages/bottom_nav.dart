@@ -8,6 +8,8 @@ import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Home/data/local/home_static_repo.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 
 import '../../../../constants/utils/app_colors.dart';
 
@@ -31,7 +33,10 @@ class BottomNav extends StatelessWidget {
           final goalCubit = context.read<GoalCubit>();
           goalCubit.user = context.read<AuthenticationCubit>().user;
           goalCubit.loadGoals();
-          context.read<ChatCubit>().loadConversations(user: context.read<AuthenticationCubit>().user);
+          context.read<ChatCubit>().loadConversations(
+            user: context.read<AuthenticationCubit>().user,
+          );
+         
         }
         return Scaffold(
           body: watchHome.screens[index],

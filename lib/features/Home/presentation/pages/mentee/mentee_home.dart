@@ -10,10 +10,13 @@ import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
+import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
+import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/features/Home/presentation/widgets/src/home_appbar.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 import 'package:mistakes/global%20widgets/widgets/milestone.dart';
 
@@ -91,277 +94,312 @@ class MenteeHomeState extends State<MenteeHome> {
             SizedBox(height: size.height * 0.025),
 
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: size.height * 0.02),
-                    if (watchMentorCubit.hasMentor)
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  final userId = context.read<AuthenticationCubit>().user.id;
+                  if (userId != null) {
+                    context.read<BookmarksCubit>().loadBookmarkedMentors(
+                      userId,
+                    );
+                    context.read<MentorCubit>().loadMenteeMentor(userId);
+                    context.read<MentorCubit>().checkActiveMentor(userId);
+                    context.read<GoalCubit>().loadGoals();
+                    context.read<DashboardCubit>().loadNeedAttentionItems(
+                      userId,
+                    );
+                  }
+                  checkPendingAchievements();
+                },
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: size.height * 0.02),
+                      if (watchMentorCubit.hasMentor)
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: size.width * 0.04,
+                          ),
+                          child: _buildActiveMentorCard(
+                            context,
+                            size,
+                            watchMentorCubit,
+                          ),
+                        ),
+
+                      Visibility(
+                        visible: !watchMentorCubit.hasMentor,
+                        child: HomeCarousel(size: size),
+                      ),
+                      SizedBox(height: size.height * 0.025),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: size.width * 0.04,
                         ),
-                        child: _buildActiveMentorCard(
-                          context,
-                          size,
-                          watchMentorCubit,
+                        child: TextField(
+                          controller: searchController,
+                          onChanged: (value) {
+                            context.read<HomeCubit>().searchAndFilter(
+                              query: value,
+                              role: 'mentor',
+                            );
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'What do you need?',
+                            labelStyle: GoogleFonts.ptSans(
+                              fontSize: 20.sp,
+                              color: AppColors.blackColor,
+                            ),
+                            hintText: 'Example: Mentors, Years..',
+                            hintStyle: GoogleFonts.ptSans(
+                              fontSize: 15.sp,
+                              color: AppColors.grey,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: AppColors.blackColor,
+                            ),
+                            suffixIcon: searchController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(
+                                      Icons.clear,
+                                      color: AppColors.grey,
+                                    ),
+                                    onPressed: () {
+                                      searchController.clear();
+                                      context.read<HomeCubit>().searchAndFilter(
+                                        query: '',
+                                        role: 'mentor',
+                                      );
+                                      setState(() {});
+                                    },
+                                  )
+                                : null,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                size.width * 0.03,
+                              ),
+                              borderSide: BorderSide(color: AppColors.inactive),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                size.width * 0.03,
+                              ),
+                              borderSide: BorderSide(color: AppColors.inactive),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                size.width * 0.03,
+                              ),
+                              borderSide: BorderSide(
+                                color: AppColors.blue,
+                                width: size.width * 0.002,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
+                      SizedBox(height: size.height * 0.025),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.04,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            BlocBuilder<HomeCubit, HomeState>(
+                              builder: (context, state) {
+                                if (state is UserSearchLoadedState &&
+                                    searchController.text.isNotEmpty) {
+                                  return InAppText(
+                                    text:
+                                        '${state.users.length} Mentor${state.users.length != 1 ? 's' : ''} Found',
 
-                    Visibility(
-                      visible: !watchMentorCubit.hasMentor,
-                      child: HomeCarousel(size: size),
-                    ),
-                    SizedBox(height: size.height * 0.025),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: size.width * 0.04,
-                      ),
-                      child: TextField(
-                        controller: searchController,
-                        onChanged: (value) {
-                          context.read<HomeCubit>().searchAndFilter(
-                            query: value,
-                            role: 'mentor',
-                          );
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'What do you need?',
-                          labelStyle: GoogleFonts.ptSans(
-                            fontSize: 20.sp,
-                            color: AppColors.blackColor,
-                          ),
-                          hintText: 'Example: Mentors, Years..',
-                          hintStyle: GoogleFonts.ptSans(
-                            fontSize: 15.sp,
-                            color: AppColors.grey,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: AppColors.blackColor,
-                          ),
-                          suffixIcon: searchController.text.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.clear,
-                                    color: AppColors.grey,
-                                  ),
-                                  onPressed: () {
-                                    searchController.clear();
-                                    context.read<HomeCubit>().searchAndFilter(
-                                      query: '',
-                                      role: 'mentor',
-                                    );
-                                    setState(() {});
-                                  },
-                                )
-                              : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              size.width * 0.03,
-                            ),
-                            borderSide: BorderSide(color: AppColors.inactive),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              size.width * 0.03,
-                            ),
-                            borderSide: BorderSide(color: AppColors.inactive),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              size.width * 0.03,
-                            ),
-                            borderSide: BorderSide(
-                              color: AppColors.blue,
-                              width: size.width * 0.002,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.025),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: size.width * 0.04,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          BlocBuilder<HomeCubit, HomeState>(
-                            builder: (context, state) {
-                              if (state is UserSearchLoadedState &&
-                                  searchController.text.isNotEmpty) {
+                                    fontweight: FontWeight.w600,
+                                    size: 20,
+                                  );
+                                }
                                 return InAppText(
-                                  text:
-                                      '${state.users.length} Mentor${state.users.length != 1 ? 's' : ''} Found',
-
+                                  text: 'Suggested Mentors',
                                   fontweight: FontWeight.w600,
                                   size: 20,
                                 );
-                              }
-                              return InAppText(
-                                text: 'Suggested Mentors',
-                                fontweight: FontWeight.w600,
-                                size: 20,
-                              );
-                            },
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              context.read<HomeCubit>().searchAndFilter(
-                                role: 'mentor',
-                                reload: true,
-                              );
+                              },
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                context.read<HomeCubit>().searchAndFilter(
+                                  role: 'mentor',
+                                  reload: true,
+                                );
 
-                              Navigator.pushNamed(
-                                context,
-                                Routename.allMentors,
-                              );
-                            },
-                            child: const InAppText(text: 'View All', size: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: size.height * 0.01),
-                    BlocBuilder<HomeCubit, HomeState>(
-                      builder: (context, state) {
-                        if (state is UserSearchLoadingState) {
-                          return Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(size.height * 0.05),
-                              child: LoadingAnimationWidget.dotsTriangle(
-                                size: 70.sp,
-                                color: AppColors.background,
+                                Navigator.pushNamed(
+                                  context,
+                                  Routename.allMentors,
+                                );
+                              },
+                              child: const InAppText(
+                                text: 'View All',
+                                size: 16,
                               ),
                             ),
-                          );
-                        }
-                        if (state is UserSearchLoadedState) {
-                          if (state.users.isEmpty) {
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.01),
+                      BlocBuilder<HomeCubit, HomeState>(
+                        builder: (context, state) {
+                          if (state is UserSearchLoadingState) {
                             return Center(
                               child: Padding(
                                 padding: EdgeInsets.all(size.height * 0.05),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.search_off,
-                                      size: 70.sp,
-                                      color: AppColors.grey.withAlpha(50),
-                                    ),
-                                    SizedBox(height: size.height * 0.01),
-                                    InAppText(
-                                      text: "No mentors found",
-                                      size: 20,
-                                      fontweight: FontWeight.w600,
-                                      color: AppColors.lightblack,
-                                    ),
-                                    InAppText(
-                                      text: "Try a different search term",
-
-                                      color: AppColors.lightblack,
-                                    ),
-                                  ],
+                                child: LoadingAnimationWidget.dotsTriangle(
+                                  size: 70.sp,
+                                  color: AppColors.background,
                                 ),
                               ),
                             );
                           }
-                          final displayMentors = state.users.take(5).toList();
-
-                          return Column(
-                            children: displayMentors.map((mentor) {
-                              return MentorList(
-                                onBookmarkTap: () {},
-                                size: size,
-                                mentorId: mentor.id ?? "0",
-                                mentorName: mentor.name ?? "rey",
-                                profileImage: mentor.profilePhotoUrl,
-                                expertise: mentor.expertise ?? "Expertise",
-                                yoe:
-                                    "${mentor.yearsExperience?.toString() ?? 0}",
-                              );
-                            }).toList(),
-                          );
-                        }
-                        return watchHomeCubit.getMentors().isEmpty
-                            ? Center(
+                          if (state is UserSearchLoadedState) {
+                            if (state.users.isEmpty) {
+                              return Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(size.height * 0.05),
                                   child: Column(
                                     children: [
                                       Icon(
-                                        Icons.no_accounts,
+                                        Icons.search_off,
                                         size: 70.sp,
                                         color: AppColors.grey.withAlpha(50),
                                       ),
                                       SizedBox(height: size.height * 0.01),
                                       InAppText(
-                                        text: "No mentors available",
+                                        text: "No mentors found",
                                         size: 20,
                                         fontweight: FontWeight.w600,
                                         color: AppColors.lightblack,
                                       ),
                                       InAppText(
-                                        text: "Please try again later",
+                                        text: "Try a different search term",
 
                                         color: AppColors.lightblack,
                                       ),
                                     ],
                                   ),
                                 ),
-                              )
-                            : Column(
-                                children: List.generate(
-                                  watchHomeCubit.filteredUsers.length,
-                                  (index) => MentorList(
-                                    profileImage: watchHomeCubit
-                                        .filteredUsers[index]
-                                        .profilePhotoUrl,
-                                    onBookmarkTap: () {
-                                      final userId = context
-                                          .read<AuthenticationCubit>()
-                                          .user
-                                          .id;
-                                      if (userId != null) {
-                                        context
-                                            .read<BookmarksCubit>()
-                                            .toggleMentorBookmark(
-                                              context: context,
-                                              menteeId: userId,
-                                              mentorId:
-                                                  watchHomeCubit
-                                                      .filteredUsers[index]
-                                                      .id ??
-                                                  "0",
-                                            );
-                                      }
-                                    },
-                                    size: size,
-                                    mentorId:
-                                        watchHomeCubit
-                                            .filteredUsers[index]
-                                            .id ??
-                                        'mentor$index',
-                                    mentorName:
-                                        watchHomeCubit
-                                            .filteredUsers[index]
-                                            .name ??
-                                        'Mentor $index',
-
-                                    expertise:
-                                        watchHomeCubit
-                                            .filteredUsers[index]
-                                            .expertise ??
-                                        'Expertise $index',
-                                    yoe:
-                                        "${watchHomeCubit.filteredUsers[index].yearsExperience?.toString() ?? 0}",
-                                  ),
-                                ),
                               );
-                      },
-                    ),
-                  ],
+                            }
+                            final displayMentors = state.users.take(5).toList();
+
+                            return Column(
+                              children: displayMentors.map((mentor) {
+                                return MentorList(
+                                  onBookmarkTap: () {
+                                    final userId = context
+                                        .read<AuthenticationCubit>()
+                                        .user
+                                        .id;
+                                    if (userId != null) {
+                                      context
+                                          .read<BookmarksCubit>()
+                                          .toggleMentorBookmark(
+                                            context: context,
+                                            menteeId: userId,
+                                            mentorId: mentor.id ?? "0",
+                                          );
+                                    }
+                                  },
+                                  size: size,
+                                  mentorId: mentor.id ?? "0",
+                                  mentorName: mentor.name ?? "rey",
+                                  profileImage: mentor.profilePhotoUrl,
+                                  expertise: mentor.expertise ?? "Expertise",
+                                  yoe:
+                                      "${mentor.yearsExperience?.toString() ?? 0}",
+                                );
+                              }).toList(),
+                            );
+                          }
+                          return watchHomeCubit.getMentors().isEmpty
+                              ? Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(size.height * 0.05),
+                                    child: Column(
+                                      children: [
+                                        Icon(
+                                          Icons.no_accounts,
+                                          size: 70.sp,
+                                          color: AppColors.grey.withAlpha(50),
+                                        ),
+                                        SizedBox(height: size.height * 0.01),
+                                        InAppText(
+                                          text: "No mentors available",
+                                          size: 20,
+                                          fontweight: FontWeight.w600,
+                                          color: AppColors.lightblack,
+                                        ),
+                                        InAppText(
+                                          text: "Please try again later",
+
+                                          color: AppColors.lightblack,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Column(
+                                  children: List.generate(
+                                    watchHomeCubit.filteredUsers.length,
+                                    (index) => MentorList(
+                                      profileImage: watchHomeCubit
+                                          .filteredUsers[index]
+                                          .profilePhotoUrl,
+                                      onBookmarkTap: () {
+                                        final userId = context
+                                            .read<AuthenticationCubit>()
+                                            .user
+                                            .id;
+                                        if (userId != null) {
+                                          context
+                                              .read<BookmarksCubit>()
+                                              .toggleMentorBookmark(
+                                                context: context,
+                                                menteeId: userId,
+                                                mentorId:
+                                                    watchHomeCubit
+                                                        .filteredUsers[index]
+                                                        .id ??
+                                                    "0",
+                                              );
+                                        }
+                                      },
+                                      size: size,
+                                      mentorId:
+                                          watchHomeCubit
+                                              .filteredUsers[index]
+                                              .id ??
+                                          'mentor$index',
+                                      mentorName:
+                                          watchHomeCubit
+                                              .filteredUsers[index]
+                                              .name ??
+                                          'Mentor $index',
+
+                                      expertise:
+                                          watchHomeCubit
+                                              .filteredUsers[index]
+                                              .expertise ??
+                                          'Expertise $index',
+                                      yoe:
+                                          "${watchHomeCubit.filteredUsers[index].yearsExperience?.toString() ?? 0}",
+                                    ),
+                                  ),
+                                );
+                        },
+                      ),
+                      SizedBox(height: size.height * 0.1),
+                    ],
+                  ),
                 ),
               ),
             ),

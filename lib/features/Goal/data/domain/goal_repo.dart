@@ -220,4 +220,64 @@ class GoalRepo {
       return [];
     }
   }
+
+  // Get feedback for a specific goal
+Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
+  try {
+    // First, get the comments
+    final commentsResponse = await supabase
+        .from('goal_comments')
+        .select('*')
+        .eq('goal_id', goalId)
+        .order('created_at', ascending: false);
+
+    if (commentsResponse.isEmpty) {
+      return [];
+    }
+
+    // Then, manually fetch profile details for each comment
+    List<Map<String, dynamic>> feedbackList = [];
+
+    for (var comment in commentsResponse) {
+      final userId = comment['user_id']; // This is auth user_id
+      
+      try {
+        // Get profile details using user_id (auth ID)
+        final profileResponse = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('user_id', userId) // Match on profiles.user_id
+            .maybeSingle();
+
+        String mentorName = 'Mentor';
+        if (profileResponse != null) {
+          mentorName = profileResponse['full_name'] ?? 
+                      profileResponse['username'] ?? 
+                      'Mentor';
+        }
+
+        feedbackList.add({
+          'comment_text': comment['comment_text'],
+          'rating': comment['rating'],
+          'created_at': comment['created_at'],
+          'mentor_name': mentorName,
+        });
+      } catch (e) {
+        log('⚠️ Error fetching profile for user $userId: $e');
+        // Still add the comment even if we can't get the profile
+        feedbackList.add({
+          'comment_text': comment['comment_text'],
+          'rating': comment['rating'],
+          'created_at': comment['created_at'],
+          'mentor_name': 'Mentor',
+        });
+      }
+    }
+
+    return feedbackList;
+  } catch (e) {
+    log('❌ Error fetching goal feedback: $e');
+    return [];
+  }
+}
 }

@@ -10,6 +10,7 @@ sealed class ReviewState extends Equatable {
 final class ReviewInitial extends ReviewState {}
 
 final class ReviewLoadedState extends ReviewState {}
+final class ReviewFeedbackSubmittedState extends ReviewState {}
 
 final class ReviewFeedbackLoadedState extends ReviewState {}
 

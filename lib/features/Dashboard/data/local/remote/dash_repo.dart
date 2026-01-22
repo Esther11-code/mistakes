@@ -49,6 +49,7 @@ class DashboardRepo {
 
           // Calculate stats
           final totalGoals = goalsResponse.length;
+
           final completedGoals = goalsResponse
               .where((g) => g['status'] == 'completed')
               .length;
@@ -289,6 +290,164 @@ class DashboardRepo {
         '✅ Fetched ${feedbackList.length} feedback comments for goal $goalId',
       );
       return feedbackList;
+    } catch (e) {
+      log('❌ Error fetching goal feedback: $e');
+      return [];
+    }
+  }
+
+  // Add these methods to dashboard_repo.dart
+
+  // Get recently completed goals (last 7 days)
+  Future<List<Map<String, dynamic>>> getRecentCompletedGoals(
+    String userId,
+  ) async {
+    try {
+      final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
+
+      final response = await _supabase
+          .from('goals')
+          .select('id, title, completed_at')
+          .eq('mentee_id', userId)
+          .eq('status', 'completed')
+          .gte('completed_at', sevenDaysAgo.toIso8601String())
+          .order('completed_at', ascending: false)
+          .limit(3);
+
+      return response.cast<Map<String, dynamic>>();
+    } catch (e) {
+      log('❌ Error fetching completed goals: $e');
+      return [];
+    }
+  }
+
+  // Get unread messages count
+  Future<int> getUnreadMessagesCount(String userId) async {
+    try {
+      final response = await _supabase
+          .from('messages')
+          .select('id')
+          .eq('receiver_id', userId)
+          .eq('is_read', false);
+
+      return response.length;
+    } catch (e) {
+      log('❌ Error fetching unread messages: $e');
+      return 0;
+    }
+  }
+
+  // Get unread shared resources
+  Future<List<Map<String, dynamic>>> getUnreadSharedResources(
+    String userId,
+  ) async {
+    try {
+      final profile = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+
+      final profileId = profile['id'];
+      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+
+      final response = await _supabase
+          .from('resource_shares')
+          .select('''
+      resource_id,
+      created_at,
+      shared_resources!resource_shares_resource_id_fkey (
+        resource_title,
+        created_at
+      )
+    ''')
+          .eq('mentee_id', profileId)
+          .eq('is_read', false)
+          .gte('created_at', sevenDaysAgo.toIso8601String())
+          .limit(3);
+
+      return response
+          .where((item) => item['shared_resources'] != null)
+          .map<Map<String, dynamic>>((item) {
+            final resource = item['shared_resources'];
+
+            return {
+              'resource_id': item['resource_id'],
+              'resource_title': resource['resource_title'],
+              'created_at': item['created_at'],
+            };
+          })
+          .toList();
+    } catch (e) {
+      log('❌ Error fetching unread resources: $e');
+      return [];
+    }
+  }
+
+  // Get recent achievements (last 7 days)
+  Future<List<Map<String, dynamic>>> getRecentAchievements(
+    String userId,
+  ) async {
+    try {
+      final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
+
+      final response = await _supabase
+          .from('user_achievements')
+          .select('achievement_type, achieved_at')
+          .eq('user_id', userId)
+          .gte('achieved_at', sevenDaysAgo.toIso8601String())
+          .order('achieved_at', ascending: false)
+          .limit(3);
+
+      return response.cast<Map<String, dynamic>>();
+    } catch (e) {
+      log('❌ Error fetching achievements: $e');
+      return [];
+    }
+  }
+
+  // Get recent goal feedback (last 7 days)
+  Future<List<Map<String, dynamic>>> getRecentGoalFeedback(
+    String userId,
+  ) async {
+    try {
+      final sevenDaysAgo = DateTime.now().subtract(Duration(days: 7));
+
+      // First get user's goals
+      final goals = await _supabase
+          .from('goals')
+          .select('id, title')
+          .eq('mentee_id', userId);
+
+      List<Map<String, dynamic>> feedbackList = [];
+
+      for (var goal in goals) {
+        final feedback = await _supabase
+            .from('goal_comments')
+            .select('id, created_at')
+            .eq('goal_id', goal['id'])
+            .gte('created_at', sevenDaysAgo.toIso8601String())
+            .order('created_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
+
+        if (feedback != null) {
+          feedbackList.add({
+            'goal_id': goal['id'],
+            'goal_title': goal['title'],
+            'created_at': feedback['created_at'],
+          });
+        }
+      }
+
+      // Sort by created_at and limit to 3
+      feedbackList.sort(
+        (a, b) => DateTime.parse(
+          b['created_at'],
+        ).compareTo(DateTime.parse(a['created_at'])),
+      );
+
+      return feedbackList.take(3).toList();
     } catch (e) {
       log('❌ Error fetching goal feedback: $e');
       return [];

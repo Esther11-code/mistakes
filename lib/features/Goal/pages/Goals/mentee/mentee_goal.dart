@@ -385,6 +385,16 @@ class GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final watchGoalCubit = context.watch<GoalCubit>();
+
+    // Get feedback for this goal
+    final feedback =
+        watchGoalCubit.goalFeedback[goal.id] ?? {'has_feedback': false};
+    final hasFeedback = feedback['has_feedback'] ?? false;
+    final feedbackText = feedback['feedback_text'] ?? '';
+    final feedbackRating = feedback['feedback_rating'] ?? 0;
+    final mentorName = feedback['mentor_name'] ?? 'Mentor';
+
     return AppshadowContainer(
       onTap: onTap,
       margin: EdgeInsets.only(bottom: size.height * 0.015),
@@ -449,12 +459,82 @@ class GoalCard extends StatelessWidget {
 
           SizedBox(height: size.height * 0.01),
 
-          InAppText(
-            text: goal.description,
-            size: 14,
-            color: AppColors.grey,
-            maxline: 2,
-          ),
+          // ⭐ CONDITIONAL: Show feedback or description
+          if (hasFeedback) ...[
+            // Show mentor feedback
+            Container(
+              padding: EdgeInsets.all(size.width * 0.03),
+              decoration: BoxDecoration(
+                color: AppColors.filledColor.withAlpha(10),
+                borderRadius: BorderRadius.circular(size.width * 0.02),
+                border: Border.all(
+                  color: AppColors.filledColor.withAlpha(50),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.feedback,
+                            size: 16.sp,
+                            color: AppColors.filledColor,
+                          ),
+                          SizedBox(width: size.width * 0.02),
+                          InAppText(
+                            text: "Mentor Feedback",
+                            size: 13,
+                            fontweight: FontWeight.w700,
+                            color: AppColors.filledColor,
+                          ),
+                        ],
+                      ),
+                      // Star rating
+                      Row(
+                        children: List.generate(
+                          5,
+                          (index) => Icon(
+                            index < feedbackRating
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: Colors.orange.shade400,
+                            size: 14.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: size.height * 0.008),
+                  InAppText(
+                    text: feedbackText,
+                    size: 14,
+                    color: AppColors.lightblack,
+                    maxline: 2,
+                  ),
+                  SizedBox(height: size.height * 0.005),
+                  InAppText(
+                    text: "— $mentorName",
+                    size: 12,
+                    color: AppColors.grey,
+                    fontweight: FontWeight.w600,
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // Show goal description
+            InAppText(
+              text: goal.description,
+              size: 14,
+              color: AppColors.grey,
+              maxline: 2,
+            ),
+          ],
 
           SizedBox(height: size.height * 0.015),
 

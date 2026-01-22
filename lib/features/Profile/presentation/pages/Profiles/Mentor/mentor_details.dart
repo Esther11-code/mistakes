@@ -11,6 +11,7 @@ import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Home/presentation/pages/home.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class MentorDetails extends StatelessWidget {
@@ -21,6 +22,8 @@ class MentorDetails extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final watchProfileCubit = context.watch<ProfileCubit>();
     final mentor = watchProfileCubit.selectedMentor;
+    final readReviewCubit = context.read<ReviewCubit>();
+    final watchReviewCubit = context.watch<ReviewCubit>();
     final menteeId = context.read<AuthenticationCubit>().user.id ?? "";
     return BlocListener<BookmarksCubit, BookmarksState>(
       listener: (context, state) {
@@ -116,12 +119,26 @@ class MentorDetails extends StatelessWidget {
                                 Column(
                                   children: [
                                     InAppText(
-                                      text: "24",
+                                      text: context
+                                          .watch<MentorCubit>()
+                                          .activeMentees
+                                          .length
+                                          .toString(),
                                       color: AppColors.blue,
                                       size: 18,
                                       fontweight: FontWeight.w600,
                                     ),
-                                    InAppText(text: "Mentees", size: 16),
+                                    InAppText(
+                                      text:
+                                          context
+                                                  .watch<MentorCubit>()
+                                                  .activeMentees
+                                                  .length <=
+                                              1
+                                          ? "Mentee"
+                                          : "Mentees",
+                                      size: 16,
+                                    ),
                                   ],
                                 ),
                                 Column(
@@ -139,12 +156,25 @@ class MentorDetails extends StatelessWidget {
                                 Column(
                                   children: [
                                     InAppText(
-                                      text: "95%",
+                                      text:
+                                          "${watchReviewCubit.ratingStats['average_rating']}",
                                       color: AppColors.blue,
                                       size: 18,
                                       fontweight: FontWeight.w600,
                                     ),
-                                    InAppText(text: "Success", size: 16),
+                                    InAppText(
+                                      text:
+                                          watchReviewCubit
+                                                  .ratingStats['average_rating'] !=
+                                              null
+                                          ? watchReviewCubit
+                                                        .ratingStats['average_rating'] <=
+                                                    1
+                                                ? "Rating"
+                                                : "Ratings"
+                                          : "Rating",
+                                      size: 16,
+                                    ),
                                   ],
                                 ),
                               ],
@@ -234,13 +264,37 @@ class MentorDetails extends StatelessWidget {
                       ),
 
                       SizedBox(height: size.height * 0.01),
-                      Column(
-                        children: List.generate(
-                          3,
-                          (index) => ReviewsContainer(size: size),
-                        ),
-                      ),
-                      SizedBox(height: size.height * 0.01),
+                      watchReviewCubit.mentorReviews.isEmpty
+                          ? Center(
+                              child: InAppText(
+                                text: "No Reviews yet",
+                                size: 22,
+                                fontweight: FontWeight.w500,
+                                color: AppColors.blackColor,
+                              ),
+                            )
+                          : Column(
+                              children: List.generate(
+                                watchReviewCubit.mentorReviews.length,
+                                (index) => ReviewsContainer(
+                                  size: size,
+                                  index: index,
+                                  username:
+                                      watchReviewCubit
+                                          .mentorReviews[index]
+                                          .menteeName ??
+                                      "",
+                                  review: watchReviewCubit
+                                      .mentorReviews[index]
+                                      .reviewText,
+                                  ratings: watchReviewCubit
+                                      .mentorReviews[index]
+                                      .rating
+                                      .toString(),
+                                ),
+                              ),
+                            ),
+                      SizedBox(height: size.height * 0.02),
                       AppButton(
                         isLoading:
                             context.watch<BookmarksCubit>().state
@@ -277,6 +331,7 @@ class MentorDetails extends StatelessWidget {
                             : "Save to Favorites",
                         labelColor: AppColors.blue,
                       ),
+                      SizedBox(height: size.height * 0.04),
                     ],
                   ),
                 ),
@@ -562,12 +617,22 @@ class MentorDetails extends StatelessWidget {
 }
 
 class ReviewsContainer extends StatelessWidget {
-  const ReviewsContainer({super.key, required this.size});
+  const ReviewsContainer({
+    super.key,
+    required this.size,
+    required this.index,
+    required this.username,
+    required this.ratings,
+    required this.review,
+  });
 
   final Size size;
+  final int index;
+  final String username, ratings, review;
 
   @override
   Widget build(BuildContext context) {
+    final watchReviewCubit = context.watch<ReviewCubit>();
     return AppshadowContainer(
       color: AppColors.white,
       padding: EdgeInsets.all(size.width * 0.03),
@@ -588,7 +653,7 @@ class ReviewsContainer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InAppText(
-                    text: "User Name",
+                    text: username,
                     size: 16,
                     color: AppColors.blue,
                     fontweight: FontWeight.w600,
@@ -603,7 +668,7 @@ class ReviewsContainer extends StatelessWidget {
               Spacer(),
               Icon(Icons.star, size: 20.sp, color: AppColors.yellow),
               InAppText(
-                text: "4.5",
+                text: ratings,
                 size: 16,
                 color: AppColors.blue,
                 fontweight: FontWeight.w600,
@@ -615,12 +680,7 @@ class ReviewsContainer extends StatelessWidget {
           SizedBox(height: size.height * 0.01),
           AppDivider(),
           SizedBox(height: size.height * 0.01),
-          InAppText(
-            text:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-
-            color: AppColors.blackColor,
-          ),
+          InAppText(text: review, color: AppColors.blackColor),
           SizedBox(height: size.height * 0.01),
         ],
       ),

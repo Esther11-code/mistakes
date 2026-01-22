@@ -157,6 +157,7 @@ class GoalCubit extends Cubit<GoalState> {
     try {
       allGoals = await goalRepo.getGoals(menteeId: user.id!);
       filterGoals();
+      loadGoalFeedback();
       log('Goals loaded: ${allGoals.length}');
       emit(GoalLoadedState());
     } catch (e) {
@@ -196,7 +197,11 @@ class GoalCubit extends Cubit<GoalState> {
     emit(GoalLoadedState());
   }
 
-  updateProgress(String goalId, int newProgress,{required BuildContext context}) async {
+  updateProgress(
+    String goalId,
+    int newProgress, {
+    required BuildContext context,
+  }) async {
     emit(GoalLoadingState());
     try {
       await goalRepo.updateGoalProgress(
@@ -220,20 +225,20 @@ class GoalCubit extends Cubit<GoalState> {
 
       log('Progress updated to $newProgress% for goal $goalId');
       if (newProgress == 50) {
-  await checkAndShowAchievement(
-    context,
-    'progress_50_percent',
-    AchievementType.progressMilestone,
-    progressPercentage: 50,
-  );
-} else if (newProgress == 75) {
-  await checkAndShowAchievement(
-    context,
-    'progress_75_percent',
-    AchievementType.progressMilestone,
-    progressPercentage: 75,
-  );
-}
+        await checkAndShowAchievement(
+          context,
+          'progress_50_percent',
+          AchievementType.progressMilestone,
+          progressPercentage: 50,
+        );
+      } else if (newProgress == 75) {
+        await checkAndShowAchievement(
+          context,
+          'progress_75_percent',
+          AchievementType.progressMilestone,
+          progressPercentage: 75,
+        );
+      }
 
       emit(GoalProgressUpdatedState());
     } catch (e) {
@@ -292,7 +297,6 @@ class GoalCubit extends Cubit<GoalState> {
     }
   }
 
-  
   void changeCategory(String category) {
     emit(GoalLoadingState());
     selectedCategory = category;
@@ -337,6 +341,45 @@ class GoalCubit extends Cubit<GoalState> {
   int get activeGoalsCount {
     return allGoals.where((goal) => goal.status == 'active').length;
   }
+
+  // Add to GoalCubit class
+  // Store feedback for each goal
+  Map<String, Map<String, dynamic>> goalFeedback =
+      {}; // goalId -> feedback data
+
+  // Load feedback for all goals
+  Future<void> loadGoalFeedback() async {
+    try {
+      for (var goal in allGoals) {
+        try {
+          // Get feedback for this goal from goalRepo
+          final feedback = await goalRepo.getGoalFeedback(goal.id);
+
+          if (feedback.isNotEmpty) {
+            // Store the latest feedback
+            goalFeedback[goal.id] = {
+              'has_feedback': true,
+              'feedback_text': feedback.first['comment_text'],
+              'feedback_rating': feedback.first['rating'],
+              'mentor_name': feedback.first['mentor_name'],
+            };
+          } else {
+            goalFeedback[goal.id] = {'has_feedback': false};
+          }
+        } catch (e) {
+          log('⚠️ Error loading feedback for goal ${goal.id}: $e');
+          goalFeedback[goal.id] = {'has_feedback': false};
+        }
+      }
+
+      log('✅ Loaded feedback for ${goalFeedback.length} goals');
+      emit(GoalLoadedState());
+    } catch (e) {
+      log('❌ Error loading goal feedback: $e');
+    }
+  }
+
+  // Modified loadGoals to also load feedback
 
   void clear() {
     titleController.clear();

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mistakes/config/detail/route_name.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/pages/Profiles/Mentor/mentor_details.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../constants/utils/app_colors.dart';
@@ -12,6 +16,7 @@ class AllReviews extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final watchReviewCubit = context.watch<ReviewCubit>();
     return AppScaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +41,8 @@ class AllReviews extends StatelessWidget {
                       child: Column(
                         children: [
                           InAppText(
-                            text: "4.6",
+                            text:
+                                "${watchReviewCubit.ratingStats['average_rating']}",
                             size: 21,
                             fontweight: FontWeight.w800,
                           ),
@@ -53,7 +59,11 @@ class AllReviews extends StatelessWidget {
                             ),
                           ),
                           SizedBox(height: size.height * 0.008),
-                          InAppText(text: "Based on 100+ reviews", size: 16),
+                          InAppText(
+                            text:
+                                "Based on ${watchReviewCubit.mentorReviews.length} reviews",
+                            size: 16,
+                          ),
                           SizedBox(height: size.height * 0.02),
                           AppDivider(),
 
@@ -91,8 +101,20 @@ class AllReviews extends StatelessWidget {
                     SizedBox(height: size.height * 0.02),
                     Column(
                       children: List.generate(
-                        10,
-                        (index) => ReviewsContainer(size: size),
+                        watchReviewCubit.mentorReviews.length,
+                        (index) => ReviewsContainer(
+                          size: size,
+                          index: index,
+                          review:
+                              watchReviewCubit.mentorReviews[index].reviewText,
+                          username:
+                              watchReviewCubit
+                                  .mentorReviews[index]
+                                  .menteeName ??
+                              "",
+                          ratings: watchReviewCubit.mentorReviews[index].rating
+                              .toString(),
+                        ),
                       ),
                     ),
                   ],
@@ -100,6 +122,24 @@ class AllReviews extends StatelessWidget {
               ),
             ),
           ),
+          context.watch<MentorCubit>().currentMentorId ==
+                  watchReviewCubit.currentMentorId
+              ? Padding(
+                  padding: EdgeInsets.all(size.width * 0.03),
+                  child: Column(
+                    children: [
+                      AppButton(
+                        buttonColor: AppColors.blue,
+                        label: "Add Review",
+                        onTap: () {
+                          Navigator.pushNamed(context, Routename.addFeedback);
+                        },
+                      ),
+                      SizedBox(height: size.height * 0.04),
+                    ],
+                  ),
+                )
+              : SizedBox(height: size.height * 0.04),
         ],
       ),
     );

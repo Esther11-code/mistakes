@@ -7,7 +7,9 @@ import 'package:mistakes/features/Authentication/presentation/cubit/authenticati
 import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/data/local/images/home_image.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
@@ -179,7 +181,20 @@ class MentorList extends StatelessWidget {
                         menteeId: readAuthCubit.user.id ?? "",
                         mentorId: mentorId,
                       );
-                      Navigator.pushNamed(context, Routename.mentorDetails);
+
+                      context.read<ReviewCubit>().loadMentorReviews(mentorId);
+                      context.read<ReviewCubit>().checkExistingReview(
+                        mentorId: mentorId,
+                        menteeId: readAuthCubit.user.id ?? "",
+                      );
+                      context.read<MentorCubit>().loadActiveMentees(mentorId);
+                      final move = Navigator.pushNamed(
+                        context,
+                        Routename.mentorDetails,
+                      );
+                      Future.delayed(const Duration(seconds: 3), () {
+                        move;
+                      });
                     },
                     buttonColor: AppColors.background,
                     width: size.width * 0.6,
@@ -196,17 +211,17 @@ class MentorList extends StatelessWidget {
               final userId = context.read<AuthenticationCubit>().user.id;
               if (userId != null) {
                 context.read<BookmarksCubit>().toggleMentorBookmark(
-                    context: context,
+                  context: context,
                   menteeId: userId,
                   mentorId: mentorId,
                 );
               }
             },
             child: Icon(
-               watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
+              watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
                   ? Icons.favorite
                   : Icons.favorite_border,
-              color:  watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
+              color: watchBookmarksCubit.mentorBookmarkStatus[mentorId] == true
                   ? AppColors.errorColor
                   : AppColors.grey,
               size: 25.sp,

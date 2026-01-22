@@ -308,7 +308,9 @@ class MenteeDashboard extends StatelessWidget {
                       crossAxisSpacing: size.width * 0.03,
                       mainAxisSpacing: size.height * 0.015,
                     ),
-                    itemCount: watchDashboardCubit.menteeStats.length,
+                    itemCount: watchAuthCubit.user.isMentor
+                        ? watchDashboardCubit.menteeStats.length
+                        : 4,
                     itemBuilder: (context, index) {
                       final statColors = [
                         [Colors.blue.shade400, Colors.blue.shade600],
@@ -339,7 +341,16 @@ class MenteeDashboard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             InAppText(
-                              text: stats['stat'],
+                              text: watchAuthCubit.user.isMentor
+                                  ? "${stats['stat']}"
+                                  : index == 0
+                                  ? "${watchGoalCubit.activeGoalsCount}"
+                                  : index == 1
+                                  ? "${watchGoalCubit.completedGoalsCount}"
+                                  : index == 2
+                                  ? "${watchDashboardCubit.monthsTogether}"
+                                  : "${watchGoalCubit.overallProgressPercentage}%",
+
                               color: AppColors.white,
                               size: 30,
                               fontweight: FontWeight.w900,
@@ -438,144 +449,183 @@ class MenteeDashboard extends StatelessWidget {
                     ),
                   ],
                   if (isRole == "mentee") ...[
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(size.width * 0.04),
-                          decoration: BoxDecoration(
-                            color: AppColors.orange.withAlpha(10),
-                            borderRadius: BorderRadius.circular(
-                              size.width * 0.03,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.history,
-                            color: AppColors.orange,
-                            size: 25.sp,
-                          ),
-                        ),
-                        SizedBox(width: size.width * 0.03),
-                        InAppText(
-                          text: "Need Attention",
-                          size: 20,
-                          fontweight: FontWeight.w700,
-                          color: AppColors.blue,
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: size.height * 0.015),
-                    Column(
-                      children: List.generate(5, (index) {
-                        final activityIcons = [
-                          Icons.check_circle_outline,
-                          Icons.message_outlined,
-                          Icons.book_outlined,
-                          Icons.emoji_events_outlined,
-                          Icons.feedback_outlined,
-                        ];
-                        final activityColors = [
-                          Colors.green.shade400,
-                          Colors.blue.shade400,
-                          Colors.purple.shade400,
-                          Colors.orange.shade400,
-                          Colors.pink.shade400,
-                        ];
-                        final activities = [
-                          'Goal Completed',
-                          'New Message',
-                          'Resource Shared',
-                          'Achievement Unlocked',
-                          'Feedback Received',
-                        ];
-
-                        return AppshadowContainer(
-                          onTap: () {
-                            if (index == 0) {
-                              Navigator.pushNamed(context, Routename.goalSetUp);
-                            } else if (index == 2) {
-                              Navigator.pushNamed(
-                                context,
-                                Routename.sharedResources,
-                              );
-                            } else if (index == 4) {
-                              Navigator.pushNamed(context, Routename.goalSetUp);
-                            } else if (index == 1) {
-                              Navigator.pushNamed(
-                                context,
-                                Routename.menteeChat,
-                              );
-                            } else {
-                              Navigator.pushNamed(
-                                context,
-                                Routename.achievementHistory,
+                    BlocListener<DashboardCubit, DashboardState>(
+                      listener: (context, state) {},
+                      child: Builder(
+                        builder: (context) {
+                          // Load on first build
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (watchDashboardCubit
+                                .needAttentionItems
+                                .isEmpty) {
+                              watchDashboardCubit.loadNeedAttentionItems(
+                                user.id!,
                               );
                             }
-                          },
-                          shadowcolour: AppColors.lightgrey.withAlpha(50),
-                          padding: EdgeInsets.all(size.width * 0.04),
-                          margin: EdgeInsets.only(bottom: size.height * 0.012),
-                          child: Row(
+                          });
+
+                          return Column(
                             children: [
-                              Container(
-                                width: size.height * 0.06,
-                                height: size.height * 0.06,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      activityColors[index],
-                                      activityColors[index].withAlpha(70),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(size.width * 0.04),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.orange.withAlpha(10),
+                                      borderRadius: BorderRadius.circular(
+                                        size.width * 0.03,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      Icons.history,
+                                      color: AppColors.orange,
+                                      size: 25.sp,
+                                    ),
+                                  ),
+                                  SizedBox(width: size.width * 0.03),
+                                  InAppText(
+                                    text:
+                                        "Need Attention (${watchDashboardCubit.needAttentionItems.length})",
+                                    size: 20,
+                                    fontweight: FontWeight.w700,
+                                    color: AppColors.blue,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: size.height * 0.015),
+
+                              if (watchDashboardCubit
+                                  .needAttentionItems
+                                  .isEmpty)
+                                AppshadowContainer(
+                                  padding: EdgeInsets.all(size.width * 0.06),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle_outline,
+                                        size: 50.sp,
+                                        color: Colors.green.shade400,
+                                      ),
+                                      SizedBox(height: size.height * 0.01),
+                                      InAppText(
+                                        text: "All caught up!",
+                                        fontweight: FontWeight.w600,
+                                        size: 18,
+                                        color: AppColors.blue,
+                                      ),
+                                      SizedBox(height: size.height * 0.005),
+                                      InAppText(
+                                        text: "No items need your attention",
+                                        size: 14,
+                                        color: AppColors.grey,
+                                      ),
                                     ],
                                   ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: activityColors[index].withAlpha(
-                                        30,
-                                      ),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
+                                )
+                              else
+                                Column(
+                                  children: watchDashboardCubit
+                                      .needAttentionItems
+                                      .take(5)
+                                      .map((item) {
+                                        return AppshadowContainer(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              item['route'],
+                                            );
+                                          },
+                                          shadowcolour: AppColors.lightgrey
+                                              .withAlpha(50),
+                                          padding: EdgeInsets.all(
+                                            size.width * 0.04,
+                                          ),
+                                          margin: EdgeInsets.only(
+                                            bottom: size.height * 0.012,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                width: size.height * 0.06,
+                                                height: size.height * 0.06,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [
+                                                      item['color'],
+                                                      item['color'].withAlpha(
+                                                        70,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: item['color']
+                                                          .withAlpha(20),
+                                                      blurRadius: 8,
+                                                      offset: Offset(0, 4),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Icon(
+                                                  item['icon'],
+                                                  color: AppColors.white,
+                                                  size: 25.sp,
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                width: size.width * 0.04,
+                                              ),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    InAppText(
+                                                      text: item['title'],
+                                                      color: AppColors.blue,
+
+                                                      fontweight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                    SizedBox(height: 4),
+                                                    InAppText(
+                                                      text: item['subtitle'],
+                                                      size: 16,
+                                                      fontweight:
+                                                          FontWeight.w500,
+                                                      color: AppColors.grey,
+                                                      maxline: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              InAppText(
+                                                text: item['time'],
+                                                size: 14,
+                                                color: AppColors.grey,
+                                              ),
+                                              SizedBox(
+                                                width: size.width * 0.02,
+                                              ),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 18.sp,
+                                                color: AppColors.grey,
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      })
+                                      .toList(),
                                 ),
-                                child: Icon(
-                                  activityIcons[index],
-                                  color: AppColors.white,
-                                  size: 24.sp,
-                                ),
-                              ),
-                              SizedBox(width: size.width * 0.04),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    InAppText(
-                                      text: activities[index],
-                                      color: AppColors.blue,
-                                      size: 19,
-                                      fontweight: FontWeight.w700,
-                                    ),
-                                    SizedBox(height: 4),
-                                    InAppText(
-                                      text: '${index + 1}h ago',
-                                      size: 16,
-                                      fontweight: FontWeight.w500,
-                                      color: AppColors.grey,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20.sp,
-                                color: AppColors.grey,
-                              ),
                             ],
-                          ),
-                        );
-                      }),
+                          );
+                        },
+                      ),
                     ),
                   ],
-                  SizedBox(height: size.height * 0.02),
+                  SizedBox(height: size.height * 0.1),
                 ],
               ),
             ),

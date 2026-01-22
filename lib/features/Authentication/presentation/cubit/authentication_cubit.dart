@@ -99,10 +99,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     final nameParts = user.name!.trim().split(' ');
 
     if (nameParts.length == 1) {
-      // Single name: return first letter
       return nameParts[0][0].toUpperCase();
     } else {
-      // Multiple names: return first letter of first and last name
       final firstInitial = nameParts.first[0].toUpperCase();
       final lastInitial = nameParts.last[0].toUpperCase();
       return '$firstInitial$lastInitial';
@@ -257,7 +255,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       await authRepo.saveInterests(interests);
 
       user.interests = interests;
-      // user.areaOfInterest = interests.join(', ');
 
       log('Interests saved: ${interests.length}');
       clear();
@@ -275,9 +272,8 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     try {
       String? profilePhotoUrl;
 
-      // 1. ⭐ Upload photo FIRST if user selected one
       if (profileImage != null) {
-        log('📸 Uploading profile photo...');
+        log('Uploading profile photo');
 
         // Delete old photo if exists
         if (user.profilePhotoUrl != null && user.profilePhotoUrl!.isNotEmpty) {
@@ -297,25 +293,25 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         log('Photo uploaded: $profilePhotoUrl');
       }
 
-      // 2. Update profile with the PUBLIC URL (not local path)
+      //Update profile 
       await authRepo.updateProfile(
         userId: user.id!,
         bio: bioController.text.trim(),
         expertise: expertiseController.text.trim(),
         yearsExperience:
             int.tryParse(yearsOfExperienceController.text.trim()) ?? 0,
-        profilePhotoUrl: profilePhotoUrl, // ⭐ Use uploaded URL, not local path
+        profilePhotoUrl: profilePhotoUrl, 
       );
 
       log("Years: ${user.yearsExperience}");
 
-      // 3. Update local user model
+      //  Update local user model
       user.bio = bioController.text.trim();
       user.expertise = expertiseController.text.trim();
       user.yearsExperience = int.tryParse(yearsOfExperienceController.text);
 
       if (profilePhotoUrl != null) {
-        user.profilePhotoUrl = profilePhotoUrl; // ⭐ Save URL, not path
+        user.profilePhotoUrl = profilePhotoUrl; 
       }
 
       getUserInfo();
@@ -424,7 +420,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
-  // ADD THIS NEW METHOD:
+
   updatePassword() async {
     final newPassword = newPasswordController.text.trim();
     final confirmPassword = confirmNewPasswordController.text.trim();
@@ -463,8 +459,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(AuthLoadedState());
     }
   }
-
-  // ADD THIS METHOD to reset to initial state:
   resetState() {
     emit(AuthenticationInitial());
   }
