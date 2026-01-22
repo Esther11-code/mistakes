@@ -6,9 +6,10 @@ import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
-import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
+
+import 'widgets/mentor_feedback_widgets.dart';
 
 class MentorReview extends StatefulWidget {
   const MentorReview({super.key});
@@ -21,7 +22,6 @@ class _MentorReviewState extends State<MentorReview> {
   @override
   void initState() {
     super.initState();
-    // Load feedback when page opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardCubit>().loadFeedbackForSelectedGoal();
     });
@@ -32,16 +32,12 @@ class _MentorReviewState extends State<MentorReview> {
     final size = MediaQuery.sizeOf(context);
     final watchReviewCubit = context.watch<ReviewCubit>();
     final watchDashboardCubit = context.watch<DashboardCubit>();
-
-    // Check if feedback exists
     final hasFeedback =
         watchDashboardCubit.selectedRecentGoals['has_feedback'] ?? false;
     final feedbackText =
         watchDashboardCubit.selectedRecentGoals['feedback_text'] ?? '';
     final feedbackRating =
         watchDashboardCubit.selectedRecentGoals['feedback_rating'] ?? 0;
-    final mentorName =
-        watchDashboardCubit.selectedRecentGoals['mentor_name'] ?? 'Mentor';
 
     return BlocListener<ReviewCubit, ReviewState>(
       listener: (context, state) {
@@ -50,7 +46,7 @@ class _MentorReviewState extends State<MentorReview> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -179,10 +175,7 @@ class _MentorReviewState extends State<MentorReview> {
                             ),
 
                             SizedBox(height: size.height * 0.02),
-
-                            // ⭐ CONDITIONAL RENDERING: Show Feedback or Input Form
                             if (hasFeedback) ...[
-                              // Show existing feedback
                               Container(
                                 width: size.width,
                                 padding: EdgeInsets.all(size.width * 0.04),
@@ -255,8 +248,6 @@ class _MentorReviewState extends State<MentorReview> {
                                   maxLine: 5,
                                 ),
                                 SizedBox(height: size.height * 0.02),
-
-                                // Star Rating
                                 InAppText(
                                   text: "Rate Progress",
                                   fontweight: FontWeight.w600,
@@ -286,13 +277,13 @@ class _MentorReviewState extends State<MentorReview> {
                                   ),
                                 ),
                                 SizedBox(height: size.height * 0.025),
-
-                                // Submit Button
                                 AppButton(
                                   isLoading:
                                       watchReviewCubit.state
                                           is ReviewFeedbackLoading,
                                   onTap: () async {
+                                    final readDashboardCubit = context
+                                        .read<DashboardCubit>();
                                     await context
                                         .read<ReviewCubit>()
                                         .submitGoalFeedback(
@@ -305,10 +296,7 @@ class _MentorReviewState extends State<MentorReview> {
                                                   .id ??
                                               "",
                                         );
-
-                                    // Reload feedback after submission
-                                    await context
-                                        .read<DashboardCubit>()
+                                    await readDashboardCubit
                                         .loadFeedbackForSelectedGoal();
                                   },
                                   label: "Submit Feedback",
@@ -327,65 +315,6 @@ class _MentorReviewState extends State<MentorReview> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class AppProgressIndicator extends StatelessWidget {
-  const AppProgressIndicator({
-    super.key,
-    required this.size,
-    required this.width,
-  });
-
-  final Size size;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppshadowContainer(
-      padding: EdgeInsets.zero,
-      alignment: Alignment.centerLeft,
-      height: size.height * 0.015,
-      width: size.width,
-      borderRadius: BorderRadius.circular(size.height * 0.02),
-      color: AppColors.grey.withAlpha(40),
-      child: SizedBox(
-        width: width,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.filledColor,
-            borderRadius: BorderRadius.circular(size.height * 0.02),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class StatusContainer extends StatelessWidget {
-  const StatusContainer({super.key, required this.size, required this.status});
-
-  final Size size;
-  final String status;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppshadowContainer(
-      padding: EdgeInsets.symmetric(
-        horizontal: size.width * 0.03,
-        vertical: size.height * 0.008,
-      ),
-      borderRadius: BorderRadius.circular(size.width * 0.07),
-      border: true,
-      borderColor: AppColors.filledColor,
-      color: AppColors.inactive,
-      child: InAppText(
-        text: status,
-        color: AppColors.background,
-        fontweight: FontWeight.w700,
-        size: 14,
       ),
     );
   }

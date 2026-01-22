@@ -1,11 +1,9 @@
-// lib/features/Rating&Reviews/data/model/mentor_review_model.dart
-
 class MentorReviewModel {
   final String id;
   final String mentorId;
   final String menteeId;
   final String? matchId;
-  final int rating; // 1-5 stars
+  final int rating; 
   final String reviewText;
   final DateTime createdAt;
   final DateTime updatedAt;

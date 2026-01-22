@@ -28,13 +28,7 @@ class SignupPage extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.background,
-              AppColors.blue,
-              AppColors.active,
-              // Color(0xFF003366), // Deep Blue
-              // Color(0xFF00B8B0), // Teal accent
-            ],
+            colors: [AppColors.background, AppColors.blue, AppColors.active],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -51,16 +45,9 @@ class SignupPage extends StatelessWidget {
               readAuthCubit.clear();
               Navigator.pushNamed(context, Routename.selectInterest);
             }
-            if (state is AuthErrorState) {
-              Fluttertoast.showToast(
-                msg: "Failed to sign up. Please try again",
-                gravity: ToastGravity.TOP,
-                backgroundColor: AppColors.errorColor,
-              );
-            }
           },
           child: Scaffold(
-            backgroundColor: Colors.transparent, // important!
+            backgroundColor: Colors.transparent,
             body: Form(
               key: formKey,
               child: Column(

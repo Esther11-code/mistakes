@@ -24,7 +24,6 @@ class _MentorHomeState extends State<MentorHome> {
   @override
   void initState() {
     super.initState();
-    // Load mentor data when page loads
     final mentorCubit = context.read<MentorCubit>();
     final userId = context.read<HomeCubit>().user.id;
 
@@ -34,6 +33,8 @@ class _MentorHomeState extends State<MentorHome> {
         user: context.read<HomeCubit>().user,
       );
     }
+
+    
   }
 
   @override

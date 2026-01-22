@@ -1,5 +1,3 @@
-// lib/features/Notification/presentation/cubit/notification_state.dart
-
 part of 'notification_cubit.dart';
 
 sealed class NotificationState extends Equatable {

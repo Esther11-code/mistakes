@@ -17,23 +17,18 @@ class HomeCubit extends Cubit<HomeState> {
 
   HomeCubit(this.homeRepo) : super(HomeInitial());
 
-  // Current user (set from AuthenticationCubit)
   UserModel user = UserModel();
 
-  // All users loaded from database
   List<UserModel> allUsers = [];
   List<UserModel> filteredUsers = [];
 
-  // Available filters
   List<String> expertiseList = [];
   List<String> allSkills = [];
 
-  // Current filters
   String? currentSearchQuery;
   String? currentRoleFilter;
   String? currentExpertiseFilter;
 
-  // Bottom navigation
   int bottonnavSelectedIndex = 0;
 
   final screens = [
@@ -71,16 +66,12 @@ class HomeCubit extends Cubit<HomeState> {
   //   return likedMentorIds.contains(mentorId);
   // }
 
-  // ============================================================================
-  // LOAD ALL USERS
-  // ============================================================================
   Future<void> loadUsers() async {
     emit(UserSearchLoadingState());
     try {
       allUsers = await homeRepo.getAllUsers();
       filteredUsers = allUsers;
 
-      // Load filter options
       expertiseList = await homeRepo.getExpertiseList();
       allSkills = await homeRepo.getAllSkills();
 
@@ -100,13 +91,10 @@ class HomeCubit extends Cubit<HomeState> {
       );
     } catch (e) {
       log(' Error loading users: $e');
-      emit(UserSearchErrorState(e.toString()));
+      emit(UserSearchErrorState("Error loading Users"));
     }
   }
 
-  // ============================================================================
-  // SEARCH AND FILTER
-  // ============================================================================
   Future<void> searchAndFilter({
     String? query,
     String? role,
@@ -115,7 +103,6 @@ class HomeCubit extends Cubit<HomeState> {
     int? experience,
     bool reload = false,
   }) async {
-    // Reload from database if requested or if empty
     if (reload || allUsers.isEmpty) {
       await loadUsers();
       if (state is UserSearchErrorState) return;
@@ -124,7 +111,6 @@ class HomeCubit extends Cubit<HomeState> {
     emit(UserSearchLoadingState());
 
     try {
-      // Store current filters
       currentSearchQuery = query;
       currentRoleFilter = role;
       currentExpertiseFilter = expertise;

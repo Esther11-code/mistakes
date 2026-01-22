@@ -1,62 +1,49 @@
-// lib/features/Profile/data/remote/mentor_repo.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:developer';
 
 class MentorRepo {
-  final _supabase = Supabase.instance.client;
-
-  // ============================================================================
-  // MENTOR STATS
-  // ============================================================================
+  final supabase = Supabase.instance.client;
   Future<Map<String, int>> getMentorStats(String mentorId) async {
     try {
-      // Active mentees count - using 'matches' table and 'accepted' status
-      final activeMenteesResponse = await _supabase
+      final activeMenteesResponse = await supabase
           .from('matches')
           .select('id, responded_at')
           .eq('mentor_id', mentorId)
-          .eq('status', 'accepted'); // Correct enum value
+          .eq('status', 'accepted'); 
 
-      // Pending requests count
-      final pendingRequestsResponse = await _supabase
+      final pendingRequestsResponse = await supabase
           .from('matches')
           .select('id')
           .eq('mentor_id', mentorId)
           .eq('status', 'pending');
-
-      // Ended mentorships
-      final endedResponse = await _supabase
+      final endedResponse = await supabase
           .from('matches')
           .select('id, responded_at, ended_at')
           .eq('mentor_id', mentorId)
           .eq('status', 'ended');
-
-      // Declined requests
-      final declinedResponse = await _supabase
+      final declinedResponse = await supabase
           .from('matches')
           .select('id')
           .eq('mentor_id', mentorId)
           .eq('status', 'declined');
 
       int totalHours = 0;
-      // Active mentorships - estimate based on duration (assume 2 hours/week average)
       for (var match in activeMenteesResponse) {
         if (match['responded_at'] != null) {
           final startDate = DateTime.parse(match['responded_at']);
           final now = DateTime.now();
           final weeks = now.difference(startDate).inDays / 7;
-          totalHours += (weeks * 2).toInt(); // 2 hours per week estimate
+          totalHours += (weeks * 2).toInt(); 
         }
       }
 
-      // Ended mentorships - calculate actual duration
       for (var match in endedResponse) {
         if (match['responded_at'] != null && match['ended_at'] != null) {
           final startDate = DateTime.parse(match['responded_at']);
           final endDate = DateTime.parse(match['ended_at']);
           final weeks = endDate.difference(startDate).inDays / 7;
-          totalHours += (weeks * 2).toInt(); // 2 hours per week estimate
+          totalHours += (weeks * 2).toInt(); 
         }
       }
 
@@ -78,22 +65,16 @@ class MentorRepo {
     }
   }
 
-  // ============================================================================
-  // RECENT ACTIVITIES
-  // ============================================================================// In mentor_repo.dart, update getRecentActivities:
-
+ 
   Future<List<Map<String, dynamic>>> getRecentActivities(
     String mentorId,
   ) async {
     try {
       final activities = <Map<String, dynamic>>[];
 
-      // ========================================
-      // 1. Get recently started mentorships (last 7 days)
-      // ========================================
       final weekAgo = DateTime.now().subtract(Duration(days: 7));
 
-      final newMentorshipsResponse = await _supabase
+      final newMentorshipsResponse = await supabase
           .from('matches')
           .select('id, created_at, responded_at, mentee_id')
           .eq('mentor_id', mentorId)
@@ -106,7 +87,7 @@ class MentorRepo {
         final menteeId = match['mentee_id'];
 
         try {
-          final userResponse = await _supabase
+          final userResponse = await supabase
               .from('profiles')
               .select('full_name, profile_photo_url')
               .eq('user_id', menteeId)
@@ -130,10 +111,7 @@ class MentorRepo {
         }
       }
 
-      // ========================================
-      // 2. Get active mentees' goal updates
-      // ========================================
-      final matchesResponse = await _supabase
+      final matchesResponse = await supabase
           .from('matches')
           .select('mentee_id')
           .eq('mentor_id', mentorId)
@@ -146,7 +124,7 @@ class MentorRepo {
 
         log('Found ${menteeIds.length} active mentees');
 
-        final goalsResponse = await _supabase
+        final goalsResponse = await supabase
             .from('goals')
             .select('*')
             .inFilter('mentee_id', menteeIds)
@@ -157,7 +135,7 @@ class MentorRepo {
           final menteeId = goal['mentee_id'];
 
           try {
-            final userResponse = await _supabase
+            final userResponse = await supabase
                 .from('profiles')
                 .select('full_name, profile_photo_url')
                 .eq('user_id', menteeId)
@@ -181,13 +159,11 @@ class MentorRepo {
         }
       }
 
-      // Sort all activities by timestamp (most recent first)
       activities.sort(
         (a, b) =>
             (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
       );
 
-      // Return top 5 activities
       final topActivities = activities.take(5).toList();
 
       log('Loaded ${topActivities.length} recent activities');
@@ -232,10 +208,9 @@ class MentorRepo {
   Future<void> debugThisWeeksTasks(String mentorId) async {
     try {
       final now = DateTime.now();
-      log('📅 Today is: $now');
-      log('📅 Week day: ${now.weekday}');
+      log('Today is: $now');
+      log('Week day: ${now.weekday}');
 
-      // Calculate week range
       final startOfWeek = DateTime(
         now.year,
         now.month,
@@ -250,10 +225,8 @@ class MentorRepo {
       final endDateStr =
           '${endOfWeek.year}-${endOfWeek.month.toString().padLeft(2, '0')}-${endOfWeek.day.toString().padLeft(2, '0')}';
 
-      log('📅 Week range: $startDateStr to $endDateStr');
-
-      // Get all active mentees
-      final matches = await _supabase
+      log('Week range: $startDateStr to $endDateStr');
+      final matches = await supabase
           .from('matches')
           .select('mentee_id, id, responded_at')
           .eq('mentor_id', mentorId)
@@ -262,43 +235,37 @@ class MentorRepo {
       log('👥 Active mentees: ${matches.length}');
 
       if (matches.isEmpty) {
-        log('⚠️ No active mentees found!');
+        log('No active mentees found!');
         return;
       }
 
       final menteeIds = matches.map((m) => m['mentee_id'] as String).toList();
-      log('📋 Mentee IDs: $menteeIds');
-
-      // Get ALL goals for these mentees (no filters)
-      final allGoals = await _supabase
+      log('Mentee IDs: $menteeIds');
+      final allGoals = await supabase
           .from('goals')
           .select('*')
           .inFilter('mentee_id', menteeIds)
           .order('deadline', ascending: true);
 
-      log('📊 TOTAL GOALS FOUND: ${allGoals.length}');
+      log('All goals: ${allGoals.length}');
 
       if (allGoals.isEmpty) {
-        log('⚠️ No goals found at all for these mentees!');
-        log('⚠️ Check if goals have mentee_id set correctly');
+        log('No goals found at all for these mentees!');
+        log('Check if goals have mentee_id set correctly');
         return;
       }
-
-      // Analyze each goal
       for (var goal in allGoals) {
         final deadline = goal['deadline'];
         final title = goal['title'];
         final status = goal['status'];
         final menteeId = goal['mentee_id'];
 
-        log('─────────────────────────────────');
-        log('📌 Goal: $title');
-        log('   Mentee ID: $menteeId');
-        log('   Deadline: $deadline (${deadline.runtimeType})');
-        log('   Status: $status');
-        log('   Progress: ${goal['progress_percentage']}%');
+        log('Goal: $title');
+        log('Mentee ID: $menteeId');
+        log('Deadline: $deadline (${deadline.runtimeType})');
+        log('Status: $status');
+        log('Progress: ${goal['progress_percentage']}%');
 
-        // Check if this deadline is in range
         if (deadline != null) {
           final isInRange =
               deadline.compareTo(startDateStr) >= 0 &&
@@ -306,16 +273,12 @@ class MentorRepo {
           log('   In range? $isInRange');
 
           if (deadline == startDateStr || deadline == endDateStr) {
-            log('   🎯 EXACT MATCH WITH RANGE BOUNDARIES!');
+            log('EXACT MATCH WITH RANGE BOUNDARIES!');
           }
         }
       }
-
-      log('─────────────────────────────────');
-
-      // Try the actual query
-      log('🔍 Testing actual query with filters...');
-      final filteredGoals = await _supabase
+      log('Testing actual query with filter');
+      final filteredGoals = await supabase
           .from('goals')
           .select('*')
           .inFilter('mentee_id', menteeIds)
@@ -323,16 +286,11 @@ class MentorRepo {
           .lte('deadline', endDateStr)
           .order('deadline', ascending: true);
 
-      log('✅ Filtered query returned: ${filteredGoals.length} goals');
+      log('Filtered query returned: ${filteredGoals.length} goals');
     } catch (e) {
-      log('❌ Debug error: $e');
+      log('error: $e');
     }
   }
-  // ============================================================================
-  // THIS WEEK'S TASKS
-  // ============================================================================
-  // In mentor_repo.dart, update getThisWeeksTasks:
-
   Future<List<Map<String, dynamic>>> getThisWeeksTasks(String mentorId) async {
     try {
       final now = DateTime.now();
@@ -340,11 +298,7 @@ class MentorRepo {
       final endOfWeek = startOfWeek.add(Duration(days: 6));
 
       final tasks = <Map<String, dynamic>>[];
-
-      // ========================================
-      // 1. Pending mentorship requests to review
-      // ========================================
-      final pendingRequestsResponse = await _supabase
+      final pendingRequestsResponse = await supabase
           .from('matches')
           .select('id, created_at, mentee_id')
           .eq('mentor_id', mentorId)
@@ -355,7 +309,7 @@ class MentorRepo {
         final menteeId = request['mentee_id'];
 
         try {
-          final userResponse = await _supabase
+          final userResponse = await supabase
               .from('profiles')
               .select('full_name')
               .eq('user_id', menteeId)
@@ -380,29 +334,23 @@ class MentorRepo {
           continue;
         }
       }
-
-      // ========================================
-      // 2. Goals with recent progress updates (need comments)
-      // ========================================
-      final matchesResponse = await _supabase
+      final matchesResponse = await supabase
           .from('matches')
           .select('mentee_id, id')
           .eq('mentor_id', mentorId)
           .eq('status', 'accepted');
 
-      final menteeToMatchMap = {
-        for (var m in matchesResponse)
-          m['mentee_id'] as String: m['id'] as String,
-      };
+      // final menteeToMatchMap = {
+      //   for (var m in matchesResponse)
+      //     m['mentee_id'] as String: m['id'] as String,
+      // };
       if (matchesResponse.isNotEmpty) {
         final menteeIds = matchesResponse
             .map((m) => m['mentee_id'] as String)
             .toList();
-
-        // Get goals updated in the last 3 days without mentor comments
         final threeDaysAgo = now.subtract(Duration(days: 3));
 
-        final goalsWithProgressResponse = await _supabase
+        final goalsWithProgressResponse = await supabase
             .from('goals')
             .select('*')
             .inFilter('mentee_id', menteeIds)
@@ -412,19 +360,15 @@ class MentorRepo {
         for (var goal in goalsWithProgressResponse) {
           final menteeId = goal['mentee_id'];
           final goalId = goal['id'];
-
-          // Check if mentor has commented on this goal
-          final commentsResponse = await _supabase
+          final commentsResponse = await supabase
               .from('goal_comments')
               .select('id')
               .eq('goal_id', goalId)
               .eq('user_id', mentorId)
               .limit(1);
-
-          // If no comments from mentor and progress > 0, add to tasks
           if (commentsResponse.isEmpty && goal['progress_percentage'] > 0) {
             try {
-              final userResponse = await _supabase
+              final userResponse = await supabase
                   .from('profiles')
                   .select('full_name')
                   .eq('user_id', menteeId)
@@ -439,7 +383,7 @@ class MentorRepo {
                 'title': 'Comment on "${goal['title']}"',
                 'deadline': updatedAt.add(
                   Duration(days: 2),
-                ), // Suggest commenting within 2 days
+                ), 
                 'status': 'active',
                 'priority': hoursAgo >= 48 ? 'high' : 'medium',
                 'mentee_name': userResponse['full_name'] ?? 'Unknown',
@@ -452,11 +396,6 @@ class MentorRepo {
             }
           }
         }
-
-        // ========================================
-        // 3. Goals with deadlines this week
-        // ========================================
-
         final startDateStr =
             '${startOfWeek.year}-${startOfWeek.month.toString().padLeft(2, '0')}-${startOfWeek.day.toString().padLeft(2, '0')}';
         final endDateStr =
@@ -466,7 +405,7 @@ class MentorRepo {
           'Searching for goals with deadline between $startDateStr and $endDateStr',
         );
 
-        final goalsResponse = await _supabase
+        final goalsResponse = await supabase
             .from('goals')
             .select('*')
             .inFilter('mentee_id', menteeIds)
@@ -480,7 +419,7 @@ class MentorRepo {
           final menteeId = goal['mentee_id'];
 
           try {
-            final userResponse = await _supabase
+            final userResponse = await supabase
                 .from('profiles')
                 .select('full_name')
                 .eq('user_id', menteeId)
@@ -502,26 +441,19 @@ class MentorRepo {
           }
         }
       }
-
-      // Sort tasks: pending requests first, then comments needed, then by deadline
       tasks.sort((a, b) {
-        // Pending requests first
         if (a['type'] == 'pending_request' && b['type'] != 'pending_request') {
           return -1;
         }
         if (b['type'] == 'pending_request' && a['type'] != 'pending_request') {
           return 1;
         }
-
-        // Comment needed second
         if (a['type'] == 'comment_needed' && b['type'] == 'goal_deadline') {
           return -1;
         }
         if (b['type'] == 'comment_needed' && a['type'] == 'goal_deadline') {
           return 1;
         }
-
-        // Then by deadline/priority
         return (a['deadline'] as DateTime).compareTo(b['deadline'] as DateTime);
       });
 
@@ -541,13 +473,9 @@ class MentorRepo {
     if (daysUntil <= 3) return 'medium';
     return 'low';
   }
-
-  // ============================================================================
-  // FETCH ACTIVE MENTEES
-  // ============================================================================
   Future<List<Map<String, dynamic>>> getActiveMentees(String mentorId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('matches')
           .select('id, created_at, mentee_id')
           .eq('mentor_id', mentorId)
@@ -560,7 +488,7 @@ class MentorRepo {
         final menteeId = match['mentee_id'];
 
         try {
-          final userResponse = await _supabase
+          final userResponse = await supabase
               .from('profiles')
               .select(
                 'user_id, username, full_name, profile_photo_url, bio, expertise',
@@ -587,12 +515,9 @@ class MentorRepo {
     }
   }
 
-  // ============================================================================
-  // FETCH MENTEE DETAILS
-  // ============================================================================
   Future<Map<String, dynamic>> getMenteeDetails(String menteeId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('profiles')
           .select(
             'user_id, username, full_name, profile_photo_url, bio, expertise, years_experience, created_at, learning_goals, area_of_interest, availability, linkedin_url',
@@ -606,24 +531,20 @@ class MentorRepo {
       rethrow;
     }
   }
-
-  // ============================================================================
-  // FETCH INCOMING REQUESTS
-  // ============================================================================
   Future<List<Map<String, dynamic>>> getIncomingRequestsWithDetails(
     String mentorId,
   ) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('matches')
           .select(
             'id, message, goals, status, created_at, mentee_id',
-          ) // message and goals exist
+          ) 
           .eq('mentor_id', mentorId)
           .eq('status', 'pending')
           .order('created_at', ascending: false);
 
-      log('🔍 Found ${response.length} pending requests');
+      log('Found ${response.length} pending requests');
 
       final requests = <Map<String, dynamic>>[];
 
@@ -631,10 +552,10 @@ class MentorRepo {
         final menteeId = request['mentee_id'];
 
         try {
-          final userResponse = await _supabase
+          final userResponse = await supabase
               .from('profiles')
               .select(
-                'user_id, username, full_name, profile_photo_url, bio, expertise',
+                'user_id, username, full_name, profile_photo_url, bio, expertise, area_of_interest',
               )
               .eq('user_id', menteeId)
               .single();
@@ -645,6 +566,7 @@ class MentorRepo {
             'goals': request['goals'] ?? [],
             'status': request['status'],
             'created_at': request['created_at'],
+            'area_of_interest': userResponse['area_of_interest'],
             'mentee': userResponse,
           });
         } catch (e) {
@@ -660,23 +582,17 @@ class MentorRepo {
       rethrow;
     }
   }
-
-  // ============================================================================
-  // ACCEPT/DECLINE REQUEST
-  // ============================================================================
   Future<void> acceptRequest(String matchId, {String? welcomeMessage}) async {
     try {
       final updateData = {
         'status': 'accepted',
         'responded_at': DateTime.now().toIso8601String(),
       };
-
-      // Add welcome message if provided
       if (welcomeMessage != null && welcomeMessage.isNotEmpty) {
         updateData['welcome_message'] = welcomeMessage;
       }
 
-      await _supabase.from('matches').update(updateData).eq('id', matchId);
+      await supabase.from('matches').update(updateData).eq('id', matchId);
 
       log('Request accepted: $matchId');
     } catch (e) {
@@ -687,7 +603,7 @@ class MentorRepo {
 
   Future<void> declineRequest(String matchId) async {
     try {
-      await _supabase
+      await supabase
           .from('matches')
           .update({
             'status': 'declined',
@@ -704,8 +620,7 @@ class MentorRepo {
 
   Future<Map<String, dynamic>> getMentorSettings(String mentorId) async {
     try {
-      // First, get the profile ID from user_id
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', mentorId)
@@ -713,17 +628,15 @@ class MentorRepo {
 
       final profileId = profileResponse['id'];
 
-      final response = await _supabase
+      final response = await supabase
           .from('mentor_settings')
           .select(
             'accepting_requests, max_active_mentees, auto_reply_enabled, auto_reply_message, notify_new_requests, notify_mentee_messages, notify_goal_completions',
           )
           .eq('mentor_id', profileId)
           .maybeSingle();
-
-      // If no settings exist yet, create default settings
       if (response == null) {
-        await _supabase.from('mentor_settings').insert({
+        await supabase.from('mentor_settings').insert({
           'mentor_id': profileId,
           'accepting_requests': true,
           'max_active_mentees': 5,
@@ -735,7 +648,6 @@ class MentorRepo {
           'notify_goal_completions': true,
         });
 
-        // Return default values
         return {
           'accepting_requests': true,
           'max_active_mentees': 5,
@@ -761,8 +673,7 @@ class MentorRepo {
     bool accepting,
   ) async {
     try {
-      // Get profile ID first
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', mentorId)
@@ -770,7 +681,7 @@ class MentorRepo {
 
       final profileId = profileResponse['id'];
 
-      await _supabase
+      await supabase
           .from('mentor_settings')
           .update({'accepting_requests': accepting})
           .eq('mentor_id', profileId);
@@ -784,8 +695,7 @@ class MentorRepo {
 
   Future<void> updateMaxActiveMentees(String mentorId, int maxMentees) async {
     try {
-      // Get profile ID first
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', mentorId)
@@ -793,7 +703,7 @@ class MentorRepo {
 
       final profileId = profileResponse['id'];
 
-      await _supabase
+      await supabase
           .from('mentor_settings')
           .update({'max_active_mentees': maxMentees})
           .eq('mentor_id', profileId);
@@ -807,8 +717,7 @@ class MentorRepo {
 
   Future<void> updateAutoReply(String mentorId, bool autoReply) async {
     try {
-      // Get profile ID first
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', mentorId)
@@ -816,7 +725,7 @@ class MentorRepo {
 
       final profileId = profileResponse['id'];
 
-      await _supabase
+      await supabase
           .from('mentor_settings')
           .update({'auto_reply_enabled': autoReply})
           .eq('mentor_id', profileId);
@@ -834,16 +743,13 @@ class MentorRepo {
     bool enabled,
   ) async {
     try {
-      // Get profile ID first
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', mentorId)
           .single();
 
       final profileId = profileResponse['id'];
-
-      // Map the notification type to the correct column name
       String columnName;
       switch (notificationType) {
         case 'new_requests':
@@ -859,7 +765,7 @@ class MentorRepo {
           columnName = 'notify_$notificationType';
       }
 
-      await _supabase
+      await supabase
           .from('mentor_settings')
           .update({columnName: enabled})
           .eq('mentor_id', profileId);
@@ -871,14 +777,9 @@ class MentorRepo {
     }
   }
 
-  // Add these methods to your MentorRepo class
-
-  // ============================================================================
-  // GET MENTOR NAME
-  // ============================================================================
   Future<String> getMentorName(String mentorId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('profiles')
           .select('full_name')
           .eq('user_id', mentorId)
@@ -890,38 +791,29 @@ class MentorRepo {
       return 'Your mentor';
     }
   }
-
-  // ============================================================================
-  // SAVE ACHIEVEMENT FOR USER (Mentee)
-  // ============================================================================
   Future<void> saveAchievementForMentee(
     String menteeId,
     String achievementType, {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _supabase.from('user_achievements').insert({
+      await supabase.from('user_achievements').insert({
         'user_id': menteeId,
         'achievement_type': achievementType,
         'metadata': metadata,
       });
 
-      log('✅ Achievement saved for mentee $menteeId: $achievementType');
+      log('Achievement saved for mentee $menteeId: $achievementType');
     } catch (e) {
-      log('❌ Error saving achievement: $e');
-      // Don't throw - achievements are non-critical
+      log('Error saving achievement: $e');
     }
   }
 
-  // ============================================================================
-  // CHECK PENDING MENTORSHIP ACHIEVEMENT FOR MENTEE
-  // ============================================================================
   Future<Map<String, dynamic>?> checkPendingMentorshipAchievement(
     String menteeId,
   ) async {
     try {
-      // Check if achievement already exists
-      final existingAchievement = await _supabase
+      final existingAchievement = await supabase
           .from('user_achievements')
           .select('id')
           .eq('user_id', menteeId)
@@ -929,11 +821,9 @@ class MentorRepo {
           .maybeSingle();
 
       if (existingAchievement != null) {
-        return null; // Already shown
+        return null; 
       }
-
-      // Check if they have an accepted mentorship
-      final match = await _supabase
+      final match = await supabase
           .from('matches')
           .select('mentor_id, welcome_message, responded_at')
           .eq('mentee_id', menteeId)
@@ -941,9 +831,7 @@ class MentorRepo {
           .maybeSingle();
 
       if (match == null) return null;
-
-      // Get mentor name
-      final mentorProfile = await _supabase
+      final mentorProfile = await supabase
           .from('profiles')
           .select('full_name')
           .eq('user_id', match['mentor_id'])
@@ -959,30 +847,21 @@ class MentorRepo {
       return null;
     }
   }
-
-  // ============================================================================
-  // GET MENTEE'S MENTOR DETAILS
-  // ============================================================================
   Future<Map<String, dynamic>?> getMenteeMentorDetails(String menteeId) async {
     try {
-      // First, get the active mentorship match
-      final matchResponse = await _supabase
+      final matchResponse = await supabase
           .from('matches')
           .select('id, mentor_id, requested_at, responded_at, welcome_message')
           .eq('mentee_id', menteeId)
           .eq('status', 'accepted')
           .maybeSingle();
-
-      // If no active mentor, return null
       if (matchResponse == null) {
         log('No active mentor found for mentee $menteeId');
         return null;
       }
 
       final mentorId = matchResponse['mentor_id'];
-
-      // Get mentor's profile details
-      final mentorProfileResponse = await _supabase
+      final mentorProfileResponse = await supabase
           .from('profiles')
           .select(
             'id, user_id, username, full_name, profile_photo_url, bio, expertise, years_experience, linkedin_url, availability, is_verified',
@@ -990,22 +869,19 @@ class MentorRepo {
           .eq('user_id', mentorId)
           .single();
 
-      // Get mentor's skills
-      final skillsResponse = await _supabase
+      final skillsResponse = await supabase
           .from('user_skills')
           .select('skill_name, proficiency_level')
           .eq('user_id', mentorId);
 
-      // Get the conversation ID for this mentorship
-      final conversationResponse = await _supabase
+      final conversationResponse = await supabase
           .from('conversations')
           .select('id')
           .eq('mentor_id', mentorId)
           .eq('mentee_id', menteeId)
           .maybeSingle();
 
-      // Get total goals count for this mentorship
-      final goalsResponse = await _supabase
+      final goalsResponse = await supabase
           .from('goals')
           .select('id, status')
           .eq('mentee_id', menteeId)
@@ -1016,7 +892,6 @@ class MentorRepo {
           .where((g) => g['status'] == 'completed')
           .length;
 
-      // Combine all data
       final mentorDetails = {
         'match_id': matchResponse['id'],
         'mentor_id': mentorId,
@@ -1046,14 +921,11 @@ class MentorRepo {
     }
   }
 
-  // ============================================================================
-  // GET ALL MENTORS FOR A MENTEE (including past/declined)
-  // ============================================================================
   Future<List<Map<String, dynamic>>> getAllMenteeMentorships(
     String menteeId,
   ) async {
     try {
-      final matchesResponse = await _supabase
+      final matchesResponse = await supabase
           .from('matches')
           .select(
             'id, mentor_id, status, requested_at, responded_at, ended_at, message, goals',
@@ -1067,7 +939,7 @@ class MentorRepo {
         final mentorId = match['mentor_id'];
 
         try {
-          final mentorResponse = await _supabase
+          final mentorResponse = await supabase
               .from('profiles')
               .select(
                 'user_id, username, full_name, profile_photo_url, bio, expertise, years_experience',
@@ -1099,12 +971,9 @@ class MentorRepo {
     }
   }
 
-  // ============================================================================
-  // CHECK IF MENTEE HAS ACTIVE MENTOR
-  // ============================================================================
   Future<bool> hasActiveMentor(String menteeId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('matches')
           .select('id')
           .eq('mentee_id', menteeId)
@@ -1118,23 +987,20 @@ class MentorRepo {
     }
   }
 
-  // ============================================================================
-  // END MENTORSHIP
-  // ============================================================================
   Future<void> endMentorship(String matchId, String reason) async {
     try {
-      await _supabase
+      await supabase
           .from('matches')
           .update({
             'status': 'ended',
             'ended_at': DateTime.now().toIso8601String(),
-            'end_reason': reason, // You might need to add this column
+            'end_reason': reason, 
           })
           .eq('id', matchId);
 
-      log('✅ Mentorship ended: $matchId');
+      log('Mentorship ended: $matchId');
     } catch (e) {
-      log('❌ Error ending mentorship: $e');
+      log('Error ending mentorship: $e');
       rethrow;
     }
   }

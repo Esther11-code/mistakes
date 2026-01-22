@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
+import 'package:mistakes/features/Goal/pages/widgets/add_goal_widget.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global widgets/export.dart';

@@ -32,9 +32,9 @@ class AuthRepo {
         'role': role,
         'success': true,
       };
-    } catch (e) {
-      log('Signup error: $e');
-      throw Exception('Signup failed: ${e.toString()}');
+    } on AuthApiException catch (e) {
+      log('SignUp error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -43,7 +43,7 @@ class AuthRepo {
     required String password,
   }) async {
     try {
-      log('Starting signin for: $email');
+      log('Signin for: $email');
 
       final authResponse = await supabase.auth.signInWithPassword(
         email: email,
@@ -64,8 +64,6 @@ class AuthRepo {
           .single();
 
       log('Profile fetched from database');
-
-      // ⭐ No more user_skills query! Just get from profiles
       final interests = profileResponse['area_of_interest'] != null
           ? List<String>.from(profileResponse['area_of_interest'])
           : <String>[];
@@ -82,12 +80,12 @@ class AuthRepo {
         'location': profileResponse['location'],
         'linkedin_url': profileResponse['linkedin_url'],
         'is_verified': profileResponse['is_verified'],
-        'interests': interests, // ⭐ From profiles, not user_skills
+        'interests': interests,
         'success': true,
       };
     } on AuthApiException catch (e) {
-      log('Signin error: $e');
-      throw AuthApiException('Login failed: ${e.toString()}');
+      log('Signin error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -98,10 +96,10 @@ class AuthRepo {
     String? profilePhotoUrl,
     String? location,
     String? linkedinUrl,
-    String? areaOfInterest, // for mentees
-    String? learningGoals, // for mentees
-    int? yearsExperience, // for mentors
-    String? availability, // for mentors
+    String? areaOfInterest,
+    String? learningGoals,
+    int? yearsExperience,
+    String? availability,
   }) async {
     try {
       log('Updating profile for user: $userId');
@@ -127,9 +125,9 @@ class AuthRepo {
       await supabase.from('profiles').update(updates).eq('user_id', userId);
 
       log('Profile updated successfully');
-    } catch (e) {
-      log('Update profile error: $e');
-      throw Exception('Failed to update profile: ${e.toString()}');
+    } on AuthApiException catch (e) {
+      log('Update profile error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -141,21 +139,19 @@ class AuthRepo {
         throw Exception('User not authenticated');
       }
 
-      log('🔵 Saving ${selectedInterests.length} interests for user: $userId');
-
-      // ⭐ Just update the profiles table - no user_skills!
+      log('Saving ${selectedInterests.length} interests for user: $userId');
       await supabase
           .from('profiles')
           .update({
-            'area_of_interest': selectedInterests, // Save as array
+            'area_of_interest': selectedInterests,
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('user_id', userId);
 
       log('Interests saved successfully');
-    } catch (e) {
-      log(' Save interests error: $e');
-      rethrow;
+    } on AuthApiException catch (e) {
+      log('Save interests error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -201,9 +197,9 @@ class AuthRepo {
         'area_of_interest': profileResponse['area_of_interest'],
         'interests': interests,
       };
-    } catch (e) {
-      log('Get current user error: $e');
-      return null;
+    } on AuthApiException catch (e) {
+      log('Get current user error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -212,15 +208,15 @@ class AuthRepo {
       log('Signing out user');
       await supabase.auth.signOut();
       log('User signed out');
-    } catch (e) {
-      log('Signout error: $e');
-      throw Exception('Logout failed: ${e.toString()}');
+    } on AuthApiException catch (e) {
+      log('User sign out error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
   Future<void> resetPassword({required String email}) async {
     try {
-      log('🔵 Sending password reset email to: $email');
+      log('password reset email to: $email');
 
       await supabase.auth.resetPasswordForEmail(
         email,
@@ -228,10 +224,10 @@ class AuthRepo {
       );
 
       log('Password reset email sent successfully');
-      log('📧 Check email for reset link');
-    } catch (e) {
-      log(' Password reset error: $e');
-      throw Exception('Failed to send reset email: ${e.toString()}');
+      log('Check email for reset link');
+    } on AuthApiException catch (e) {
+      log('Password reset error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -240,9 +236,9 @@ class AuthRepo {
       log('Updating password');
       await supabase.auth.updateUser(UserAttributes(password: newPassword));
       log('Password updated successfully');
-    } catch (e) {
-      log('Update password error: $e');
-      throw Exception('Failed to update password: ${e.toString()}');
+    } on AuthApiException catch (e) {
+      log('Update password error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
@@ -251,53 +247,40 @@ class AuthRepo {
     required File imageFile,
   }) async {
     try {
-      log('🔵 Uploading profile photo for user: $userId');
-
-      // Generate unique filename
+      log('Uploading profile photo for user: $userId');
       final fileExt = imageFile.path.split('.').last;
       final fileName =
           '${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = 'profile-photos/$fileName';
-
-      // Upload to Supabase Storage
       await supabase.storage
           .from('profile-photos')
           .upload(
             filePath,
             imageFile,
-            fileOptions: const FileOptions(
-              cacheControl: '3600',
-              upsert: true, // Overwrite if exists
-            ),
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
           );
-
-      // Get public URL
       final publicUrl = supabase.storage
           .from('profile-photos')
           .getPublicUrl(filePath);
 
       log('Photo uploaded: $publicUrl');
       return publicUrl;
-    } catch (e) {
-      log(' Upload error: $e');
-      throw Exception('Failed to upload photo: ${e.toString()}');
+    } on AuthApiException catch (e) {
+      log('Update profile photo error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 
-  /// Delete old profile photo from storage
   Future<void> deleteProfilePhoto(String photoUrl) async {
     try {
-      // Extract file path from URL
       final uri = Uri.parse(photoUrl);
-      final path = uri.pathSegments
-          .skip(4)
-          .join('/'); // Skip /storage/v1/object/public/profile-photos/
+      final path = uri.pathSegments.skip(4).join('/');
 
       await supabase.storage.from('profile-photos').remove([path]);
       log('Old photo deleted: $path');
-    } catch (e) {
-      log(' Delete error (non-critical): $e');
-      // Don't throw - deleting old photo is not critical
+    } on AuthApiException catch (e) {
+      log('Delete profile photo error: ${e.message}');
+      throw AuthApiException(e.message);
     }
   }
 }

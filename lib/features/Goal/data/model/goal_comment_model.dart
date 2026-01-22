@@ -3,7 +3,7 @@ class GoalCommentModel {
   final String goalId;
   final String userId;
   final String commentText;
-  final int? rating; // 1-5 stars
+  final int? rating; 
   final DateTime createdAt;
   final String? userName;
   final String? userAvatar;

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
-import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Home/presentation/widgets/home.dart';
+import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class MentorAccount extends StatelessWidget {
@@ -15,6 +17,7 @@ class MentorAccount extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final watchAuthCubit = context.watch<AuthenticationCubit>();
+    final watchReviewCubit = context.watch<ReviewCubit>();
     return AppScaffold(
       body: Column(
         children: [
@@ -131,12 +134,22 @@ class MentorAccount extends StatelessWidget {
                               Column(
                                 children: [
                                   InAppText(
-                                    text: "95%",
+                                    text:
+                                        "${watchReviewCubit.ratingStats['average_rating'] ?? 0.0}",
+
                                     color: AppColors.blue,
                                     size: 18,
                                     fontweight: FontWeight.w600,
                                   ),
-                                  InAppText(text: "Success", size: 16),
+                                  InAppText(
+                                    text:
+                                        watchReviewCubit
+                                                .ratingStats['average_rating'] <=
+                                            1
+                                        ? "Rating"
+                                        : "Ratings",
+                                    size: 16,
+                                  ),
                                 ],
                               ),
                             ],
@@ -321,34 +334,52 @@ class MentorAccount extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: EdgeInsets.all(
-                                        size.width * 0.03,
+                                GestureDetector(
+                                  onTap: () {
+                                    Fluttertoast.showToast(
+                                      msg: "Coming soon",
+                                      backgroundColor: AppColors.blue,
+                                    );
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(
+                                          size.width * 0.03,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.orange.withAlpha(10),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.lock_outline,
+                                          color: AppColors.orange,
+                                          size: 25.sp,
+                                        ),
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.orange.withAlpha(10),
-                                        borderRadius: BorderRadius.circular(10),
+                                      SizedBox(width: size.width * 0.03),
+                                      InAppText(
+                                        text: "Privacy Settings",
+                                        fontweight: FontWeight.w500,
+                                        color: AppColors.blue,
                                       ),
-                                      child: Icon(
-                                        Icons.lock_outline,
-                                        color: AppColors.orange,
-                                        size: 25.sp,
-                                      ),
-                                    ),
-                                    SizedBox(width: size.width * 0.03),
-                                    InAppText(
-                                      text: "Privacy Settings",
-                                      fontweight: FontWeight.w500,
-                                      color: AppColors.blue,
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                                Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 20.sp,
-                                  color: AppColors.grey,
+                                GestureDetector(
+                                  onTap: () {
+                                    Fluttertoast.showToast(
+                                      msg: "Coming soon",
+                                      backgroundColor: AppColors.blue,
+                                    );
+                                  },
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    size: 20.sp,
+                                    color: AppColors.grey,
+                                  ),
                                 ),
                               ],
                             ),

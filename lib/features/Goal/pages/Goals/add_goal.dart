@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
+import 'package:mistakes/features/Goal/pages/widgets/add_goal_widget.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
@@ -259,7 +261,6 @@ class _AddGoalState extends State<AddGoal> {
                               ),
                               SizedBox(width: size.width * 0.03),
                               InAppText(
-                                // FIX: Show selected date or placeholder
                                 text: watchGoalCubit.selectedDeadline != null
                                     ? "${watchGoalCubit.selectedDeadline!.day}/${watchGoalCubit.selectedDeadline!.month}/${watchGoalCubit.selectedDeadline!.year}"
                                     : "Select a date",
@@ -309,21 +310,10 @@ class _AddGoalState extends State<AddGoal> {
                   BlocListener<GoalCubit, GoalState>(
                     listener: (context, state) {
                       if (state is GoalCreatedState) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Goal created successfully!'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
+                        Fluttertoast.showToast(msg: 'Goal created successfully!');
+                       
                         Navigator.pop(context);
-                      } else if (state is GoalErrorState) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.error),
-                            backgroundColor: AppColors.errorColor,
-                          ),
-                        );
-                      }
+                      } 
                     },
                     child: Visibility(
                       visible: context
@@ -407,91 +397,3 @@ class _AddGoalState extends State<AddGoal> {
   }
 }
 
-class CategoryChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Size size;
-
-  const CategoryChip({
-    super.key,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.size,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: size.width * 0.04,
-          vertical: size.height * 0.02,
-        ),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [AppColors.background, AppColors.filledColor],
-                )
-              : null,
-          color: isSelected ? null : AppColors.grey.withAlpha(20),
-          borderRadius: BorderRadius.circular(size.width * 0.06),
-
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.grey.withAlpha(50),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: InAppText(
-          text: label,
-          size: 20,
-          fontweight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          color: isSelected ? AppColors.white : AppColors.grey,
-        ),
-      ),
-    );
-  }
-}
-
-class InfoBar extends StatelessWidget {
-  const InfoBar({super.key, required this.size, this.text, this.icon});
-
-  final Size size;
-  final String? text;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppshadowContainer(
-      color: AppColors.background,
-      margin: EdgeInsets.only(bottom: size.height * 0.02),
-      child: AppshadowContainer(
-        padding: EdgeInsets.all(size.width * 0.02),
-        color: AppColors.inactive,
-        margin: EdgeInsets.only(left: size.width * 0.025),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.filledColor, size: 23.sp),
-            SizedBox(width: size.width * 0.015),
-            SizedBox(
-              width: size.width * 0.775,
-              child: InAppText(
-                text:
-                    text ??
-                    "Set SMART goals: Specific, Measurable, Achievable, Relevant, Time-bound",
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

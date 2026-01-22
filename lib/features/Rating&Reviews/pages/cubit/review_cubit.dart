@@ -28,7 +28,6 @@ class ReviewCubit extends Cubit<ReviewState> {
 
   void submitFeedback() {
     emit(ReviewFeedbackLoading());
-    // Simulate feedback submission process
     Future.delayed(const Duration(seconds: 2), () {
       log('Feedback submitted: ${feedbackController.text}');
       feedbackController.clear();
@@ -44,24 +43,18 @@ class ReviewCubit extends Cubit<ReviewState> {
     emit(ReviewLoadedState());
   }
 
-  // Goal comment data
   String? currentGoalId;
   String? currentUserId;
-
-  // Mentor review data
   String? currentMentorId;
   String? currentMenteeId;
   String? currentMatchId;
   MentorReviewModel? existingReview;
 
-  // Reviews list
+
   List<MentorReviewModel> mentorReviews = [];
   Map<String, dynamic> ratingStats = {};
 
-  // ============================================================================
-  // GOAL COMMENTS (Mentor → Mentee Goal Feedback)
-  // ============================================================================
-
+  
   Future<void> submitGoalFeedback({
     required String goalId,
     required String userId,
@@ -88,19 +81,15 @@ class ReviewCubit extends Cubit<ReviewState> {
       feedbackController.clear();
       selectedStarIndex = 0;
 
-      log('✅ Goal feedback submitted');
+      log('Goal feedback submitted');
       emit(ReviewFeedbackAddedState());
     } catch (e) {
-      log('❌ Error submitting goal feedback: $e');
-      emit(ReviewErrorState(e.toString()));
+      log('Error submitting goal feedback: $e');
+      emit(ReviewErrorState("Error submitting goal feedback"));
     }
   }
 
-  // ============================================================================
-  // MENTOR REVIEWS (Mentee → Mentor)
-  // ============================================================================
 
-  // Check if review already exists
   Future<void> checkExistingReview({
     required String mentorId,
     required String menteeId,
@@ -113,20 +102,17 @@ class ReviewCubit extends Cubit<ReviewState> {
       );
       currentMentorId = mentorId;
       if (existingReview != null) {
-        // Pre-fill form with existing review
         reviewController.text = existingReview!.reviewText;
         selectedStarIndex = existingReview!.rating;
-        log('📝 Found existing review');
+        log('Found existing review');
       }
 
       emit(ReviewLoadedState());
     } catch (e) {
-      log('❌ Error checking existing review: $e');
+      log('Error checking existing review: $e');
       emit(ReviewLoadedState());
     }
   }
-
-  // Submit or update mentor review
   Future<void> submitMentorReview({
     required String mentorId,
     required String menteeId,
@@ -147,15 +133,13 @@ class ReviewCubit extends Cubit<ReviewState> {
       }
 
       if (existingReview != null) {
-        // Update existing review
         await feedbackRepo.updateMentorReview(
           reviewId: existingReview!.id,
           rating: selectedStarIndex,
           reviewText: reviewController.text.trim(),
         );
-        log('✅ Mentor review updated');
+        log('Mentor review updated');
       } else {
-        // Submit new review
         await feedbackRepo.submitMentorReview(
           mentorId: mentorId,
           menteeId: menteeId,
@@ -163,7 +147,7 @@ class ReviewCubit extends Cubit<ReviewState> {
           rating: selectedStarIndex,
           reviewText: reviewController.text.trim(),
         );
-        log('✅ Mentor review submitted');
+        log('Mentor review submitted');
       }
 
       reviewController.clear();
@@ -172,26 +156,23 @@ class ReviewCubit extends Cubit<ReviewState> {
 
       emit(ReviewFeedbackSubmittedState());
     } catch (e) {
-      log('❌ Error submitting mentor review: $e');
+      log('Error submitting mentor review: $e');
       emit(ReviewErrorState(e.toString()));
     }
   }
-
-  // Load all reviews for a mentor
   Future<void> loadMentorReviews(String mentorId) async {
     emit(ReviewLoading());
     try {
       mentorReviews = await feedbackRepo.getMentorReviews(mentorId);
       ratingStats = await feedbackRepo.getMentorRatingStats(mentorId);
       currentMentorId = mentorId;
-      log('✅ Loaded ${mentorReviews.length} reviews');
-      log('📊 Average rating: ${ratingStats['average_rating']}');
+      log('Loaded ${mentorReviews.length} reviews');
+      log('Average rating: ${ratingStats['average_rating']}');
 
       emit(ReviewLoadedState());
     } catch (e) {
-      log('❌ Error loading mentor reviews: $e');
+      log('Error loading mentor reviews: $e');
       emit(ReviewErrorState(e.toString()));
-      emit(ReviewLoadedState());
     }
   }
 
@@ -220,18 +201,14 @@ class ReviewCubit extends Cubit<ReviewState> {
     Icons.folder_outlined,
     Icons.description_outlined,
   ];
-
-  // Form controllers
   TextEditingController resourceTitleController = TextEditingController();
   TextEditingController resourceUrlController = TextEditingController();
   TextEditingController resourceDescriptionController = TextEditingController();
 
-  // Mentee selection
   List<Map<String, dynamic>> availableMentees = [];
   List<String> selectedMenteeIds = [];
   bool shareWithAll = false;
 
-  // Change selected resource type
   void selectResourceType(int index) {
     emit(ReviewLoading());
     selectedResourceTypeIndex = index;
@@ -239,7 +216,6 @@ class ReviewCubit extends Cubit<ReviewState> {
     emit(ReviewLoadedState());
   }
 
-  // Toggle mentee selection
   void toggleMenteeSelection(String menteeId) {
     emit(ReviewLoading());
     if (selectedMenteeIds.contains(menteeId)) {
@@ -247,7 +223,7 @@ class ReviewCubit extends Cubit<ReviewState> {
     } else {
       selectedMenteeIds.add(menteeId);
     }
-    // If selecting individual mentees, disable "share with all"
+   
     if (selectedMenteeIds.isNotEmpty) {
       shareWithAll = false;
     }
@@ -255,11 +231,9 @@ class ReviewCubit extends Cubit<ReviewState> {
     emit(ReviewLoadedState());
   }
 
-  // Toggle share with all mentees
   void toggleShareWithAll() {
     emit(ReviewLoading());
     shareWithAll = !shareWithAll;
-    // If sharing with all, clear individual selections
     if (shareWithAll) {
       selectedMenteeIds.clear();
     }
@@ -267,34 +241,29 @@ class ReviewCubit extends Cubit<ReviewState> {
     emit(ReviewLoadedState());
   }
 
-  // Load available mentees for sharing
   Future<void> loadAvailableMentees(String mentorId) async {
     emit(ReviewLoading());
     try {
       availableMentees = await feedbackRepo.getMentorActiveMentees(mentorId);
-      log('✅ Loaded ${availableMentees.length} mentees for sharing');
+      log('Loaded ${availableMentees.length} mentees for sharing');
       emit(ReviewLoadedState());
     } catch (e) {
-      log('❌ Error loading mentees: $e');
-      emit(ReviewErrorState(e.toString()));
-      emit(ReviewLoadedState());
+      log('Error loading mentees: $e');
+      emit(ReviewErrorState("Error loading mentees"));
     }
   }
 
-  // Share resource
+
   Future<void> shareResource(String mentorId) async {
     emit(ReviewFeedbackLoading());
     try {
-      // Validation
       if (resourceTitleController.text.trim().isEmpty) {
         emit(ReviewErrorState('Please enter a resource title'));
-        emit(ReviewLoadedState());
         return;
       }
 
       if (resourceUrlController.text.trim().isEmpty) {
         emit(ReviewErrorState('Please enter a resource URL'));
-        emit(ReviewLoadedState());
         return;
       }
 
@@ -302,7 +271,6 @@ class ReviewCubit extends Cubit<ReviewState> {
         emit(
           ReviewErrorState('Please select mentees or choose "Share with All"'),
         );
-        emit(ReviewLoadedState());
         return;
       }
 
@@ -316,19 +284,16 @@ class ReviewCubit extends Cubit<ReviewState> {
         menteeIds: shareWithAll ? [] : selectedMenteeIds,
       );
 
-      // Clear form
       clearResourceForm();
 
-      log('✅ Resource shared successfully');
+      log('Resource shared successfully');
       emit(ReviewFeedbackLoadedState());
     } catch (e) {
-      log('❌ Error sharing resource: $e');
-      emit(ReviewErrorState(e.toString()));
-      emit(ReviewLoadedState());
+      log('Error sharing resource: $e');
+      emit(ReviewErrorState("Error sharing resource"));
     }
   }
 
-  // Clear resource form
   void clearResourceForm() {
     resourceTitleController.clear();
     resourceUrlController.clear();
@@ -339,23 +304,20 @@ class ReviewCubit extends Cubit<ReviewState> {
     emit(ReviewLoadedState());
   }
 
-  // For mentees - load shared resources
   List<Map<String, dynamic>> sharedResources = [];
 
   Future<void> loadSharedResources(String menteeId) async {
     emit(ReviewLoading());
     try {
       sharedResources = await feedbackRepo.getSharedResources(menteeId);
-      log('✅ Loaded ${sharedResources.length} shared resources');
+      log('Loaded ${sharedResources.length} shared resources');
       emit(ReviewLoadedState());
     } catch (e) {
-      log('❌ Error loading shared resources: $e');
-      emit(ReviewErrorState(e.toString()));
-      emit(ReviewLoadedState());
+      log('Error loading shared resources: $e');
+      emit(ReviewErrorState("Failed to load shared resources"));
     }
   }
 
-  // Mark resource as read
   Future<void> markResourceAsRead({
     required String resourceId,
     required String menteeId,
@@ -365,9 +327,9 @@ class ReviewCubit extends Cubit<ReviewState> {
         resourceId: resourceId,
         menteeId: menteeId,
       );
-      log('✅ Resource marked as read');
+      log('Resource marked as read');
     } catch (e) {
-      log('❌ Error marking resource as read: $e');
+      log('Error marking resource as read: $e');
     }
   }
 

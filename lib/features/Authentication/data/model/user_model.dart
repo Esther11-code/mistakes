@@ -57,7 +57,6 @@ class UserModel {
       interests: json['interests'] != null
           ? List<String>.from(json['interests'])
           : [],
-      // areaOfInterest: json['area_of_interest'],
       learningGoals: json['learning_goals'],
       yearsExperience: json['years_experience'],
       availability: json['availability'],
@@ -78,7 +77,6 @@ class UserModel {
       'linkedin_url': linkedinUrl,
       'is_verified': isVerified,
       'interests': interests,
-      // 'area_of_interest': areaOfInterest,
       'learning_goals': learningGoals,
       'years_experience': yearsExperience,
       'availability': availability,

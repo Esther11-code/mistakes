@@ -153,8 +153,6 @@ class _AchievementHistoryState extends State<AchievementHistory> {
                           ),
 
                           SizedBox(height: size.height * 0.04),
-
-                          // Header
                           Row(
                             children: [
                               Container(
@@ -194,7 +192,6 @@ class _AchievementHistoryState extends State<AchievementHistory> {
                               );
                             }).toList(),
                           ),
-
                           SizedBox(height: size.height * 0.03),
                         ],
                       ),

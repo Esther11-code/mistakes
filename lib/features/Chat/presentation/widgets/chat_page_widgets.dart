@@ -1,4 +1,4 @@
-// lib/features/Chat/presentation/pages/mentee_chat_page.dart
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -7,121 +7,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mistakes/config/page%20route/page_route.dart';
-import 'dart:io';
-
-import 'package:mistakes/constants/utils/app_colors.dart';
+import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Chat/data/models/message_model.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
+import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
-class MenteChatPage extends StatefulWidget {
-  const MenteChatPage({super.key});
-
-  @override
-  State<MenteChatPage> createState() => _MenteChatPageState();
-}
-
-class _MenteChatPageState extends State<MenteChatPage>
-    with WidgetsBindingObserver {
-  late final ChatCubit _chatCubit;
-  late final UserModel _user;
-
-  @override
-  void initState() {
-    super.initState();
-    _chatCubit = context.read<ChatCubit>();
-    _user = context.read<AuthenticationCubit>().user;
-
-    WidgetsBinding.instance.addObserver(this);
-    _chatCubit.loadConversations(user: _user);
-    _chatCubit.updateOnlineStatus(true, user: _user);
-    _chatCubit.loadMessages(user: _user);
-  }
-
-  @override
-  void dispose() {
-    // ✅ Use saved reference instead of context
-    _chatCubit.updateOnlineStatus(false, user: _user);
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    switch (state) {
-      case AppLifecycleState.resumed:
-        _chatCubit.updateOnlineStatus(true, user: _user);
-        break;
-      case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.detached:
-        _chatCubit.updateOnlineStatus(false, user: _user);
-        break;
-      case AppLifecycleState.hidden:
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final readChatCubit = context.read<ChatCubit>();
-    final watchChatCubit = context.watch<ChatCubit>();
-
-    return BlocListener<ChatCubit, ChatState>(
-      listener: (context, state) {
-        if (state is ChatErrorState) {
-          Fluttertoast.showToast(
-            msg: state.error,
-            gravity: ToastGravity.TOP,
-            backgroundColor: AppColors.errorColor,
-          );
-        }
-      },
-      child: BlocBuilder<ChatCubit, ChatState>(
-        builder: (context, state) {
-          return AppScaffold(
-            isloading:
-                state is ChatLoadingState &&
-                watchChatCubit.currentChatMessages.isEmpty,
-            body: Column(
-              children: [
-                ChatAppBar(
-                  userName: watchChatCubit.selectedUserName,
-                  userAvatar: watchChatCubit.selectedUserAvatar,
-                  isOnline: watchChatCubit.selectedUserIsOnline,
-                  userRole: watchChatCubit.selectedUserRole, // NEW
-                  size: size,
-                ),
-
-                Expanded(
-                  child: watchChatCubit.currentChatMessages.isEmpty
-                      ? ChatEmptyState(size: size)
-                      : MessagesList(
-                          size: size,
-                          messages: watchChatCubit.currentChatMessages,
-                          scrollController: watchChatCubit.scrollController,
-                          currentUserId:
-                              context.watch<AuthenticationCubit>().user.id ??
-                              "",
-                        ),
-                ),
-
-                ChatMessageInput(size: size),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+import '../../../../constants/utils/app_colors.dart';
+import '../../data/models/message_model.dart';
 
 class ChatAppBar extends StatelessWidget {
   final String userName;
@@ -257,12 +153,15 @@ class ChatUserAvatar extends StatelessWidget {
             bottom: 0,
             right: 0,
             child: Container(
-              width: 12,
-              height: 12,
+              width: size.width * 0.03,
+              height: size.width * 0.03,
               decoration: BoxDecoration(
                 color: Colors.green,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.white, width: 2),
+                border: Border.all(
+                  color: AppColors.white,
+                  width: size.width * 0.002,
+                ),
               ),
             ),
           ),
@@ -333,8 +232,6 @@ class MessagesList extends StatelessWidget {
           message,
           user: context.read<AuthenticationCubit>().user,
         );
-
-        // Show avatar only for the last message in a group
         final showAvatar =
             index == messages.length - 1 ||
             (index < messages.length - 1 &&
@@ -349,7 +246,7 @@ class MessagesList extends StatelessWidget {
           isMyMessage: isMyMessage,
           showAvatar: showAvatar,
           size: size,
-          time: readChatCubit.formatTime(message.createdAt), // UPDATED
+          time: readChatCubit.formatTime(message.createdAt),
         );
       },
     );
@@ -386,8 +283,8 @@ class MessageBubble extends StatelessWidget {
             MessageAvatar(
               size: size,
               color: AppColors.filledColor,
-              avatarUrl: message.senderPhoto, // UPDATED
-              initials: _getInitials(message.senderName), // UPDATED
+              avatarUrl: message.senderPhoto,
+              initials: _getInitials(message.senderName),
             ),
           if (!isMyMessage && showAvatar) SizedBox(width: size.width * 0.02),
           if (!isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
@@ -399,8 +296,8 @@ class MessageBubble extends StatelessWidget {
             MessageAvatar(
               size: size,
               color: AppColors.blue,
-              avatarUrl: message.senderPhoto, // UPDATED
-              initials: _getInitials(message.senderName), // UPDATED
+              avatarUrl: message.senderPhoto,
+              initials: _getInitials(message.senderName),
             ),
           if (isMyMessage && !showAvatar) SizedBox(width: size.width * 0.1),
         ],
@@ -409,7 +306,6 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent(BuildContext context) {
-    // Handle different message types
     switch (message.messageType) {
       case MessageType.image:
         return _buildImageMessage(context);
@@ -446,11 +342,7 @@ class MessageBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InAppText(
-            text: message.content, // UPDATED from message.message
-            color: AppColors.white,
-            size: 16,
-          ),
+          InAppText(text: message.content, color: AppColors.white, size: 16),
           SizedBox(height: size.height * 0.005),
           _buildMessageFooter(),
         ],
@@ -671,7 +563,10 @@ class ChatMessageInput extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.filledColor, width: 1),
+                  border: Border.all(
+                    color: AppColors.filledColor,
+                    width: size.width * 0.002,
+                  ),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: Row(
@@ -681,7 +576,7 @@ class ChatMessageInput extends StatelessWidget {
                         controller: watchChatCubit.messageController,
                         focusNode: watchChatCubit.focusNode,
                         decoration: InputDecoration(
-                          hintText: 'Type a message...',
+                          hintText: 'Enter a message',
                           hintStyle: GoogleFonts.ptSans(
                             color: AppColors.filledColor,
                             fontSize: 15.sp,
@@ -705,7 +600,7 @@ class ChatMessageInput extends StatelessWidget {
                         color: AppColors.filledColor,
                       ),
                       onPressed: () {
-                        // TODO: Add emoji picker
+                        // TODO: emoji picker
                       },
                       padding: EdgeInsets.zero,
                       constraints: BoxConstraints(),
@@ -714,9 +609,7 @@ class ChatMessageInput extends StatelessWidget {
                 ),
               ),
             ),
-
             SizedBox(width: size.width * 0.03),
-
             SendMessageButton(
               size: size,
               onPressed: () => readChatCubit.sendMessage(
@@ -750,7 +643,7 @@ class AttachmentButton extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: IconButton(
-        icon: Icon(Icons.add, color: AppColors.white, size: 22),
+        icon: Icon(Icons.add, color: AppColors.white, size: 22.sp),
         onPressed: onPressed,
         padding: EdgeInsets.zero,
       ),
@@ -985,22 +878,38 @@ void showChatOptionsMenu(BuildContext context, Size size) {
           ListTile(
             leading: Icon(Icons.person, color: AppColors.blue, size: 28.sp),
             title: InAppText(text: 'View Profile', size: 20),
-            onTap: () {
-              Navigator.pop(context);
-              context.read<AuthenticationCubit>().user.isMentee
-                  ? null 
-                  // TODO: Handle null case appropriately
-                  : context.read<MentorCubit>().loadMenteeDetails(
+            onTap: context.read<AuthenticationCubit>().user.isMentee
+                ? () {
+                    final readHomeCubit = context.read<HomeCubit>();
+                    final mentor = readHomeCubit.allUsers.firstWhere(
+                      (user) => user.id == readChatCubit.selectedUserId,
+                      orElse: () => UserModel(),
+                    );
+                    Navigator.pop(context);
+                    context.read<MentorCubit>().loadMenteeMentor(
+                      context.read<AuthenticationCubit>().user.id ?? "",
+                    );
+                    final move = Navigator.pushNamed(
+                      context,
+                      Routename.mentorDetails,
+                    );
+                    context.read<ProfileCubit>().setSelectedMentor(mentor);
+                    Future.delayed(Duration(seconds: 5), () {
+                      move;
+                    });
+                  }
+                : () {
+                    Navigator.pop(context);
+                    context.read<MentorCubit>().loadMenteeDetails(
                       readChatCubit.selectedUserId,
                     );
-              Navigator.pushNamed(context, Routename.menteeDetails);
-            },
+                    Navigator.pushNamed(context, Routename.menteeDetails);
+                  },
           ),
           ListTile(
             leading: Icon(
               Icons.notifications_off,
               color: AppColors.blue,
-
               size: 28.sp,
             ),
             title: InAppText(text: 'Mute Notifications', size: 20),

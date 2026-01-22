@@ -20,7 +20,7 @@ class _SplashscreenState extends State<Splashscreen>
   late final Animation<Offset> _globeSlide;
   late final Animation<Offset> _textSlide;
   late final Animation<double> _textFade;
-  late final Animation<double> _switchToRow; // controls when to switch layouts
+  late final Animation<double> _switchToRow; 
 
   @override
   void initState() {
@@ -31,7 +31,6 @@ class _SplashscreenState extends State<Splashscreen>
       duration: const Duration(milliseconds: 3200),
     );
 
-    // Globe bounce + shrink
     _globeScale = TweenSequence<double>([
       TweenSequenceItem(
         tween: Tween(
@@ -70,7 +69,6 @@ class _SplashscreenState extends State<Splashscreen>
       ),
     ]).animate(CurvedAnimation(parent: _c, curve: const Interval(0.0, 0.80)));
 
-    // Globe slides right in stage 2
     _globeSlide =
         Tween<Offset>(
           begin: const Offset(0.9, 0.0),
@@ -82,7 +80,6 @@ class _SplashscreenState extends State<Splashscreen>
           ),
         );
 
-    // Text slides in from left
     _textSlide =
         Tween<Offset>(
           begin: const Offset(-0.9, 0.0),
@@ -97,24 +94,18 @@ class _SplashscreenState extends State<Splashscreen>
     // Text fade in
     _textFade = CurvedAnimation(parent: _c, curve: const Interval(0.60, 0.95));
 
-    // Control when we switch to the row layout
     _switchToRow = CurvedAnimation(
       parent: _c,
       curve: const Interval(0.55, 0.60),
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Capture the context synchronously and start precache operations.
-      // Avoid awaiting while using `context` to satisfy
-      // the `use_build_context_synchronously` lint.
       final ctx = context;
       final futures = <Future<void>>[
         precacheImage(const AssetImage(OnboardingImages.globe), ctx),
         precacheImage(const AssetImage(OnboardingImages.applogo), ctx),
       ];
 
-      // When all precache futures complete, ensure the widget is still
-      // mounted before starting the animation.
       Future.wait(futures).then((_) {
         if (!mounted) return;
         _c.forward();
@@ -135,43 +126,18 @@ class _SplashscreenState extends State<Splashscreen>
   }
 
   @override
-  /// Builds the splash screen widget.
-  ///
-  /// This widget uses an `AnimatedBuilder` to perform a series of animations:
-  /// Stage 1: The globe in the center of the screen scales up and down.
-  /// Stage 2: The globe slides to the right and the app logo slides in from the left,
-  /// both in a row layout. The globe is scaled down to fit in the row.
-  ///
-  /// The animation is controlled by an `AnimationController` which is started
-  /// when the widget is first built. The animation is stopped when the widget
-  /// is disposed.
+ 
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-
-      // child: Container(
-      //   decoration: BoxDecoration(
-      //     gradient: LinearGradient(
-      //       colors: [
-      //         AppColors.background,
-      //         AppColors.blue,
-      //         AppColors.active,
-      //         Color(0xFF003366), // Deep Blue
-      //         // Color(0xFF00B8B0), // Teal accent
-      //       ],
-      //       begin: Alignment.topLeft,
-      //       end: Alignment.bottomRight,
-      //     ),
-      //   ),
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: Center(
           child: AnimatedBuilder(
             animation: _c,
             builder: (context, _) {
-              // Stage 1 → globe in center
               final globeCenter = Transform.scale(
                 scale: _globeScale.value,
                 child: Image.asset(
@@ -181,8 +147,6 @@ class _SplashscreenState extends State<Splashscreen>
                   filterQuality: FilterQuality.high,
                 ),
               );
-
-              // Stage 2 → final row layout
               final globeRow = SlideTransition(
                 position: _globeSlide,
                 child: Transform.scale(
@@ -207,8 +171,6 @@ class _SplashscreenState extends State<Splashscreen>
                   ),
                 ),
               );
-
-              // Stack them: start with centered globe, fade into row
               return Stack(
                 alignment: Alignment.center,
                 children: [

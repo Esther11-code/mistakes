@@ -205,7 +205,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
 
       user = UserModel.fromJson(response);
 
-      log('Signup successful - User ID: ${user.id} - User: ${user.name}');
+      log('Signup successful User ID: ${user.id} - User: ${user.name}');
       clear();
       emit(AuthSignUpSuccessState());
     } catch (e) {
@@ -237,7 +237,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       clear();
       emit(AuthSignInSuccessState());
     } on AuthApiException catch (e) {
-      log('Login error: $e');
+      log('Login error: ${e.message}');
       emit(AuthErrorState(error: e.message));
     }
   }
@@ -293,14 +293,14 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
         log('Photo uploaded: $profilePhotoUrl');
       }
 
-      //Update profile 
+      //Update profile
       await authRepo.updateProfile(
         userId: user.id!,
         bio: bioController.text.trim(),
         expertise: expertiseController.text.trim(),
         yearsExperience:
             int.tryParse(yearsOfExperienceController.text.trim()) ?? 0,
-        profilePhotoUrl: profilePhotoUrl, 
+        profilePhotoUrl: profilePhotoUrl,
       );
 
       log("Years: ${user.yearsExperience}");
@@ -311,7 +311,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       user.yearsExperience = int.tryParse(yearsOfExperienceController.text);
 
       if (profilePhotoUrl != null) {
-        user.profilePhotoUrl = profilePhotoUrl; 
+        user.profilePhotoUrl = profilePhotoUrl;
       }
 
       getUserInfo();
@@ -420,7 +420,6 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     }
   }
 
-
   updatePassword() async {
     final newPassword = newPasswordController.text.trim();
     final confirmPassword = confirmNewPasswordController.text.trim();
@@ -459,6 +458,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
       emit(AuthLoadedState());
     }
   }
+
   resetState() {
     emit(AuthenticationInitial());
   }

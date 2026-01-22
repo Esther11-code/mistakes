@@ -26,7 +26,7 @@ class Utils {
     var time = DateTime.parse(value);
     log(value.toString());
     final month = DateFormat.MMMM().format(time);
-    final date = DateFormat.d().format(time); // Day of month
+    final date = DateFormat.d().format(time); 
     final day = DateFormat.E().format(time);
     return (month: month, date: date, day: day);
   }

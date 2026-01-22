@@ -8,15 +8,14 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Bookmark/pages/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
-import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Home/presentation/widgets/home.dart';
 import 'package:mistakes/features/Home/presentation/widgets/src/home_appbar.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
-import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 import 'package:mistakes/global%20widgets/widgets/milestone.dart';
 
@@ -33,13 +32,19 @@ class MenteeHomeState extends State<MenteeHome> {
   @override
   void initState() {
     super.initState();
-    // Load mentors when screen opens
     context.read<HomeCubit>().searchAndFilter(role: 'mentor', reload: true);
     final userId = context.read<AuthenticationCubit>().user.id;
     if (userId != null) {
       context.read<BookmarksCubit>().loadBookmarkedMentors(userId);
       context.read<MentorCubit>().loadMenteeMentor(userId);
       context.read<MentorCubit>().checkActiveMentor(userId);
+      context.read<MentorCubit>().checkActiveMentor(userId);
+      final goalCubit = context.read<GoalCubit>();
+
+      if (goalCubit.allGoals.isEmpty) {
+        goalCubit.user = context.read<AuthenticationCubit>().user;
+        goalCubit.loadGoals(context);
+      }
     }
     checkPendingAchievements();
   }
@@ -47,8 +52,6 @@ class MenteeHomeState extends State<MenteeHome> {
   Future<void> checkPendingAchievements() async {
     final userId = context.read<AuthenticationCubit>().user.id;
     if (userId == null) return;
-
-    // Check through MentorRepo (reuse it)
     final mentorRepo = context.read<MentorCubit>().mentorRepo;
 
     final achievement = await mentorRepo.checkPendingMentorshipAchievement(
@@ -56,7 +59,6 @@ class MenteeHomeState extends State<MenteeHome> {
     );
 
     if (achievement != null && mounted) {
-      // Show the celebration
       await checkAndShowAchievement(
         context,
         'first_mentorship_started',
@@ -91,7 +93,7 @@ class MenteeHomeState extends State<MenteeHome> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             HomeAppbar(size: size),
-            SizedBox(height: size.height * 0.025),
+            SizedBox(height: size.height * 0.02),
 
             Expanded(
               child: RefreshIndicator(
@@ -103,7 +105,7 @@ class MenteeHomeState extends State<MenteeHome> {
                     );
                     context.read<MentorCubit>().loadMenteeMentor(userId);
                     context.read<MentorCubit>().checkActiveMentor(userId);
-                    context.read<GoalCubit>().loadGoals();
+                    context.read<GoalCubit>().loadGoals(context);
                     context.read<DashboardCubit>().loadNeedAttentionItems(
                       userId,
                     );
@@ -120,7 +122,7 @@ class MenteeHomeState extends State<MenteeHome> {
                           padding: EdgeInsets.symmetric(
                             horizontal: size.width * 0.04,
                           ),
-                          child: _buildActiveMentorCard(
+                          child: buildActiveMentorCard(
                             context,
                             size,
                             watchMentorCubit,
@@ -232,7 +234,6 @@ class MenteeHomeState extends State<MenteeHome> {
                                   role: 'mentor',
                                   reload: true,
                                 );
-
                                 Navigator.pushNamed(
                                   context,
                                   Routename.allMentors,
@@ -253,8 +254,8 @@ class MenteeHomeState extends State<MenteeHome> {
                             return Center(
                               child: Padding(
                                 padding: EdgeInsets.all(size.height * 0.05),
-                                child: LoadingAnimationWidget.dotsTriangle(
-                                  size: 70.sp,
+                                child: LoadingAnimationWidget.threeRotatingDots(
+                                  size: 50.sp,
                                   color: AppColors.background,
                                 ),
                               ),
@@ -409,8 +410,7 @@ class MenteeHomeState extends State<MenteeHome> {
     );
   }
 
-  // ⭐ NEW: Active Mentor Card Widget
-  Widget _buildActiveMentorCard(
+  Widget buildActiveMentorCard(
     BuildContext context,
     Size size,
     MentorCubit mentorCubit,
@@ -432,7 +432,7 @@ class MenteeHomeState extends State<MenteeHome> {
               ),
               child: Icon(
                 Icons.stars_rounded,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 27.sp,
               ),
             ),

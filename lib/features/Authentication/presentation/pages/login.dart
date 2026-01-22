@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/constants/utils/app_validation.dart';
 import 'package:mistakes/constants/utils/toast_helper.dart';
+import 'package:mistakes/features/Authentication/presentation/pages/widgets/login_widgets.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
@@ -22,7 +23,6 @@ class LoginPage extends StatelessWidget {
     final readAuthCubit = context.read<AuthenticationCubit>();
     final formkey = GlobalKey<FormState>();
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      // 👇 Optional: makes status bar text/icons visible on gradient
       value: SystemUiOverlayStyle.light,
       child: Container(
         decoration: BoxDecoration(
@@ -31,14 +31,11 @@ class LoginPage extends StatelessWidget {
               AppColors.background,
               AppColors.blue,
               AppColors.active,
-              // Color(0xFF003366), // Deep Blue
-              // Color(0xFF00B8B0), // Teal accent
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        // 👇 Fill entire screen — under status & nav bars
         child: BlocListener<AuthenticationCubit, AuthenticationState>(
           listener: (context, state) {
             if (state is AuthSignInSuccessState) {
@@ -49,7 +46,7 @@ class LoginPage extends StatelessWidget {
             }
           },
           child: Scaffold(
-            backgroundColor: Colors.transparent, // important!
+            backgroundColor: Colors.transparent, 
             body: Form(
               key: formkey,
               child: Column(
@@ -214,34 +211,3 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class CheckboxAndLabel extends StatelessWidget {
-  const CheckboxAndLabel({
-    super.key,
-    required this.watchAuthCubit,
-    required this.readAuthCubit,
-  });
-
-  final AuthenticationCubit watchAuthCubit;
-  final AuthenticationCubit readAuthCubit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        AppCheckbox(
-          status: watchAuthCubit.stayLogin,
-          ontap: () {
-            readAuthCubit.changeStaylogin();
-          },
-        ),
-        10.horizontalSpace,
-        InAppText(
-          text: "Stay logged in",
-          fontweight: FontWeight.w500,
-          size: 16,
-          color: AppColors.lightblack,
-        ),
-      ],
-    );
-  }
-}

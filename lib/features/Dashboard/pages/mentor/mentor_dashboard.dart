@@ -7,7 +7,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Dashboard/data/local/model/mentor_model.dart';
+import 'package:mistakes/features/Dashboard/data/model/mentee_model.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 

@@ -41,7 +41,6 @@ class ForgotPassword extends StatelessWidget {
               }
             });
           }
-
           if (state is AuthErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

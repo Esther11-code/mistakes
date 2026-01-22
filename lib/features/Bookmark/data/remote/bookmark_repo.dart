@@ -2,18 +2,12 @@ import 'dart:developer';
 import 'package:mistakes/main.dart';
 
 class BookmarkRepo {
-  // ═══════════════════════════════════════════════════════════
-  // MENTOR BOOKMARKS
-  // ═══════════════════════════════════════════════════════════
-
-  /// Add mentor bookmark
   Future<void> addMentorBookmark({
     required String menteeId,
     required String mentorId,
   }) async {
     try {
-      log('🔵 [BookmarksRepo] Adding mentor bookmark');
-
+      log('Adding mentor bookmark');
       final existing = await supabase
           .from('bookmarks')
           .select()
@@ -31,35 +25,30 @@ class BookmarkRepo {
         'created_at': DateTime.now().toIso8601String(),
       });
 
-      log('[BookmarksRepo] Mentor bookmark added');
+      log('Mentor bookmark added');
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }
-
-  /// Remove mentor bookmark
   Future<void> removeMentorBookmark({
     required String menteeId,
     required String mentorId,
   }) async {
     try {
-      log('🔵 [BookmarksRepo] Removing mentor bookmark');
-
+      log('Removing mentor bookmark');
       await supabase
           .from('bookmarks')
           .delete()
           .eq('mentee_id', menteeId)
           .eq('mentor_id', mentorId);
 
-      log('[BookmarksRepo] Mentor bookmark removed');
+      log('Bookmark removed');
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }
-
-  /// Check if mentor is bookmarked
   Future<bool> isMentorBookmarked({
     required String menteeId,
     required String mentorId,
@@ -74,17 +63,15 @@ class BookmarkRepo {
 
       return result != null;
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       return false;
     }
   }
-
-  /// Get bookmarked mentors
   Future<List<Map<String, dynamic>>> getBookmarkedMentors(
     String menteeId,
   ) async {
     try {
-      log('🔵 [BookmarksRepo] Loading mentor bookmarks');
+      log('Loading mentor bookmarks');
 
       final response = await supabase
           .from('bookmarks')
@@ -118,25 +105,21 @@ class BookmarkRepo {
         });
       }
 
-      log('[BookmarksRepo] Found ${bookmarks.length} mentor bookmarks');
+      log('Found ${bookmarks.length} mentor bookmarks');
       return bookmarks;
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }
 
-  // ═══════════════════════════════════════════════════════════
-  // RESOURCE BOOKMARKS
-  // ═══════════════════════════════════════════════════════════
 
-  /// Add resource bookmark
   Future<void> addResourceBookmark({
     required String userId,
     required String resourceId,
   }) async {
     try {
-      log('🔵 [BookmarksRepo] Adding resource bookmark');
+      log('Adding resource bookmark');
 
       final existing = await supabase
           .from('resource_bookmarks')
@@ -155,20 +138,19 @@ class BookmarkRepo {
         'created_at': DateTime.now().toIso8601String(),
       });
 
-      log('[BookmarksRepo] Resource bookmark added');
+      log('Resource bookmark added');
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }
 
-  /// Remove resource bookmark
   Future<void> removeResourceBookmark({
     required String userId,
     required String resourceId,
   }) async {
     try {
-      log('🔵 [BookmarksRepo] Removing resource bookmark');
+      log('Removing resource bookmark');
 
       await supabase
           .from('resource_bookmarks')
@@ -176,14 +158,12 @@ class BookmarkRepo {
           .eq('user_id', userId)
           .eq('resource_id', resourceId);
 
-      log('[BookmarksRepo] Resource bookmark removed');
+      log('Resource bookmark removed');
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }
-
-  /// Check if resource is bookmarked
   Future<bool> isResourceBookmarked({
     required String userId,
     required String resourceId,
@@ -198,17 +178,15 @@ class BookmarkRepo {
 
       return result != null;
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       return false;
     }
   }
-
-  /// Get bookmarked resources
   Future<List<Map<String, dynamic>>> getBookmarkedResources(
     String userId,
   ) async {
     try {
-      log('🔵 [BookmarksRepo] Loading resource bookmarks');
+      log('Loading resource bookmarks');
 
       final response = await supabase
           .from('resource_bookmarks')
@@ -218,7 +196,6 @@ class BookmarkRepo {
 
       final bookmarks = <Map<String, dynamic>>[];
       for (var bookmark in response) {
-        // Assuming you have a 'resources' table
         final resource = await supabase
             .from('resources')
             .select('*')
@@ -230,17 +207,17 @@ class BookmarkRepo {
           'resource_id': bookmark['resource_id'],
           'resource_title': resource['title'],
           'resource_description': resource['description'],
-          'resource_type': resource['type'], // article, video, course, etc.
+          'resource_type': resource['type'], 
           'resource_url': resource['url'],
           'resource_thumbnail': resource['thumbnail'],
           'bookmarked_at': bookmark['created_at'],
         });
       }
 
-      log('[BookmarksRepo] Found ${bookmarks.length} resource bookmarks');
+      log('Found ${bookmarks.length} resource bookmarks');
       return bookmarks;
     } catch (e) {
-      log(' [BookmarksRepo] Error: $e');
+      log(' Error: $e');
       rethrow;
     }
   }

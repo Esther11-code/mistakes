@@ -87,12 +87,9 @@ class GoalRepo {
     }
   }
 
-  // ============================================================================
-  // FETCH ALL INTERESTS FROM DATABASE
-  // ============================================================================
   Future<List<InterestModel>> getAllInterests() async {
     try {
-      log('🔵 Fetching all interests from database');
+      log('Fetching all interests from database');
 
       final response = await supabase
           .from('interests')
@@ -110,13 +107,9 @@ class GoalRepo {
       throw Exception('Failed to load interests: ${e.toString()}');
     }
   }
-
-  // ============================================================================
-  // FETCH INTERESTS BY TYPE
-  // ============================================================================
   Future<List<InterestModel>> getInterestsByType(String type) async {
     try {
-      log('🔵 Fetching $type interests');
+      log('Fetching $type interests');
 
       final response = await supabase
           .from('interests')
@@ -136,12 +129,9 @@ class GoalRepo {
     }
   }
 
-  // ============================================================================
-  // FETCH INTERESTS GROUPED BY TYPE
-  // ============================================================================
   Future<Map<String, List<InterestModel>>> getInterestsGroupedByType() async {
     try {
-      log('🔵 Fetching interests grouped by type');
+      log('Fetching interests grouped by type');
 
       final allInterests = await getAllInterests();
 
@@ -161,21 +151,13 @@ class GoalRepo {
       throw Exception('Failed to group interests: ${e.toString()}');
     }
   }
-
-  // ============================================================================
-  // SAVE USER INTERESTS (Updated to use interest IDs)
-  // ============================================================================
   Future<void> saveUserInterests({
     required String userId,
     required List<String> interestNames,
   }) async {
     try {
-      log('🔵 Saving ${interestNames.length} interests for user: $userId');
-
-      // Delete existing interests first
+      log('Saving ${interestNames.length} interests for user: $userId');
       await supabase.from('user_skills').delete().eq('user_id', userId);
-
-      // Insert new interests
       final skillsData = interestNames
           .map(
             (name) => {
@@ -197,12 +179,9 @@ class GoalRepo {
     }
   }
 
-  // ============================================================================
-  // GET USER SELECTED INTERESTS
-  // ============================================================================
   Future<List<String>> getUserInterests({required String userId}) async {
     try {
-      log('🔵 Fetching interests for user: $userId');
+      log('Fetching interests for user: $userId');
 
       final response = await supabase
           .from('user_skills')
@@ -221,10 +200,8 @@ class GoalRepo {
     }
   }
 
-  // Get feedback for a specific goal
 Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
   try {
-    // First, get the comments
     final commentsResponse = await supabase
         .from('goal_comments')
         .select('*')
@@ -235,18 +212,16 @@ Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
       return [];
     }
 
-    // Then, manually fetch profile details for each comment
     List<Map<String, dynamic>> feedbackList = [];
 
     for (var comment in commentsResponse) {
-      final userId = comment['user_id']; // This is auth user_id
+      final userId = comment['user_id']; 
       
       try {
-        // Get profile details using user_id (auth ID)
         final profileResponse = await supabase
             .from('profiles')
             .select('full_name, username')
-            .eq('user_id', userId) // Match on profiles.user_id
+            .eq('user_id', userId) 
             .maybeSingle();
 
         String mentorName = 'Mentor';
@@ -263,8 +238,7 @@ Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
           'mentor_name': mentorName,
         });
       } catch (e) {
-        log('⚠️ Error fetching profile for user $userId: $e');
-        // Still add the comment even if we can't get the profile
+        log('Error fetching profile for user $userId: $e');
         feedbackList.add({
           'comment_text': comment['comment_text'],
           'rating': comment['rating'],
@@ -276,7 +250,7 @@ Future<List<Map<String, dynamic>>> getGoalFeedback(String goalId) async {
 
     return feedbackList;
   } catch (e) {
-    log('❌ Error fetching goal feedback: $e');
+    log('Error fetching goal feedback: $e');
     return [];
   }
 }

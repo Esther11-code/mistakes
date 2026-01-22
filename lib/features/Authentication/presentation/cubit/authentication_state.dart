@@ -23,8 +23,6 @@ final class AddDetailsSkipped extends AuthenticationState {}
 
 final class AuthLogoutState extends AuthenticationState {}
 final class AuthInterestsSavedState extends AuthenticationState {}
-
-// New states for signup/signin
 final class AuthSignUpSuccessState extends AuthenticationState {}
 
 final class AuthSignInSuccessState extends AuthenticationState {}
@@ -34,8 +32,6 @@ final class AuthAutoLoginSuccessState extends AuthenticationState {}
 final class AuthProfileUpdatedState extends AuthenticationState {}
 
 final class AuthPasswordResetEmailSentState extends AuthenticationState {}
-
-// Error states
 final class AuthErrorState extends AuthenticationState {
   const AuthErrorState({required this.error});
   final String error;

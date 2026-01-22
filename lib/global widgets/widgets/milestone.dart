@@ -1,5 +1,3 @@
-// lib/features/Profile/presentation/widgets/achievement_celebration.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:confetti/confetti.dart';
@@ -221,7 +219,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          // Confetti
           if (achievement.showConfetti)
             Positioned(
               top: -50,
@@ -241,8 +238,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                 emissionFrequency: 0.05,
               ),
             ),
-
-          // Main Content
           SlideTransition(
             position: _slideAnimation,
             child: FadeTransition(
@@ -250,7 +245,7 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
               child: Container(
                 padding: EdgeInsets.all(size.width * 0.06),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color:  AppColors.white,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -263,7 +258,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Animated Icon
                     ScaleTransition(
                       scale: _scaleAnimation,
                       child: Container(
@@ -295,8 +289,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                     ),
 
                     SizedBox(height: size.height * 0.03),
-
-                    // Title
                     InAppText(
                       text: achievement.title,
                       size: 26,
@@ -306,8 +298,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                     ),
 
                     SizedBox(height: size.height * 0.015),
-
-                    // Message
                     InAppText(
                       text: achievement.message,
                       size: 16,
@@ -316,7 +306,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                       maxline: 10,
                     ),
 
-                    // Welcome Message Card (only for mentorship started)
                     if (widget.achievementType ==
                             AchievementType.mentorshipStarted &&
                         widget.welcomeMessage != null &&
@@ -359,7 +348,7 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                                   child: Icon(
                                     Icons.mail_outline_rounded,
                                     size: 18.sp,
-                                    color: Colors.white,
+                                    color: AppColors.white,
                                   ),
                                 ),
                                 SizedBox(width: 10),
@@ -374,11 +363,11 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 12),
+                            SizedBox(height: size.height * 0.01),
                             Container(
                               padding: EdgeInsets.all(size.width * 0.03),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: InAppText(
@@ -393,10 +382,7 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
                         ),
                       ),
                     ],
-
                     SizedBox(height: size.height * 0.03),
-
-                    // Continue Button
                     AppButton(
                       onTap: () {
                         Navigator.pop(context);
@@ -418,7 +404,6 @@ class _AchievementCelebrationState extends State<AchievementCelebration>
   }
 }
 
-// Helper function to show achievement
 void showAchievementCelebration(
   BuildContext context,
   AchievementType type, {
@@ -442,7 +427,6 @@ void showAchievementCelebration(
   );
 }
 
-// Helper to check and show achievement
 Future<void> checkAndShowAchievement(
   BuildContext context,
   String achievementKey,
@@ -454,12 +438,9 @@ Future<void> checkAndShowAchievement(
   String? continueButtonText,
 }) async {
   final service = AchievementService();
-
-  // Check if already achieved
   final alreadyAchieved = await service.hasAchieved(achievementKey);
 
   if (!alreadyAchieved) {
-    // Mark as achieved
     await service.markAchieved(
       achievementKey,
       metadata: {
@@ -469,7 +450,6 @@ Future<void> checkAndShowAchievement(
       },
     );
 
-    // Show celebration
     if (context.mounted) {
       showAchievementCelebration(
         context,

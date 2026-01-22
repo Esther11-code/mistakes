@@ -1,7 +1,7 @@
 class InterestModel {
   final String id;
   final String name;
-  final String type; // 'tech', 'career', 'personal', 'academic'
+  final String type; 
   final String? icon;
   final DateTime createdAt;
 

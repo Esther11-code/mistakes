@@ -1,19 +1,15 @@
-// lib/features/Achievement/achievement_service.dart
-
 import 'dart:developer';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 
 class AchievementService {
-  final _supabase = Supabase.instance.client;
-
-  // Check if user has already achieved something
+  final supabase = Supabase.instance.client;
   Future<bool> hasAchieved(String achievementType) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
+      final userId = supabase.auth.currentUser?.id;
       if (userId == null) return true;
 
-      final response = await _supabase
+      final response = await supabase
           .from('user_achievements')
           .select('id')
           .eq('user_id', userId)
@@ -27,34 +23,29 @@ class AchievementService {
     }
   }
 
-  // Mark achievement as completed
   Future<void> markAchieved(String achievementType, {Map<String, dynamic>? metadata}) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
+      final userId = supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      await _supabase.from('user_achievements').insert({
+      await supabase.from('user_achievements').insert({
         'user_id': userId,
         'achievement_type': achievementType,
         'metadata': metadata,
       });
 
-      log('✅ Achievement unlocked: $achievementType');
+      log('Achievement unlocked: $achievementType');
     } catch (e) {
       log('Error marking achievement: $e');
     }
   }
-
-  // Get all achievements for a user
   Future<List<Map<String, dynamic>>> getUserAchievements(String userId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('user_achievements')
           .select('achievement_type, achieved_at, metadata')
           .eq('user_id', userId)
           .order('achieved_at', ascending: false);
-
-      // Map to readable format
       return response.map<Map<String, dynamic>>((achievement) {
         final type = achievement['achievement_type'] as String;
         final achievedAt = DateTime.parse(achievement['achieved_at'] as String);
@@ -73,11 +64,9 @@ class AchievementService {
       return [];
     }
   }
-
-  // Get achievement count
   Future<int> getAchievementCount(String userId) async {
     try {
-      final response = await _supabase
+      final response = await supabase
           .from('user_achievements')
           .select('id')
           .eq('user_id', userId);
@@ -88,8 +77,6 @@ class AchievementService {
       return 0;
     }
   }
-
-  // Helper methods
   String _getAchievementTitle(String type) {
     switch (type) {
       case 'first_goal_created':
@@ -187,15 +174,15 @@ class AchievementService {
   Map<String, dynamic>? metadata,
 }) async {
   try {
-    await _supabase.from('user_achievements').insert({
+    await supabase.from('user_achievements').insert({
       'user_id': userId,
       'achievement_type': achievementType,
       'metadata': metadata,
     });
 
-    log('✅ Achievement unlocked for user $userId: $achievementType');
+    log('Achievement unlocked for user $userId: $achievementType');
   } catch (e) {
-    log('❌ Error marking achievement for user: $e');
+    log('Error marking achievement for user: $e');
   }
 }
 }

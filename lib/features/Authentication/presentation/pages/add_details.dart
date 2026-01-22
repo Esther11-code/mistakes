@@ -8,7 +8,8 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
+import 'package:mistakes/features/Authentication/presentation/pages/widgets/add_details_widgets.dart';
+import 'package:mistakes/features/Goal/pages/widgets/add_goal_widget.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class AddDetails extends StatelessWidget {
@@ -111,7 +112,6 @@ class AddDetails extends StatelessWidget {
                     children: [
                       SizedBox(height: size.height * 0.03),
 
-                      // Profile Picture Section
                       BlocBuilder<AuthenticationCubit, AuthenticationState>(
                         builder: (context, state) {
                           final isloading = state is AuthLoadingState;
@@ -200,20 +200,12 @@ class AddDetails extends StatelessWidget {
                         color: AppColors.grey,
                       ),
                       SizedBox(height: size.height * 0.03),
-
-                      // Expertise Field
                       ExpertiseField(),
                       SizedBox(height: size.height * 0.015),
-
-                      // YOE Field
                       YoeField(),
                       SizedBox(height: size.height * 0.015),
-
-                      // Bio Field
                       BioField(),
                       SizedBox(height: size.height * 0.025),
-
-                      // Age Confirmation Checkbox
                       BlocBuilder<AuthenticationCubit, AuthenticationState>(
                         builder: (context, state) {
                           return AppshadowContainer(
@@ -258,8 +250,6 @@ class AddDetails extends StatelessWidget {
                         },
                       ),
                       SizedBox(height: size.height * 0.035),
-
-                      // Info Bar
                       InfoBar(
                         size: size,
                         icon: Icons.info_outline,
@@ -267,8 +257,6 @@ class AddDetails extends StatelessWidget {
                             "Complete your profile to get the best experience and connect with the right people.",
                       ),
                       SizedBox(height: size.height * 0.03),
-
-                      // Continue Button
                       AppButton(
                         isLoading: watchAuthCubit.state is AuthLoadingState,
                         onTap: () {
@@ -285,8 +273,6 @@ class AddDetails extends StatelessWidget {
                         textSize: 20,
                       ),
                       SizedBox(height: size.height * 0.015),
-
-                      // Skip Button
                       AppButton(
                         onTap: () => readAuthCubit.skipDetails(),
                         width: size.width,
@@ -309,142 +295,3 @@ class AddDetails extends StatelessWidget {
   }
 }
 
-class ExpertiseField extends StatelessWidget {
-  const ExpertiseField({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-    final watchAuthCubit = context.watch<AuthenticationCubit>();
-    final user = watchAuthCubit.user;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(
-            text: user.isMentor ? 'Expertise' : 'Area of Interest',
-            style: GoogleFonts.ptSans(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.blue,
-            ),
-            children: [
-              TextSpan(
-                text: '*',
-                style: GoogleFonts.ptSans(
-                  color: AppColors.errorColor,
-                  fontSize: 20.sp,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: size.height * 0.01),
-        AppshadowContainer(
-          padding: EdgeInsets.symmetric(
-            horizontal: size.width * 0.04,
-            vertical: size.height * 0.005,
-          ),
-          color: AppColors.white,
-          child: ApptextField(
-            controller: watchAuthCubit.expertiseController,
-            hintText: user.isMentor
-                ? "e.g., Senior Software Engineer"
-                : "e.g., Junior Software Engineer",
-            prefixIconn: Icon(
-              Icons.work_outline,
-              color: AppColors.blue,
-              size: 20,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class BioField extends StatelessWidget {
-  const BioField({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-    final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(
-            text: 'Bio',
-            style: GoogleFonts.ptSans(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.blue,
-            ),
-            children: [
-              TextSpan(
-                text: '*',
-                style: GoogleFonts.ptSans(
-                  color: AppColors.errorColor,
-                  fontSize: 20.sp,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: size.height * 0.01),
-        AppshadowContainer(
-          padding: EdgeInsets.all(size.width * 0.04),
-          color: AppColors.white,
-          child: ApptextField(
-            controller: watchAuthCubit.bioController,
-            maxLine: 5,
-            hintText: "Tell us about yourself...",
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class YoeField extends StatelessWidget {
-  const YoeField({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-    final watchAuthCubit = context.watch<AuthenticationCubit>();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text.rich(
-          TextSpan(
-            text: 'Years of Experience',
-            style: GoogleFonts.ptSans(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.blue,
-            ),
-            children: [
-              TextSpan(
-                text: '*',
-                style: GoogleFonts.ptSans(
-                  color: AppColors.errorColor,
-                  fontSize: 20.sp,
-                ),
-              ),
-            ],
-          ),
-        ),
-        AppshadowContainer(
-          padding: EdgeInsets.all(size.width * 0.04),
-          color: AppColors.white,
-          child: ApptextField(
-            controller: watchAuthCubit.yearsOfExperienceController,
-            hintText: "What is your years of experience?",
-          ),
-        ),
-      ],
-    );
-  }
-}

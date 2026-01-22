@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/data/model/user_model.dart';
-import 'package:mistakes/features/Dashboard/data/local/model/mentor_model.dart';
-import 'package:mistakes/features/Dashboard/data/local/remote/dash_repo.dart';
+import 'package:mistakes/features/Dashboard/data/model/mentee_model.dart';
+import 'package:mistakes/features/Dashboard/data/remote/dash_repo.dart';
 
 part 'dashboard_state.dart';
 
@@ -27,10 +27,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   Map<String, dynamic> selectedMenteeDetails = {};
   List<Map<String, dynamic>> selectedMenteeRecentGoals = [];
 
-  // ============================================================================
-  // LOAD MENTEES
-  // ============================================================================
-  loadMentees({required UserModel user}) async {
+    loadMentees({required UserModel user}) async {
     emit(DashboardLoadingState());
     try {
       allMentees = await dashboardRepo.getMentees(mentorId: user.id!);
@@ -39,14 +36,10 @@ class DashboardCubit extends Cubit<DashboardState> {
       emit(DashboardLoadedState());
     } catch (e) {
       log('Error loading mentees: $e');
-      emit(DashboardErrorState(error: e.toString()));
-      emit(DashboardLoadedState());
+      emit(DashboardErrorState(error:"Failed to load mentees"));
     }
   }
 
-  // ============================================================================
-  // FILTER MENTEES
-  // ============================================================================
   void filterMentees() {
     switch (selectedStatusIndex) {
       case 0: // All
@@ -70,83 +63,56 @@ class DashboardCubit extends Cubit<DashboardState> {
     );
   }
 
-  // ============================================================================
-  // CHANGE STATUS FILTER
-  // ============================================================================
   void changeStatus(int index) {
     emit(DashboardLoadingState());
     selectedStatusIndex = index;
     log('Selected Status: ${status[index]}');
     filterMentees();
     emit(DashboardStatusChanged());
-    emit(DashboardLoadedState());
   }
 
-  // ============================================================================
-  // SET SELECTED MENTEE BY INDEX
-  // ============================================================================
   void setSelectedMenteeIndex(int index) {
     emit(DashboardLoadingState());
     selectedMenteeIndex = index;
     log('Selected Mentee Index: $selectedMenteeIndex');
     emit(DashboardMenteeChanged());
-    emit(DashboardLoadedState());
   }
 
-  // ============================================================================
-  // ⭐ SET SELECTED MENTEE (Direct)
-  // ============================================================================
   Future<void> setSelectedMentee(MenteeModel mentee) async {
     emit(DashboardLoadingState());
     try {
       selectedMentee = mentee;
-      log('🔵 Loading detailed data for mentee: ${mentee.name}');
+      log('Loading detailed data for mentee: ${mentee.name}');
 
-      // Load detailed data for this mentee
       await loadMenteeDetails(mentee.id, mentee.matchId);
 
       emit(DashboardMenteeChanged());
-      emit(DashboardLoadedState());
     } catch (e) {
-      log('❌ Error loading mentee details: $e');
-      emit(DashboardErrorState(error: e.toString()));
-      emit(DashboardLoadedState());
+      log('Error loading mentee details: $e');
+      emit(DashboardErrorState(error: "Failed to load mentee details"));
     }
   }
 
-  // ============================================================================
-  // ⭐ LOAD MENTEE DETAILS
-  // ============================================================================
   Future<void> loadMenteeDetails(String menteeId, String matchId) async {
     try {
-      // Get mentorship start date
       final matchData = await dashboardRepo.getMatchDetails(matchId);
-
-      // Get recent goals (last 5)
       selectedMenteeRecentGoals = await dashboardRepo.getMenteeRecentGoals(
         menteeId: menteeId,
         limit: 5,
       );
-
-      // Store additional details
       selectedMenteeDetails = {
         'match_id': matchId,
         'started_at': matchData['responded_at'] ?? matchData['created_at'],
         'recent_goals': selectedMenteeRecentGoals,
       };
 
-      log('✅ Loaded details for mentee: $menteeId');
+      log('Loaded details for mentee: $menteeId');
     } catch (e) {
-      log('❌ Error loading mentee details: $e');
+      log('Error loading mentee details: $e');
       rethrow;
     }
   }
 
-  // ============================================================================
-  // ⭐ DYNAMIC STATS GETTERS
-  // ============================================================================
-
-  // Calculate months together
   int get monthsTogether {
     if (selectedMenteeDetails['started_at'] == null) return 0;
 
@@ -159,24 +125,19 @@ class DashboardCubit extends Cubit<DashboardState> {
     return months;
   }
 
-  // Get active goals count
   int get activeGoalsCount {
     return selectedMentee?.totalGoals ??
         0 - (selectedMentee?.goalsCompleted ?? 0);
   }
 
-  // Get completed goals count
   int get completedGoalsCount {
     log('Completed goals count: ${selectedMentee?.goalsCompleted}');
     return selectedMentee?.goalsCompleted ?? 0;
   }
 
-  // Get overall progress percentage
   int get overallProgressPercentage {
     return selectedMentee?.overallProgress ?? 0;
   }
-
-  // Get stats list for GridView
   List<Map<String, dynamic>> get menteeStats {
     if (selectedMentee == null) {
       return [
@@ -195,7 +156,6 @@ class DashboardCubit extends Cubit<DashboardState> {
     ];
   }
 
-  // Get recent goals
   List<Map<String, dynamic>> get recentGoals {
     return selectedMenteeRecentGoals;
   }
@@ -208,10 +168,6 @@ class DashboardCubit extends Cubit<DashboardState> {
     log('Selected recent goals: ${selectedRecentGoals.length}');
     emit(DashboardLoadedState());
   }
-
-  // ============================================================================
-  // CLEAR SELECTED MENTEE
-  // ============================================================================
   void clearSelectedMentee() {
     selectedMentee = null;
     selectedMenteeDetails = {};
@@ -219,19 +175,15 @@ class DashboardCubit extends Cubit<DashboardState> {
     emit(DashboardLoadedState());
   }
 
-  // Add to DashboardCubit class
-  // Load feedback for a specific goal
   Future<void> loadFeedbackForSelectedGoal() async {
     if (selectedRecentGoals.isEmpty) {
-      log('⚠️ No goal selected');
+      log('No goal selected');
       return;
     }
 
     emit(DashboardLoadingState());
     try {
       final goalId = selectedRecentGoals['id'];
-
-      // Get comments for this goal
       final comments = await dashboardRepo.getGoalFeedback(goalId);
 
       // Add feedback to the selected goal
@@ -246,25 +198,21 @@ class DashboardCubit extends Cubit<DashboardState> {
         selectedRecentGoals['has_feedback'] = false;
       }
 
-      log('✅ Loaded feedback for goal $goalId');
+      log('Loaded feedback for goal $goalId');
       emit(DashboardLoadedState());
     } catch (e) {
-      log('❌ Error loading goal feedback: $e');
+      log('Error loading goal feedback: $e');
       selectedRecentGoals['has_feedback'] = false;
       emit(DashboardLoadedState());
     }
   }
 
-  // Add to DashboardCubit class
   List<Map<String, dynamic>> needAttentionItems = [];
-
-  // Load need attention items
   Future<void> loadNeedAttentionItems(String userId) async {
     emit(DashboardLoadingState());
     try {
       needAttentionItems.clear();
 
-      // 1. Check for completed goals (last 7 days)
       final completedGoals = await dashboardRepo.getRecentCompletedGoals(
         userId,
       );
@@ -281,7 +229,6 @@ class DashboardCubit extends Cubit<DashboardState> {
         });
       }
 
-      // 2. Check for unread messages
       final unreadCount = await dashboardRepo.getUnreadMessagesCount(userId);
       if (unreadCount > 0) {
         needAttentionItems.add({
@@ -297,7 +244,6 @@ class DashboardCubit extends Cubit<DashboardState> {
         });
       }
 
-      // 3. Check for new shared resources (unread)
       final newResources = await dashboardRepo.getUnreadSharedResources(userId);
       for (var resource in newResources) {
         needAttentionItems.add({
@@ -311,8 +257,6 @@ class DashboardCubit extends Cubit<DashboardState> {
           'data': resource,
         });
       }
-
-      // 4. Check for new achievements (last 7 days)
       final newAchievements = await dashboardRepo.getRecentAchievements(userId);
       for (var achievement in newAchievements) {
         needAttentionItems.add({
@@ -326,8 +270,6 @@ class DashboardCubit extends Cubit<DashboardState> {
           'data': achievement,
         });
       }
-
-      // 5. Check for new feedback on goals
       final newFeedback = await dashboardRepo.getRecentGoalFeedback(userId);
       for (var feedback in newFeedback) {
         needAttentionItems.add({
@@ -341,18 +283,16 @@ class DashboardCubit extends Cubit<DashboardState> {
           'data': feedback,
         });
       }
-
-      // Sort by time (most recent first)
       needAttentionItems.sort((a, b) {
         if (a['time'] == 'Now') return -1;
         if (b['time'] == 'Now') return 1;
-        return 0; // Keep database order for others
+        return 0; 
       });
 
-      log('✅ Loaded ${needAttentionItems.length} need attention items');
+      log('Loaded ${needAttentionItems.length} need attention items');
       emit(DashboardLoadedState());
     } catch (e) {
-      log('❌ Error loading need attention items: $e');
+      log('Error loading need attention items: $e');
       emit(DashboardLoadedState());
     }
   }
@@ -389,9 +329,7 @@ class DashboardCubit extends Cubit<DashboardState> {
     }
   }
 
-  // ============================================================================
-  // UPDATE STATE
-  // ============================================================================
+
   void updateState() {
     emit(DashboardLoadingState());
     emit(DashboardLoadedState());

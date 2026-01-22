@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Bookmark/pages/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/data/local/images/home_image.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
@@ -13,7 +13,7 @@ import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../../constants/utils/app_colors.dart';
-import '../widgets/src/home_appbar.dart';
+import 'src/home_appbar.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});

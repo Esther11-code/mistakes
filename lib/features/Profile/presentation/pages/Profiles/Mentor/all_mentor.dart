@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Bookmark/pages/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
-import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Home/presentation/widgets/home.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class AllMentor extends StatefulWidget {
@@ -19,6 +19,7 @@ class _AllMentorState extends State<AllMentor> {
   @override
   void initState() {
     super.initState();
+    context.read<HomeCubit>().searchAndFilter(role: 'mentor', reload: true);
     context.read<HomeCubit>().loadMentors();
   }
 
@@ -72,9 +73,8 @@ class _AllMentorState extends State<AllMentor> {
                           size: size,
                           mentorId: mentor.id ?? "0",
                           mentorName: mentor.name ?? "Unknown",
-                          expertise: mentor.expertise ?? "Expertise", // ⭐ Added
-                          yoe: (mentor.yearsExperience ?? 0)
-                              .toString(), // ⭐ Added
+                          expertise: mentor.expertise ?? "Expertise",
+                          yoe: (mentor.yearsExperience ?? 0).toString(),
                         );
                       }).toList(),
                     ),

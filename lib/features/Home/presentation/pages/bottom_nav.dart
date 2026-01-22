@@ -3,18 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Bookmark/pages/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
 import 'package:mistakes/features/Dashboard/pages/cubit/dashboard_cubit.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
 import 'package:mistakes/features/Home/data/local/home_static_repo.dart';
 import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
-import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
-import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
+import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 
 import '../../../../constants/utils/app_colors.dart';
 
-class BottomNav extends StatelessWidget {
+class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
+
+  @override
+  State<BottomNav> createState() => _BottomNavState();
+}
+
+class _BottomNavState extends State<BottomNav> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<HomeCubit>();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +43,32 @@ class BottomNav extends StatelessWidget {
           dashboardCubit.loadMentees(user: watchAuthCubit.user);
           final goalCubit = context.read<GoalCubit>();
           goalCubit.user = context.read<AuthenticationCubit>().user;
-          goalCubit.loadGoals();
+          goalCubit.loadGoals(context);
           context.read<ChatCubit>().loadConversations(
             user: context.read<AuthenticationCubit>().user,
           );
-         
+          final userId = context.read<AuthenticationCubit>().user.id;
+          if (userId != null) {
+            context.read<BookmarksCubit>().loadBookmarkedMentors(userId);
+            context.read<MentorCubit>().loadMenteeMentor(userId);
+            context.read<MentorCubit>().checkActiveMentor(userId);
+            final goalCubit = context.read<GoalCubit>();
+
+            if (goalCubit.allGoals.isEmpty) {
+              goalCubit.user = context.read<AuthenticationCubit>().user;
+              goalCubit.loadGoals(context);
+            }
+          }
+
+          final mentorCubit = context.read<MentorCubit>();
+
+          if (userId != null &&
+              context.read<AuthenticationCubit>().user.isMentor) {
+            mentorCubit.loadMentorDashboard(userId);
+            context.read<ChatCubit>().loadConversations(
+              user: context.read<HomeCubit>().user,
+            );
+          }
         }
         return Scaffold(
           body: watchHome.screens[index],
@@ -65,7 +97,7 @@ class BottomNav extends StatelessWidget {
                         color: AppColors.lightgrey.withAlpha(100),
                         blurRadius: 8.0,
                         spreadRadius: 1.0,
-                        offset: const Offset(0, -4), // shadow above the bar
+                        offset: const Offset(0, -4),
                       ),
                     ],
                   ),

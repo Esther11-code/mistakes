@@ -5,9 +5,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mistakes/config/page%20route/page_route.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
 import 'package:mistakes/features/Goal/pages/cubit/goal_cubit.dart';
-import 'package:mistakes/features/Goal/pages/select_interest.dart';
+import 'package:mistakes/features/Goal/pages/widgets/add_goal_widget.dart';
+import 'package:mistakes/features/Goal/pages/widgets/select_interest_widgets.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class EditInterests extends StatelessWidget {

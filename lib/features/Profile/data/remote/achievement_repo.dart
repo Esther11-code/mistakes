@@ -1,18 +1,14 @@
-// lib/features/Achievement/data/achievement_repository.dart
-
 import 'dart:developer';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AchievementRepo {
-  final _supabase = Supabase.instance.client;
+  final supabase = Supabase.instance.client;
 
-  // Check for pending mentorship achievement
   Future<Map<String, dynamic>?> checkPendingMentorshipAchievement(
     String menteeId,
   ) async {
     try {
-      // Check if achievement already exists
-      final existingAchievement = await _supabase
+      final existingAchievement = await supabase
           .from('user_achievements')
           .select('id')
           .eq('user_id', menteeId)
@@ -24,7 +20,7 @@ class AchievementRepo {
       }
 
       // Check if they have an accepted mentorship
-      final match = await _supabase
+      final match = await supabase
           .from('matches')
           .select('mentor_id, welcome_message, responded_at')
           .eq('mentee_id', menteeId)
@@ -34,7 +30,7 @@ class AchievementRepo {
       if (match == null) return null;
 
       // Get mentor name
-      final mentorProfile = await _supabase
+      final mentorProfile = await supabase
           .from('profiles')
           .select('full_name')
           .eq('user_id', match['mentor_id'])
@@ -58,7 +54,7 @@ class AchievementRepo {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      await _supabase.from('user_achievements').insert({
+      await supabase.from('user_achievements').insert({
         'user_id': userId,
         'achievement_type': achievementType,
         'metadata': metadata,

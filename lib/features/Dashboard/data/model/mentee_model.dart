@@ -2,7 +2,7 @@ class MenteeModel {
   final String id;
   final String name;
   final String? avatarUrl;
-  final String status; // 'active' or 'inactive'
+  final String status; 
   final int overallProgress;
   final int goalsCompleted;
   final int totalGoals;
@@ -11,7 +11,7 @@ class MenteeModel {
   final int unreadMessages;
   final bool needsAction;
   final bool isOnTrack;
-  final String matchId; // For navigation to conversations
+  final String matchId;
 
   MenteeModel({
     required this.id,
@@ -28,8 +28,6 @@ class MenteeModel {
     required this.isOnTrack,
     required this.matchId,
   });
-
-  // Copy with method for updates
   MenteeModel copyWith({
     String? id,
     String? name,

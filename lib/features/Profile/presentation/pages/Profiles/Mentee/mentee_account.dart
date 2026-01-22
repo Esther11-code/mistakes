@@ -216,6 +216,15 @@ class MenteeAccount extends StatelessWidget {
                                           label: "Privacy Policy",
                                           color: AppColors.grey,
                                           onTap: () {
+                                            Fluttertoast.showToast(
+                                              msg: "Coming Soon",
+                                              toastLength: Toast.LENGTH_LONG,
+                                              gravity: ToastGravity.BOTTOM,
+                                              timeInSecForIosWeb: 1,
+                                              backgroundColor: AppColors.blue,
+                                              textColor: AppColors.white,
+                                              fontSize: 16.0,
+                                            );
                                             // Navigator.pushNamed(context, Routename.privacyPolicy);
                                           },
                                         ),
@@ -271,7 +280,6 @@ class MenteeAccount extends StatelessWidget {
                                               InAppText(
                                                 text:
                                                     'Are you sure you want to log out of your account?',
-
                                                 textAlign: TextAlign.center,
                                                 color: AppColors.lightblack,
                                               ),
@@ -361,9 +369,9 @@ class MenteeAccount extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 4),
+                                      SizedBox(height: size.height * 0.01),
                                       InAppText(
-                                        text: "© 2024 All Rights Reserved",
+                                        text: "© 2025 All Rights Reserved",
                                         size: 12,
                                         color: AppColors.grey,
                                       ),
@@ -379,7 +387,6 @@ class MenteeAccount extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Floating white container
                   Positioned(
                     top: -100,
                     left: 0,
@@ -395,18 +402,15 @@ class MenteeAccount extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(height: size.height * 0.04),
+                              SizedBox(height: size.height * 0.05),
                               InAppText(
-                                text:
-                                    watchAuthcubit.user.name ?? "Esther Enyia",
+                                text: watchAuthcubit.user.name ?? "",
                                 size: 22,
                                 fontweight: FontWeight.w700,
                               ),
                               SizedBox(height: size.height * 0.01),
                               InAppText(
-                                text:
-                                    watchAuthcubit.user.email ??
-                                    "esther.eny@email.com",
+                                text: watchAuthcubit.user.email ?? "",
                                 color: AppColors.lightblack,
                                 size: 16,
                               ),

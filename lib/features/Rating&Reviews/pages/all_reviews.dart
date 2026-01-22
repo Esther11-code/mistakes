@@ -8,7 +8,7 @@ import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 import '../../../constants/utils/app_colors.dart';
-import '../../Home/presentation/pages/home.dart';
+import '../../Home/presentation/widgets/home.dart';
 
 class AllReviews extends StatelessWidget {
   const AllReviews({super.key});

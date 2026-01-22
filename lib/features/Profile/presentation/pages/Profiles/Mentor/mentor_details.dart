@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,10 +7,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Bookmark/cubit/bookmark_cubit.dart';
+import 'package:mistakes/features/Bookmark/pages/cubit/bookmark_cubit.dart';
 import 'package:mistakes/features/Chat/presentation/cubit/chat_cubit.dart';
-import 'package:mistakes/features/Home/presentation/cubit/home_cubit.dart';
-import 'package:mistakes/features/Home/presentation/pages/home.dart';
+import 'package:mistakes/features/Home/presentation/widgets/home.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/mentor_cubit.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import 'package:mistakes/features/Rating&Reviews/pages/cubit/review_cubit.dart';
@@ -22,7 +23,7 @@ class MentorDetails extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final watchProfileCubit = context.watch<ProfileCubit>();
     final mentor = watchProfileCubit.selectedMentor;
-    final readReviewCubit = context.read<ReviewCubit>();
+    // final readReviewCubit = context.read<ReviewCubit>();
     final watchReviewCubit = context.watch<ReviewCubit>();
     final menteeId = context.read<AuthenticationCubit>().user.id ?? "";
     return BlocListener<BookmarksCubit, BookmarksState>(
@@ -632,7 +633,7 @@ class ReviewsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final watchReviewCubit = context.watch<ReviewCubit>();
+    // final watchReviewCubit = context.watch<ReviewCubit>();
     return AppshadowContainer(
       color: AppColors.white,
       padding: EdgeInsets.all(size.width * 0.03),

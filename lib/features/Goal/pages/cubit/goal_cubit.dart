@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -16,79 +18,53 @@ class GoalCubit extends Cubit<GoalState> {
   GoalCubit(this.goalRepo) : super(GoalInitial());
 
   UserModel user = UserModel();
-
-  // Controllers for goal creation
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final successCriteriaController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
-  // Goals list and filtering
   List<GoalModel> allGoals = [];
   List<GoalModel> filteredGoals = [];
   List<String> goalFilterOptions = ['All', 'Ongoing', 'Completed'];
   int selectedGoalFilterIndex = 0;
 
-  // Goal creation
   String selectedCategory = 'skill';
   List<String> goalCategories = ['career', 'skill', 'personal'];
   DateTime? selectedDeadline;
 
   int selectedGoalIndex = 0;
 
-  // ============================================================================
-  // INTEREST SELECTION (Dynamic from database)
-  // ============================================================================
-
-  // All interests from database
   List<InterestModel> allInterests = [];
 
-  // Grouped by type
   Map<String, List<InterestModel>> groupedInterests = {};
-
-  // Category names (mapped from type)
   List<String> category = [];
 
-  // User's selected interests (just names)
   List<String> selectedInterests = [];
 
-  // ============================================================================
-  // LOAD INTERESTS FROM DATABASE
-  // ============================================================================
   Future<void> loadInterests() async {
     emit(GoalLoadingState());
     try {
-      log('🔵 Loading interests from database');
+      log('Loading interests from database');
 
-      // Fetch all interests grouped by type
       groupedInterests = await goalRepo.getInterestsGroupedByType();
 
-      // Extract category names and capitalize them
       category = groupedInterests.keys.map((type) {
-        // Capitalize first letter
         return type[0].toUpperCase() + type.substring(1);
       }).toList();
 
-      // Sort categories for consistent order
       category.sort();
 
       log('Loaded interests in ${category.length} categories');
       log('Categories: $category');
 
       emit(GoalInterestsLoadedState());
-      emit(GoalLoadedState());
     } catch (e) {
       log(' Error loading interests: $e');
       emit(GoalErrorState(error: 'Failed to load interests'));
-      emit(GoalLoadedState());
     }
   }
 
-  // ============================================================================
-  // GET INTERESTS FOR A CATEGORY
-  // ============================================================================
   List<String> getInterestsForCategory(String categoryName) {
-    // Convert display name back to type (lowercase)
     final type = categoryName.toLowerCase();
 
     if (!groupedInterests.containsKey(type)) {
@@ -98,10 +74,6 @@ class GoalCubit extends Cubit<GoalState> {
     return groupedInterests[type]!.map((interest) => interest.name).toList();
   }
 
-  // ============================================================================
-  // INTEREST SELECTION METHODS
-  // ============================================================================
-
   void addInterest(String interest) {
     if (!selectedInterests.contains(interest)) {
       emit(GoalLoadingState());
@@ -109,7 +81,6 @@ class GoalCubit extends Cubit<GoalState> {
       log('Interest Added: $interest');
       log('Total Selected: ${selectedInterests.length}');
       emit(GoalInterestAddedState());
-      emit(GoalLoadedState());
     }
   }
 
@@ -120,7 +91,6 @@ class GoalCubit extends Cubit<GoalState> {
       log('Interest Removed: $interest');
       log('Total Selected: ${selectedInterests.length}');
       emit(GoalInterestRemovedState());
-      emit(GoalLoadedState());
     }
   }
 
@@ -130,9 +100,6 @@ class GoalCubit extends Cubit<GoalState> {
 
   int get selectedInterestsCount => selectedInterests.length;
 
-  // ============================================================================
-  // LOAD USER'S EXISTING INTERESTS (for editing profile)
-  // ============================================================================
   Future<void> loadUserInterests() async {
     if (user.id == null) return;
 
@@ -148,22 +115,20 @@ class GoalCubit extends Cubit<GoalState> {
     }
   }
 
-  // ============================================================================
-  // GOAL METHODS (existing code - keep all your goal methods here)
-  // ============================================================================
-
-  loadGoals() async {
+  loadGoals(BuildContext? context) async {
     emit(GoalLoadingState());
     try {
       allGoals = await goalRepo.getGoals(menteeId: user.id!);
       filterGoals();
       loadGoalFeedback();
+         if (context != null && context.mounted) {
+      await checkMissedDeadlines(context);
+    }
       log('Goals loaded: ${allGoals.length}');
       emit(GoalLoadedState());
     } catch (e) {
       log('Error loading goals: $e');
-      emit(GoalErrorState(error: e.toString()));
-      emit(GoalLoadedState());
+      emit(GoalErrorState(error: 'Failed to load goals'));
     }
   }
 
@@ -194,7 +159,6 @@ class GoalCubit extends Cubit<GoalState> {
     filterGoals();
     log('Goal filter changed to: ${goalFilterOptions[index]}');
     emit(GoalRoleChangedState());
-    emit(GoalLoadedState());
   }
 
   updateProgress(
@@ -238,13 +202,30 @@ class GoalCubit extends Cubit<GoalState> {
           AchievementType.progressMilestone,
           progressPercentage: 75,
         );
+      } else if (newProgress == 100) {
+        final completedCount = allGoals
+            .where((g) => g.status == 'completed')
+            .length;
+
+        if (completedCount == 1) {
+          await checkAndShowAchievement(
+            context,
+            'first_completed_goal',
+            AchievementType.firstCompletedGoal,
+          );
+        }
+
+        await checkAndShowAchievement(
+          context,
+          'goal_completed_$goalId',
+          AchievementType.goalCompleted,
+        );
       }
 
       emit(GoalProgressUpdatedState());
     } catch (e) {
       log('Error updating progress: $e');
-      emit(GoalErrorState(error: e.toString()));
-      emit(GoalLoadedState());
+      emit(GoalErrorState(error: "Failed to update progress"));
     }
   }
 
@@ -264,7 +245,7 @@ class GoalCubit extends Cubit<GoalState> {
       descriptionController.clear();
       selectedDeadline = null;
 
-      await loadGoals();
+      await loadGoals(context);
       if (context.mounted) {
         await checkAndShowAchievement(
           context,
@@ -276,10 +257,31 @@ class GoalCubit extends Cubit<GoalState> {
       emit(GoalCreatedState());
     } catch (e) {
       log('Error creating goal: $e');
-      emit(GoalErrorState(error: e.toString()));
-      emit(GoalLoadedState());
+      emit(
+        GoalErrorState(
+          error:
+              "Failed to create goal. Check all fields and active mentorship",
+        ),
+      );
     }
   }
+Future<void> checkMissedDeadlines(BuildContext context) async {
+  final now = DateTime.now();
+
+  final hasMissedGoal = allGoals.any((goal) {
+    return goal.status != 'completed' &&
+        goal.deadline != null &&
+        goal.deadline!.isBefore(now);
+  });
+
+  if (hasMissedGoal) {
+    await checkAndShowAchievement(
+      context,
+      'first_missed_deadline',
+      AchievementType.firstMissedDeadline,
+    );
+  }
+}
 
   deleteGoal(String goalId) async {
     emit(GoalLoadingState());
@@ -289,11 +291,11 @@ class GoalCubit extends Cubit<GoalState> {
       filterGoals();
       log('Goal deleted successfully');
       emit(GoalDeletedState());
-      emit(GoalLoadedState());
     } catch (e) {
       log('Error deleting goal: $e');
-      emit(GoalErrorState(error: e.toString()));
-      emit(GoalLoadedState());
+      emit(
+        GoalErrorState(error: "Failed to delete goal. Please try again later"),
+      );
     }
   }
 
@@ -342,21 +344,14 @@ class GoalCubit extends Cubit<GoalState> {
     return allGoals.where((goal) => goal.status == 'active').length;
   }
 
-  // Add to GoalCubit class
-  // Store feedback for each goal
-  Map<String, Map<String, dynamic>> goalFeedback =
-      {}; // goalId -> feedback data
-
-  // Load feedback for all goals
+  Map<String, Map<String, dynamic>> goalFeedback = {};
   Future<void> loadGoalFeedback() async {
     try {
       for (var goal in allGoals) {
         try {
-          // Get feedback for this goal from goalRepo
           final feedback = await goalRepo.getGoalFeedback(goal.id);
 
           if (feedback.isNotEmpty) {
-            // Store the latest feedback
             goalFeedback[goal.id] = {
               'has_feedback': true,
               'feedback_text': feedback.first['comment_text'],
@@ -367,19 +362,17 @@ class GoalCubit extends Cubit<GoalState> {
             goalFeedback[goal.id] = {'has_feedback': false};
           }
         } catch (e) {
-          log('⚠️ Error loading feedback for goal ${goal.id}: $e');
+          log('Error loading feedback for goal ${goal.id}: $e');
           goalFeedback[goal.id] = {'has_feedback': false};
         }
       }
 
-      log('✅ Loaded feedback for ${goalFeedback.length} goals');
+      log('Loaded feedback for ${goalFeedback.length} goals');
       emit(GoalLoadedState());
     } catch (e) {
-      log('❌ Error loading goal feedback: $e');
+      log('Error loading goal feedback: $e');
     }
   }
-
-  // Modified loadGoals to also load feedback
 
   void clear() {
     titleController.clear();

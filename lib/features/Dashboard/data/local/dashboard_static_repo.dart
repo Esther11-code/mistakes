@@ -51,7 +51,7 @@ class MentorStat {
   final int count;
   final String label;
   final Color color;
-  final int flex; // For different sizes
+  final int flex; 
 
   MentorStat({
     required this.icon,

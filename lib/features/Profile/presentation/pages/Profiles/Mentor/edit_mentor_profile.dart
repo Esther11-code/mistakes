@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mistakes/constants/utils/app_colors.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
-import 'package:mistakes/features/Goal/pages/Goals/add_goal.dart';
+import 'package:mistakes/features/Goal/pages/widgets/add_goal_widget.dart';
 import 'package:mistakes/global%20widgets/export.dart';
 
 class EditMentorProfile extends StatelessWidget {

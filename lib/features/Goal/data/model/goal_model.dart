@@ -4,9 +4,9 @@ class GoalModel {
   final String? matchId;
   final String title;
   final String description;
-  final String category; // 'career', 'skill', 'personal'
-  final int progressPercentage; // 0-100
-  final String status; // 'active', 'completed', 'abandoned'
+  final String category; 
+  final int progressPercentage; 
+  final String status; 
   final DateTime? deadline;
   final DateTime createdAt;
   final DateTime updatedAt;

@@ -1,18 +1,12 @@
-// lib/features/Notification/data/notification_repository.dart
-
 import 'dart:developer';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class NotificationRepo {
-  final _supabase = Supabase.instance.client;
+  final supabase = Supabase.instance.client;
 
-  // ============================================================================
-  // FETCH NOTIFICATIONS FOR USER (MENTOR OR MENTEE)
-  // ============================================================================
   Future<List<Map<String, dynamic>>> getNotifications(String userId) async {
     try {
-      // Get the profile to check role
-      final profileResponse = await _supabase
+      final profileResponse = await supabase
           .from('profiles')
           .select('id, role')
           .eq('user_id', userId)
@@ -24,8 +18,7 @@ class NotificationRepo {
       final notifications = <Map<String, dynamic>>[];
 
       if (role.toLowerCase() == 'mentor') {
-        // Get mentor's notification settings using profile ID
-        final settingsResponse = await _supabase
+        final settingsResponse = await supabase
             .from('mentor_settings')
             .select(
               'notify_new_requests, notify_mentee_messages, notify_goal_completions',
@@ -45,11 +38,9 @@ class NotificationRepo {
           notifyGoalCompletions: notifyGoalCompletions,
         );
       } else {
-        // Fetch mentee notifications
-        await _fetchMenteeNotifications(userId, notifications);
+        await fetchMenteeNotifications(userId, notifications);
       }
 
-      // Sort by timestamp (most recent first)
       notifications.sort(
         (a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime),
       );
@@ -61,10 +52,6 @@ class NotificationRepo {
       rethrow;
     }
   }
-
-  // ============================================================================
-  // FETCH MENTOR NOTIFICATIONS
-  // ============================================================================
   Future<void> _fetchMentorNotifications(
     String userId,
     List<Map<String, dynamic>> notifications, {
@@ -72,9 +59,8 @@ class NotificationRepo {
     required bool notifyMessages,
     required bool notifyGoalCompletions,
   }) async {
-    // 1. NEW MENTORSHIP REQUESTS (if enabled)
     if (notifyNewRequests) {
-      final requestsResponse = await _supabase
+      final requestsResponse = await supabase
           .from('matches')
           .select('id, requested_at, mentee_id')
           .eq('mentor_id', userId)
@@ -84,7 +70,7 @@ class NotificationRepo {
 
       for (var request in requestsResponse) {
         try {
-          final menteeResponse = await _supabase
+          final menteeResponse = await supabase
               .from('profiles')
               .select('full_name, profile_photo_url')
               .eq('user_id', request['mentee_id'])
@@ -106,21 +92,19 @@ class NotificationRepo {
       }
     }
 
-    // 2. MENTEE MESSAGES (if enabled)
     if (notifyMessages) {
-      // Get conversations where current user is the mentor
-      final conversationsResponse = await _supabase
+      final conversationsResponse = await supabase
           .from('conversations')
           .select('id, mentee_id, last_message, last_message_at, last_message_sender_id')
           .eq('mentor_id', userId)
           .not('last_message', 'is', null)
-          .neq('last_message_sender_id', userId) // Only messages from mentee
+          .neq('last_message_sender_id', userId) 
           .order('last_message_at', ascending: false)
           .limit(10);
 
       for (var conv in conversationsResponse) {
         try {
-          final menteeResponse = await _supabase
+          final menteeResponse = await supabase
               .from('profiles')
               .select('full_name, profile_photo_url')
               .eq('user_id', conv['mentee_id'])
@@ -142,10 +126,8 @@ class NotificationRepo {
       }
     }
 
-    // 3. GOAL COMPLETIONS (if enabled)
     if (notifyGoalCompletions) {
-      // Get active mentees
-      final matchesResponse = await _supabase
+      final matchesResponse = await supabase
           .from('matches')
           .select('mentee_id')
           .eq('mentor_id', userId)
@@ -154,7 +136,7 @@ class NotificationRepo {
       if (matchesResponse.isNotEmpty) {
         final menteeIds = matchesResponse.map((m) => m['mentee_id'] as String).toList();
 
-        final goalsResponse = await _supabase
+        final goalsResponse = await supabase
             .from('goals')
             .select('id, title, completed_at, mentee_id')
             .inFilter('mentee_id', menteeIds)
@@ -165,7 +147,7 @@ class NotificationRepo {
 
         for (var goal in goalsResponse) {
           try {
-            final menteeResponse = await _supabase
+            final menteeResponse = await supabase
                 .from('profiles')
                 .select('full_name, profile_photo_url')
                 .eq('user_id', goal['mentee_id'])
@@ -188,16 +170,11 @@ class NotificationRepo {
       }
     }
   }
-
-  // ============================================================================
-  // FETCH MENTEE NOTIFICATIONS
-  // ============================================================================
-  Future<void> _fetchMenteeNotifications(
+  Future<void> fetchMenteeNotifications(
     String userId,
     List<Map<String, dynamic>> notifications,
   ) async {
-    // 1. MATCH STATUS UPDATES
-    final matchesResponse = await _supabase
+    final matchesResponse = await supabase
         .from('matches')
         .select('id, status, responded_at, mentor_id')
         .eq('mentee_id', userId)
@@ -208,7 +185,7 @@ class NotificationRepo {
 
     for (var match in matchesResponse) {
       try {
-        final mentorResponse = await _supabase
+        final mentorResponse = await supabase
             .from('profiles')
             .select('full_name, profile_photo_url')
             .eq('user_id', match['mentor_id'])
@@ -241,20 +218,18 @@ class NotificationRepo {
         log('Error fetching mentor details: $e');
       }
     }
-
-    // 2. MENTOR MESSAGES
-    final conversationsResponse = await _supabase
+    final conversationsResponse = await supabase
         .from('conversations')
         .select('id, mentor_id, last_message, last_message_at, last_message_sender_id')
         .eq('mentee_id', userId)
         .not('last_message', 'is', null)
-        .neq('last_message_sender_id', userId) // Only messages from mentor
+        .neq('last_message_sender_id', userId)
         .order('last_message_at', ascending: false)
         .limit(10);
 
     for (var conv in conversationsResponse) {
       try {
-        final mentorResponse = await _supabase
+        final mentorResponse = await supabase
             .from('profiles')
             .select('full_name, profile_photo_url')
             .eq('user_id', conv['mentor_id'])
@@ -275,8 +250,7 @@ class NotificationRepo {
       }
     }
 
-    // 3. GOAL COMMENTS FROM MENTOR
-    final goalsResponse = await _supabase
+    final goalsResponse = await supabase
         .from('goals')
         .select('id, title')
         .eq('mentee_id', userId);
@@ -284,7 +258,7 @@ class NotificationRepo {
     if (goalsResponse.isNotEmpty) {
       final goalIds = goalsResponse.map((g) => g['id'] as String).toList();
 
-      final commentsResponse = await _supabase
+      final commentsResponse = await supabase
           .from('goal_comments')
           .select('id, comment_text, created_at, user_id, goal_id')
           .inFilter('goal_id', goalIds)
@@ -294,7 +268,7 @@ class NotificationRepo {
 
       for (var comment in commentsResponse) {
         try {
-          final commenterResponse = await _supabase
+          final commenterResponse = await supabase
               .from('profiles')
               .select('full_name, profile_photo_url')
               .eq('user_id', comment['user_id'])

@@ -11,7 +11,6 @@ class MentorCubit extends Cubit<MentorState> {
 
   MentorCubit(this.mentorRepo) : super(MentorInitial());
 
-  // Mentor data
   Map<String, int> stats = {
     'activeMentees': 0,
     'pendingRequests': 0,
@@ -27,21 +26,15 @@ class MentorCubit extends Cubit<MentorState> {
   TextEditingController welcomeMessageController = TextEditingController();
 
   Map<String, dynamic>? selectedMenteeDetails;
-
-  // ============================================================================
-  // LOAD ALL MENTOR DATA
-  // ============================================================================
   Future<void> loadMentorDashboard(String mentorId) async {
     emit(MentorLoadingState());
     try {
-      // Load all data in parallel
       await Future.wait([
         loadMentorStats(mentorId),
         loadRecentActivities(mentorId),
         loadThisWeeksTasks(mentorId),
         loadActiveMentees(mentorId),
         loadIncomingRequests(mentorId),
-        
       ]);
 
       emit(MentorLoadedState());
@@ -51,9 +44,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD MENTOR STATS
-  // ============================================================================
   Future<void> loadMentorStats(String mentorId) async {
     try {
       stats = await mentorRepo.getMentorStats(mentorId);
@@ -64,9 +54,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD RECENT ACTIVITIES
-  // ============================================================================
   Future<void> loadRecentActivities(String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -79,9 +66,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD THIS WEEK'S TASKS
-  // ============================================================================
   Future<void> loadThisWeeksTasks(String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -96,9 +80,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD ACTIVE MENTEES
-  // ============================================================================
   Future<void> loadActiveMentees(String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -111,9 +92,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD INCOMING REQUESTS
-  // ============================================================================
   Future<void> loadIncomingRequests(String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -128,9 +106,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD MENTEE DETAILS (for request details page)
-  // ============================================================================
   Future<void> loadMenteeDetails(String menteeId) async {
     emit(MentorLoadingState());
     try {
@@ -143,9 +118,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // ACCEPT/DECLINE (reuse from ProfileCubit or move here)
-  // ============================================================================
   Future<void> acceptRequest(String matchId, String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -153,13 +125,9 @@ class MentorCubit extends Cubit<MentorState> {
         matchId,
         welcomeMessage: welcomeMessageController.text,
       );
-      // ⭐ Save achievement for MENTEE
       final menteeId = selectedRequest?['mentee_id'] as String?;
       if (menteeId != null) {
-        // Get mentor's name from repo
         final mentorName = await mentorRepo.getMentorName(mentorId);
-
-        // Save achievement through repo
         await mentorRepo.saveAchievementForMentee(
           menteeId,
           'first_mentorship_started',
@@ -169,9 +137,8 @@ class MentorCubit extends Cubit<MentorState> {
           },
         );
 
-        log('✅ Achievement saved for mentee: $menteeId');
+        log('Achievement saved for mentee: $menteeId');
       }
-      // Reload data
       await loadIncomingRequests(mentorId);
       await loadMentorStats(mentorId);
 
@@ -186,8 +153,6 @@ class MentorCubit extends Cubit<MentorState> {
     emit(MentorLoadingState());
     try {
       await mentorRepo.declineRequest(matchId);
-
-      // Reload data
       await loadIncomingRequests(mentorId);
       await loadMentorStats(mentorId);
 
@@ -220,6 +185,8 @@ class MentorCubit extends Cubit<MentorState> {
 
   List<dynamic>? get selectedGoals =>
       selectedRequest?['goals'] as List<dynamic>?;
+  List<dynamic>? get selectedInterests =>
+      selectedRequest?['area_of_interest'] as List<dynamic>?;
 
   String? get selectedMatchId => selectedRequest?['match_id'] as String?;
 
@@ -240,8 +207,6 @@ class MentorCubit extends Cubit<MentorState> {
   String? get selectedMenteeLocation => selectedMentee?['location'];
 
   String get selectedMenteeUsername => selectedMentee?['username'] ?? '';
-
-  // Settings data (stored in cubit, not state)
   bool acceptingNewRequests = true;
   int maxActiveMentees = 5;
   bool autoReply = false;
@@ -250,10 +215,6 @@ class MentorCubit extends Cubit<MentorState> {
     'messages': true,
     'goal_completions': true,
   };
-
-  // ============================================================================
-  // LOAD MENTOR SETTINGS
-  // ============================================================================
   Future<void> loadMentorSettings(String mentorId) async {
     emit(MentorLoadingState());
     try {
@@ -276,9 +237,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // UPDATE ACCEPTING NEW REQUESTS
-  // ============================================================================
   Future<void> toggleAcceptingNewRequests(String mentorId) async {
     try {
       final newValue = !acceptingNewRequests;
@@ -301,9 +259,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // UPDATE MAX ACTIVE MENTEES
-  // ============================================================================
   Future<void> updateMaxMentees(String mentorId, int newMax) async {
     try {
       await mentorRepo.updateMaxActiveMentees(mentorId, newMax);
@@ -311,16 +266,12 @@ class MentorCubit extends Cubit<MentorState> {
       maxActiveMentees = newMax;
 
       emit(MentorSettingsUpdatedState('Max active mentees updated to $newMax'));
-      emit(MentorSettingsLoadedState());
     } catch (e) {
       log('Error updating max mentees: $e');
       emit(MentorErrorState(e.toString()));
     }
   }
 
-  // ============================================================================
-  // TOGGLE AUTO REPLY
-  // ============================================================================
   Future<void> toggleAutoReply(String mentorId) async {
     try {
       final newValue = !autoReply;
@@ -341,9 +292,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // UPDATE NOTIFICATION SETTINGS
-  // ============================================================================
   Future<void> toggleNotification(
     String mentorId,
     String notificationType,
@@ -375,10 +323,6 @@ class MentorCubit extends Cubit<MentorState> {
 
   Map<String, dynamic>? currentMentor;
   List<Map<String, dynamic>> allMentorships = [];
-
-  // ============================================================================
-  // LOAD MENTEE'S CURRENT MENTOR
-  // ============================================================================
   Future<void> loadMenteeMentor(String menteeId) async {
     emit(MentorLoadingState());
     try {
@@ -397,9 +341,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // LOAD ALL MENTORSHIPS FOR MENTEE
-  // ============================================================================
   Future<void> loadAllMenteeMentorships(String menteeId) async {
     emit(MentorLoadingState());
     try {
@@ -412,9 +353,6 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // HELPER GETTERS FOR CURRENT MENTOR
-  // ============================================================================
   String? get currentMentorName => currentMentor?['full_name'];
   String? get currentMentorId => currentMentor?['mentor_id'];
   String? get currentMentorBio => currentMentor?['bio'];
@@ -434,13 +372,7 @@ class MentorCubit extends Cubit<MentorState> {
       : null;
 
   bool get hasMentor => currentMentor != null;
-
-  // Active mentor check
   bool hasActiveMentor = false;
-
-  // ============================================================================
-  // CHECK IF MENTEE HAS ACTIVE MENTOR
-  // ============================================================================
   Future<void> checkActiveMentor(String menteeId) async {
     try {
       hasActiveMentor = await mentorRepo.hasActiveMentor(menteeId);
@@ -451,23 +383,17 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  // ============================================================================
-  // END MENTORSHIP
-  // ============================================================================
   Future<void> endMentorship(String matchId, String reason) async {
     emit(MentorLoadingState());
     try {
       await mentorRepo.endMentorship(matchId, reason);
-
-      // Clear current mentor
       currentMentor = null;
       hasActiveMentor = false;
 
-      log('✅ Mentorship ended successfully');
+      log('Mentorship ended successfully');
       emit(MentorshipEndedState());
-      emit(MentorLoadedState());
     } catch (e) {
-      log('❌ Error ending mentorship: $e');
+      log('Error ending mentorship: $e');
       emit(MentorErrorState(e.toString()));
     }
   }

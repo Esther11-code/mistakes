@@ -87,11 +87,9 @@ class _NotificationPageState extends State<NotificationPage> {
                       ),
                     );
                   }
-
                   final notifications = context
                       .read<NotificationCubit>()
                       .notifications;
-
                   if (notifications.isEmpty) {
                     return Center(
                       child: Column(
@@ -119,7 +117,6 @@ class _NotificationPageState extends State<NotificationPage> {
                       ),
                     );
                   }
-
                   return RefreshIndicator(
                     onRefresh: () async {
                       final userId =

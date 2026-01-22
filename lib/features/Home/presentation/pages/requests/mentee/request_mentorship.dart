@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/presentation/cubit/authentication_cubit.dart';
+import 'package:mistakes/features/Home/presentation/widgets/request_mentorship_widgets.dart';
 import 'package:mistakes/features/Profile/presentation/cubit/profile_cubit.dart';
 import '../../../../../../constants/utils/app_colors.dart';
 import '../../../../../../global widgets/export.dart';
@@ -71,11 +73,10 @@ class RequestMentorship extends StatelessWidget {
             ),
           );
         } else if (state is ProfileErrorState) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.error),
-              backgroundColor: AppColors.errorColor,
-            ),
+          Fluttertoast.showToast(
+            msg:"An error occurred",
+            gravity: ToastGravity.TOP,
+            backgroundColor: AppColors.errorColor,
           );
         }
       },
@@ -332,8 +333,6 @@ class RequestMentorship extends StatelessWidget {
                     ),
 
                     SizedBox(height: size.height * 0.025),
-
-                    // Selected Goals Count
                     if (selectedGoals.isNotEmpty)
                       Container(
                         padding: EdgeInsets.all(size.width * 0.04),
@@ -398,125 +397,6 @@ class RequestMentorship extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class StatItem extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final Size size;
-
-  const StatItem({
-    super.key,
-    required this.icon,
-    required this.value,
-    required this.size,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppColors.blue),
-        SizedBox(width: 4),
-        InAppText(
-          text: value,
-          size: 15,
-          fontweight: FontWeight.w600,
-          color: AppColors.blue,
-        ),
-      ],
-    );
-  }
-}
-
-class GoalChip extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Size size;
-
-  const GoalChip({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-    required this.size,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: size.width * 0.04,
-          vertical: size.height * 0.012,
-        ),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [AppColors.blue, AppColors.filledColor])
-              : null,
-          color: isSelected ? null : AppColors.grey.withAlpha(10),
-          borderRadius: BorderRadius.circular(size.width * 0.05),
-          border: Border.all(
-            color: isSelected ? AppColors.white : AppColors.grey.withAlpha(50),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.blue.withAlpha(50),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 20.sp,
-              color: isSelected ? AppColors.white : AppColors.grey,
-            ),
-            SizedBox(width: 6),
-            InAppText(
-              text: label,
-              size: 16,
-              fontweight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? AppColors.white : AppColors.grey,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HorizontalDivider extends StatelessWidget {
-  const HorizontalDivider({
-    super.key,
-    required this.size,
-    this.width,
-    this.height,
-    this.color,
-  });
-
-  final Size size;
-  final double? width, height;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width ?? size.width * 0.004,
-      height: height ?? size.height * 0.05,
-      color: color ?? AppColors.white.withAlpha(70),
     );
   }
 }

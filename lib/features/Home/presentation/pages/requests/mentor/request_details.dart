@@ -75,7 +75,6 @@ class RequestDetails extends StatelessWidget {
             ),
           );
         }
-
         return AppScaffold(
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +228,7 @@ class RequestDetails extends StatelessWidget {
                           ),
                           SizedBox(width: size.width * 0.03),
                           InAppText(
-                            text: "Why She Wants You",
+                            text: "Reason for mentorship",
                             size: 20,
                             fontweight: FontWeight.w700,
                             color: AppColors.blue,
@@ -349,7 +348,7 @@ class RequestDetails extends StatelessWidget {
                         spacing: size.width * 0.025,
                         runSpacing: size.height * 0.012,
                         children: List.generate(
-                          watchMentorCubit.selectedGoals?.length ?? 0,
+                          watchMentorCubit.selectedInterests?.length ?? 0,
                           (index) => Container(
                             padding: EdgeInsets.symmetric(
                               horizontal: size.width * 0.04,
@@ -367,7 +366,9 @@ class RequestDetails extends StatelessWidget {
                               ],
                             ),
                             child: InAppText(
-                              text: readMentorCubit.selectedGoals?[index] ?? "",
+                              text:
+                                  readMentorCubit.selectedInterests?[index] ??
+                                  "",
                               fontweight: FontWeight.w500,
                               color: AppColors.lightblack,
                             ),

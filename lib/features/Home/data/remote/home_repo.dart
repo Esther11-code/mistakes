@@ -3,22 +3,18 @@ import 'package:mistakes/features/Authentication/data/model/user_model.dart';
 import 'package:mistakes/main.dart';
 
 class HomeRepo {
-  // ============================================================================
-  // GET ALL USERS (Mentors and Mentees)
-  // ============================================================================
   Future<List<UserModel>> getAllUsers() async {
     try {
-      log('🔵 Fetching all users from database');
+      log('Fetching all users from database');
 
       final response = await supabase
           .from('profiles')
-          .select('*') // ⭐ Simple select, no joins!
+          .select('*') 
           .order('created_at', ascending: false);
 
       final users = <UserModel>[];
 
       for (var profile in response) {
-        // ⭐ No more separate skills query!
         final interests = profile['area_of_interest'] != null
             ? List<String>.from(profile['area_of_interest'])
             : <String>[];
@@ -37,7 +33,7 @@ class HomeRepo {
           location: profile['location'],
           linkedinUrl: profile['linkedin_url'],
           isVerified: profile['is_verified'] ?? false,
-          interests: interests, // ⭐ Directly from profiles!
+          interests: interests, 
         );
 
         users.add(user);
@@ -51,12 +47,9 @@ class HomeRepo {
     }
   }
 
-  // ============================================================================
-  // GET MENTORS ONLY
-  // ============================================================================
   Future<List<UserModel>> getMentors() async {
     try {
-      log('🔵 Fetching mentors from database');
+      log('Fetching mentors from database');
 
       final response = await supabase
           .from('profiles')
@@ -115,13 +108,9 @@ class HomeRepo {
       throw Exception('Failed to load mentors: ${e.toString()}');
     }
   }
-
-  // ============================================================================
-  // GET MENTEES ONLY
-  // ============================================================================
   Future<List<UserModel>> getMentees() async {
     try {
-      log('🔵 Fetching mentees from database');
+      log('Fetching mentees from database');
 
       final response = await supabase
           .from('profiles')
@@ -176,10 +165,6 @@ class HomeRepo {
       throw Exception('Failed to load mentees: ${e.toString()}');
     }
   }
-
-  // ============================================================================
-  // SEARCH USERS
-  // ============================================================================
   Future<List<UserModel>> searchUsers({
     String? query,
     String? role,
@@ -187,7 +172,7 @@ class HomeRepo {
     String? location,
   }) async {
     try {
-      log('🔵 Searching users with query: $query');
+      log('Searching users with query: $query');
 
       var queryBuilder = supabase.from('profiles').select('''
             user_id,
@@ -206,7 +191,6 @@ class HomeRepo {
             is_verified
           ''');
 
-      // Apply filters
       if (role != null && role != 'All') {
         if (role.toLowerCase() == 'mentor') {
           queryBuilder = queryBuilder.or('role.eq.mentor,role.eq.both');
@@ -222,8 +206,6 @@ class HomeRepo {
       if (location != null) {
         queryBuilder = queryBuilder.ilike('location', '%$location%');
       }
-
-      // Execute query
       final response = await queryBuilder;
 
       final users = <UserModel>[];
@@ -255,8 +237,6 @@ class HomeRepo {
           isVerified: profile['is_verified'] ?? false,
           interests: interests,
         );
-
-        // Apply local search filter if query provided
         if (query != null && query.isNotEmpty) {
           final searchQuery = query.toLowerCase();
           final matchesSearch =
@@ -280,10 +260,6 @@ class HomeRepo {
       throw Exception('Failed to search users: ${e.toString()}');
     }
   }
-
-  // ============================================================================
-  // GET UNIQUE EXPERTISE LIST
-  // ============================================================================
   Future<List<String>> getExpertiseList() async {
     try {
       final response = await supabase
@@ -305,9 +281,6 @@ class HomeRepo {
     }
   }
 
-  // ============================================================================
-  // GET ALL SKILLS/INTERESTS
-  // ============================================================================
   Future<List<String>> getAllSkills() async {
     try {
       final response = await supabase.from('user_skills').select('skill_name');

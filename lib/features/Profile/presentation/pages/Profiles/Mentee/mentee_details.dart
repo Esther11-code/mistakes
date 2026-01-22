@@ -17,7 +17,7 @@ class MenteeDetails extends StatelessWidget {
     final size = MediaQuery.sizeOf(context);
     final watchProfileCubit = context.watch<MentorCubit>();
     final mentee = watchProfileCubit
-        .selectedMenteeDetails; // You'll need to add this to ProfileCubit
+        .selectedMenteeDetails; 
 
     return AppScaffold(
       body: Column(
@@ -37,7 +37,6 @@ class MenteeDetails extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Profile Card
                     AppshadowContainer(
                       color: AppColors.white,
                       padding: EdgeInsets.all(size.width * 0.03),
@@ -86,8 +85,6 @@ class MenteeDetails extends StatelessWidget {
                     ),
 
                     SizedBox(height: size.height * 0.03),
-
-                    // Learning Goals
                     InAppText(
                       text: "Learning Goals",
                       size: 20,
@@ -109,8 +106,6 @@ class MenteeDetails extends StatelessWidget {
                     ),
 
                     SizedBox(height: size.height * 0.03),
-
-                    // Areas of Interest
                     InAppText(
                       text: "Areas of Interest",
                       size: 20,

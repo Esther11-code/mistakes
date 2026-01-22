@@ -1,8 +1,6 @@
-// lib/data/models/message_model.dart
-
 import 'package:equatable/equatable.dart';
 
-/// Message types supported in chat
+
 enum MessageType {
   text,
   image,
@@ -19,7 +17,6 @@ enum MessageType {
   }
 }
 
-/// Comprehensive message model for chat system
 class MessageModel extends Equatable {
   final String id;
   final String conversationId;
@@ -27,25 +24,15 @@ class MessageModel extends Equatable {
   final String receiverId;
   final String content;
   final MessageType messageType;
-  
-  // File/media support
   final String? fileUrl;
   final String? fileName;
-  final int? fileSize; // in bytes
-  
-  // Read status
+  final int? fileSize;
   final bool isRead;
   final DateTime? readAt;
-  
-  // Delivery status
   final bool isDelivered;
   final DateTime? deliveredAt;
-  
-  // Timestamps
   final DateTime createdAt;
   final DateTime updatedAt;
-
-  // Enriched fields (from joins)
   final String senderName;
   final String senderPhoto;
   final bool senderOnline;
@@ -71,7 +58,6 @@ class MessageModel extends Equatable {
     this.senderOnline = false,
   });
 
-  /// Create from Supabase JSON with joined sender profile
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     final sender = json['sender'] ?? {};
 
@@ -101,7 +87,6 @@ class MessageModel extends Equatable {
     );
   }
 
-  /// Convert to JSON for Supabase insert/update
   Map<String, dynamic> toJson() {
     return {
       'conversation_id': conversationId,
@@ -115,25 +100,21 @@ class MessageModel extends Equatable {
     };
   }
 
-  /// Check if message was sent by current user
   bool isSentByMe(String currentUserId) => senderId == currentUserId;
-
-  /// Get display text for message (handles different types)
   String get displayText {
     switch (messageType) {
       case MessageType.image:
-        return '📷 Image';
+        return 'Image';
       case MessageType.file:
-        return '📎 ${fileName ?? "File"}';
+        return fileName ?? "File";
       case MessageType.location:
-        return '📍 Location';
+        return 'Location';
       
       default:
         return content;
     }
   }
 
-  /// Get formatted file size
   String get formattedFileSize {
     if (fileSize == null) return '';
     
@@ -146,7 +127,6 @@ class MessageModel extends Equatable {
     }
   }
 
-  /// Get time ago string (e.g., "2m ago", "1h ago")
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
@@ -161,8 +141,6 @@ class MessageModel extends Equatable {
       return 'Just now';
     }
   }
-
-  /// Get formatted time (e.g., "2:30 PM")
   String get formattedTime {
     final hour = createdAt.hour > 12 ? createdAt.hour - 12 : createdAt.hour;
     final minute = createdAt.minute.toString().padLeft(2, '0');
