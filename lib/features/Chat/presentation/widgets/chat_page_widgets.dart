@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mistakes/config/detail/route_name.dart';
 import 'package:mistakes/features/Authentication/data/model/user_model.dart';
@@ -523,105 +522,7 @@ class MessageAvatar extends StatelessWidget {
   }
 }
 
-class ChatMessageInput extends StatelessWidget {
-  final Size size;
 
-  const ChatMessageInput({super.key, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    final readChatCubit = context.read<ChatCubit>();
-    final watchChatCubit = context.watch<ChatCubit>();
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: size.width * 0.04,
-        vertical: size.height * 0.015,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(5),
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            AttachmentButton(
-              size: size,
-              onPressed: () {
-                showAttachmentOptions(context, size, readChatCubit);
-              },
-            ),
-            SizedBox(width: size.width * 0.03),
-
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: size.width * 0.04),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppColors.filledColor,
-                    width: size.width * 0.002,
-                  ),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: watchChatCubit.messageController,
-                        focusNode: watchChatCubit.focusNode,
-                        decoration: InputDecoration(
-                          hintText: 'Enter a message',
-                          hintStyle: GoogleFonts.ptSans(
-                            color: AppColors.filledColor,
-                            fontSize: 15.sp,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: size.height * 0.015,
-                          ),
-                        ),
-                        style: GoogleFonts.ptSans(
-                          color: AppColors.blue,
-                          fontSize: 15.sp,
-                        ),
-                        maxLines: null,
-                        textCapitalization: TextCapitalization.sentences,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.emoji_emotions_outlined,
-                        color: AppColors.filledColor,
-                      ),
-                      onPressed: () {
-                        // TODO: emoji picker
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(width: size.width * 0.03),
-            SendMessageButton(
-              size: size,
-              onPressed: () => readChatCubit.sendMessage(
-                user: context.read<AuthenticationCubit>().user,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class AttachmentButton extends StatelessWidget {
   final Size size;

@@ -38,14 +38,10 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// [MyApp] widget.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load environment variables
   await dotenv.load(fileName: ".env");
-
-  // Initialize Supabase
   await Supabase.initialize(
-    url: 'https://ivdufdbrhvjixmyfaabt.supabase.co',
-    anonKey: 'sb_publishable_DxFSSj5dvwtJCyY3u1kFBA_3Lxb3mKc',
+    url: dotenv.env['supabase_url'],
+    anonKey:dotenv.env['supabase_anonKey'],
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),
