@@ -150,7 +150,6 @@ class HomeCubit extends Cubit<HomeState> {
         }).toList();
       }
 
-      // Apply experience filter (mentors only)
       if (experience != null) {
         filtered = filtered.where((user) {
           return user.isMentor &&
@@ -161,7 +160,7 @@ class HomeCubit extends Cubit<HomeState> {
 
       filteredUsers = filtered;
 
-      log('🔍 Filtered to ${filtered.length} users');
+      log('Filtered to ${filtered.length} users');
       log('Query: "$query", Role: $role, Expertise: $expertise');
 
       emit(
@@ -179,10 +178,6 @@ class HomeCubit extends Cubit<HomeState> {
       emit(UserSearchErrorState(e.toString()));
     }
   }
-
-  // ============================================================================
-  // LOAD MENTORS ONLY
-  // ============================================================================
   Future<void> loadMentors() async {
     emit(UserSearchLoadingState());
     try {
@@ -192,7 +187,7 @@ class HomeCubit extends Cubit<HomeState> {
       log('Loaded ${mentors.length} mentors');
 
       searchAndFilter(role: 'mentor', reload: true);
-      log('🔍 Filtered to ${filteredUsers.length} mentors');
+      log('Filtered to ${filteredUsers.length} mentors');
       emit(
         UserSearchLoadedState(
           users: mentors,
@@ -209,9 +204,6 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  // ============================================================================
-  // HELPER GETTERS
-  // ============================================================================
   List<UserModel> getMentors() {
     return allUsers.where((u) => u.isMentor).toList();
   }
@@ -229,7 +221,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   List<String> getAllInterests() {
-    return allSkills; // Same as skills in your schema
+    return allSkills; 
   }
 
   // Clear filters

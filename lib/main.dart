@@ -66,14 +66,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
 
   late AppLinks appLinks;
 
   @override
   void initState() {
     super.initState();
-    setupAuthListener(); // This is the key!
+    setupAuthListener(); 
     initDeepLinks();
   }
 
@@ -81,13 +80,9 @@ class _MyAppState extends State<MyApp> {
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       log(' Auth event: $event');
-
-      // This triggers when user clicks the email link
       if (event == AuthChangeEvent.passwordRecovery) {
-        log('🔑 Password recovery event detected!');
-        log('🔑 Session: ${data.session?.accessToken}');
-
-        // Give a small delay to ensure navigation context is ready
+        log('Password recovery event detected!');
+        log('Session: ${data.session?.accessToken}');
         Future.delayed(const Duration(milliseconds: 500), () {
           navigatorKey.currentState?.pushNamedAndRemoveUntil(
             Routename.changePassword,
@@ -109,8 +104,7 @@ class _MyAppState extends State<MyApp> {
     try {
       final uri = await appLinks.getInitialLink();
       if (uri != null) {
-        log('📱 Initial link: $uri');
-        // Delay to ensure app is fully initialized
+        log('Initial link: $uri');
         Future.delayed(const Duration(seconds: 1), () {
           _handleDeepLink(uri);
         });
@@ -121,8 +115,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleDeepLink(Uri uri) {
-    log('🔗 Handling deep link: $uri');
-    log('🔗 Fragment: ${uri.fragment}');
+    log('Handling deep link: $uri');
+    log('Fragment: ${uri.fragment}');
 
     if (uri.host == 'reset-password' || uri.path.contains('reset-password')) {
       log('Navigating to reset password');

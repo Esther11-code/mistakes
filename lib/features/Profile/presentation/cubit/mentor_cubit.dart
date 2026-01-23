@@ -353,16 +353,19 @@ class MentorCubit extends Cubit<MentorState> {
     }
   }
 
-  String? get currentMentorName => currentMentor?['full_name'];
-  String? get currentMentorId => currentMentor?['mentor_id'];
-  String? get currentMentorBio => currentMentor?['bio'];
-  String? get currentMentorExpertise => currentMentor?['expertise'];
+  String? get currentMentorName => currentMentor?['full_name'] ?? "No mentor";
+  String? get currentMentorId => currentMentor?['mentor_id'] ?? "";
+  String? get currentMentorBio => currentMentor?['bio'] ?? "No bio";
+  String? get currentMentorExpertise =>
+      currentMentor?['expertise'] ?? "No expertise";
   String? get currentMentorAvatar => currentMentor?['profile_photo_url'];
-  int? get currentMentorYearsExperience => currentMentor?['years_experience'];
+  int? get currentMentorYearsExperience =>
+      currentMentor?['years_experience'] ?? 0;
   String? get currentMentorLinkedIn => currentMentor?['linkedin_url'];
   String? get currentMentorMatchId => currentMentor?['match_id'];
   String? get currentMentorUsername => currentMentor?['username'];
-  List<dynamic>? get currentMentorSkills => currentMentor?['skills'];
+  List<dynamic>? get currentMentorSkills =>
+      currentMentor?['skills'] ?? "No skills";
   int? get totalGoalsWithMentor => currentMentor?['total_goals'];
   int? get completedGoalsWithMentor => currentMentor?['completed_goals'];
   String? get mentorshipWelcomeMessage => currentMentor?['welcome_message'];

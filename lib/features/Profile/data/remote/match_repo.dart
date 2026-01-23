@@ -2,8 +2,6 @@ import 'dart:developer';
 import 'package:mistakes/main.dart';
 
 class MatchesRepo {
-  /// Send mentorship request
-  /// Send mentorship request
   Future<void> sendMentorshipRequest({
     required String menteeId,
     required String mentorId,
@@ -11,9 +9,8 @@ class MatchesRepo {
     required List<String> goals,
   }) async {
     try {
-      log('🔵 [MatchesRepo] Sending mentorship request');
+      log('Sending mentorship request');
 
-      // ⭐ Check if mentee already has an active mentor
       final activeMentorship = await supabase
           .from('matches')
           .select()
@@ -26,8 +23,6 @@ class MatchesRepo {
           'You already have an active mentor. You can only have one mentor at a time.',
         );
       }
-
-      // Check if request already exists to this specific mentor
       final existing = await supabase
           .from('matches')
           .select()
@@ -39,7 +34,6 @@ class MatchesRepo {
         throw Exception('Request already sent to this mentor');
       }
 
-      // Create new request
       await supabase.from('matches').insert({
         'mentor_id': mentorId,
         'mentee_id': menteeId,
@@ -49,19 +43,18 @@ class MatchesRepo {
         'requested_at': DateTime.now().toIso8601String(),
       });
 
-      log('[MatchesRepo] Request sent successfully');
+      log(' Request sent successfully');
     } catch (e) {
-      log(' [MatchesRepo] Error sending request: $e');
+      log('  Error sending request: $e');
       rethrow;
     }
   }
 
-  /// Get pending requests sent by mentee
   Future<List<Map<String, dynamic>>> getMyPendingRequests(
     String menteeId,
   ) async {
     try {
-      log('🔵 [MatchesRepo] Loading pending requests for mentee: $menteeId');
+      log('Loading pending requests for mentee: $menteeId');
 
       final response = await supabase
           .from('matches')
@@ -78,7 +71,6 @@ class MatchesRepo {
           .eq('status', 'pending')
           .order('requested_at', ascending: false);
 
-      // Get mentor details for each request
       final requests = <Map<String, dynamic>>[];
       for (var match in response) {
         final mentorProfile = await supabase
@@ -102,20 +94,19 @@ class MatchesRepo {
         });
       }
 
-      log('[MatchesRepo] Found ${requests.length} pending requests');
+      log(' Found ${requests.length} pending requests');
       return requests;
     } catch (e) {
-      log(' [MatchesRepo] Error loading requests: $e');
+      log('  Error loading requests: $e');
       rethrow;
     }
   }
 
-  /// Get incoming requests for mentor
   Future<List<Map<String, dynamic>>> getIncomingRequests(
     String mentorId,
   ) async {
     try {
-      log('🔵 [MatchesRepo] Loading incoming requests for mentor: $mentorId');
+      log('Loading incoming requests for mentor: $mentorId');
 
       final response = await supabase
           .from('matches')
@@ -132,7 +123,6 @@ class MatchesRepo {
           .eq('status', 'pending')
           .order('requested_at', ascending: false);
 
-      // Get mentee details
       final requests = <Map<String, dynamic>>[];
       for (var match in response) {
         final menteeProfile = await supabase
@@ -161,18 +151,17 @@ class MatchesRepo {
         });
       }
 
-      log('[MatchesRepo] Found ${requests.length} incoming requests');
+      log(' Found ${requests.length} incoming requests');
       return requests;
     } catch (e) {
-      log(' [MatchesRepo] Error loading incoming requests: $e');
+      log('  Error loading incoming requests: $e');
       rethrow;
     }
   }
 
-  /// Accept mentorship request
   Future<void> acceptRequest(String matchId) async {
     try {
-      log('🔵 [MatchesRepo] Accepting request: $matchId');
+      log('Accepting request: $matchId');
 
       await supabase
           .from('matches')
@@ -182,17 +171,16 @@ class MatchesRepo {
           })
           .eq('id', matchId);
 
-      log('[MatchesRepo] Request accepted');
+      log(' Request accepted');
     } catch (e) {
-      log(' [MatchesRepo] Error accepting request: $e');
+      log(' Error accepting request: $e');
       rethrow;
     }
   }
 
-  /// Decline mentorship request
   Future<void> declineRequest(String matchId) async {
     try {
-      log('🔵 [MatchesRepo] Declining request: $matchId');
+      log('Declining request: $matchId');
 
       await supabase
           .from('matches')
@@ -202,22 +190,19 @@ class MatchesRepo {
           })
           .eq('id', matchId);
 
-      log('[MatchesRepo] Request declined');
+      log(' Request declined');
     } catch (e) {
-      log(' [MatchesRepo] Error declining request: $e');
+      log('  Error declining request: $e');
       rethrow;
     }
   }
 
-  /// Get active mentorships
   Future<List<Map<String, dynamic>>> getActiveMentorships({
     required String userId,
     required bool isMentor,
   }) async {
     try {
-      log(
-        '🔵 [MatchesRepo] Loading active mentorships for: $userId (mentor: $isMentor)',
-      );
+      log('Loading active mentorships for: $userId (mentor: $isMentor)');
 
       final query = supabase
           .from('matches')
@@ -234,8 +219,6 @@ class MatchesRepo {
       final response = isMentor
           ? await query.eq('mentor_id', userId)
           : await query.eq('mentee_id', userId);
-
-      // Get partner details
       final mentorships = <Map<String, dynamic>>[];
       for (var match in response) {
         final partnerId = isMentor ? match['mentee_id'] : match['mentor_id'];
@@ -264,15 +247,14 @@ class MatchesRepo {
         });
       }
 
-      log('[MatchesRepo] Found ${mentorships.length} active mentorships');
+      log(' Found ${mentorships.length} active mentorships');
       return mentorships;
     } catch (e) {
-      log(' [MatchesRepo] Error loading mentorships: $e');
+      log('  Error loading mentorships: $e');
       rethrow;
     }
   }
 
-  /// Check match status
   Future<String?> checkMatchStatus({
     required String menteeId,
     required String mentorId,
@@ -287,15 +269,14 @@ class MatchesRepo {
 
       return response?['status'];
     } catch (e) {
-      log(' [MatchesRepo] Error checking match status: $e');
+      log('  Error checking match status: $e');
       return null;
     }
   }
 
-  /// End mentorship
   Future<void> endMentorship(String matchId) async {
     try {
-      log('🔵 [MatchesRepo] Ending mentorship: $matchId');
+      log('Ending mentorship: $matchId');
 
       await supabase
           .from('matches')
@@ -305,22 +286,19 @@ class MatchesRepo {
           })
           .eq('id', matchId);
 
-      log('[MatchesRepo] Mentorship ended');
+      log(' Mentorship ended');
     } catch (e) {
-      log(' [MatchesRepo] Error ending mentorship: $e');
+      log('  Error ending mentorship: $e');
       rethrow;
     }
   }
 
-  /// Get mentee's requests by status (for filtering)
   Future<List<Map<String, dynamic>>> getMyRequestsByStatus({
     required String menteeId,
-    String? status, // null = all, 'pending', 'accepted', 'declined'
+    String? status,
   }) async {
     try {
-      log(
-        '🔵 [MatchesRepo] Loading requests for mentee: $menteeId, status: $status',
-      );
+      log('Loading requests for mentee: $menteeId, status: $status');
 
       var query = supabase
           .from('matches')
@@ -336,14 +314,12 @@ class MatchesRepo {
         ''')
           .eq('mentee_id', menteeId);
 
-      // Add status filter if provided
       if (status != null) {
         query = query.eq('status', status);
       }
 
       final response = await query.order('requested_at', ascending: false);
 
-      // Get mentor details for each request
       final requests = <Map<String, dynamic>>[];
       for (var match in response) {
         final mentorProfile = await supabase
@@ -369,10 +345,10 @@ class MatchesRepo {
         });
       }
 
-      log('[MatchesRepo] Found ${requests.length} requests');
+      log(' Found ${requests.length} requests');
       return requests;
     } catch (e) {
-      log(' [MatchesRepo] Error loading requests: $e');
+      log('  Error loading requests: $e');
       rethrow;
     }
   }
